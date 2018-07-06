@@ -99,7 +99,6 @@ set(Slicer_QTLOADABLEMODULES_DISABLED
   ViewControllers
   )
 set(Slicer_QTSCRIPTEDMODULES_DISABLED
-  DataProbe
   DMRIInstall
   Endoscopy
   LabelStatistics
