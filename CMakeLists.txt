@@ -99,7 +99,6 @@ set(Slicer_QTLOADABLEMODULES_DISABLED
   ViewControllers
   )
 set(Slicer_QTSCRIPTEDMODULES_DISABLED
-  DataProbe
   DMRIInstall
   Endoscopy
   LabelStatistics
@@ -111,9 +110,7 @@ set(Slicer_QTSCRIPTEDMODULES_DISABLED
 
 # Enable/Disable Slicer custom modules: To create a new module, use the SlicerExtensionWizard.
 set(Slicer_EXTENSION_SOURCE_DIRS
-  #${${APPLICATION_NAME}_SOURCE_DIR}/Modules/CLI/MyCLIModule
-  #${${APPLICATION_NAME}_SOURCE_DIR}/Modules/Loadable/MyLoadableModule
-  #${${APPLICATION_NAME}_SOURCE_DIR}/Modules/Scripted/MyScriptedModule
+  ${${APPLICATION_NAME}_SOURCE_DIR}/Modules
   )
 
 # Add remote extension source directories
