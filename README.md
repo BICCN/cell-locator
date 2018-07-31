@@ -1,9 +1,9 @@
-cell-locator by Kitware, Inc.
-================================
+CellLocator by Allen Institute
+==============================
 
-Manually align specimens to annotated 3D spaces 
+Manually align specimens to annotated 3D spaces
 
-![cell-locator by Kitware, Inc.](Applications/App/Resources/Images/LogoFull.png?raw=true)
+![CellLocator by Allen Institute](Applications/App/Resources/Images/LogoFull.png?raw=true)
 
 Prerequisites
 -------------
@@ -31,7 +31,7 @@ Prerequisites
     * Setup [your git username](https://help.github.com/articles/setting-your-username-in-git) and [your git email](https://help.github.com/articles/setting-your-email-in-git).
 
     * If not already done, email `Jean-Christophe Fillion-Robin <jchris.fillionr@kitware.com>` to be granted access to
-    the [slicer/slicertemplateproject](https://kwgitlab.kitware.com/slicer/slicertemplateproject) repository.
+    the [BICCN/cell-locator](https://github.com/BICCN/cell-locator) repository.
 
 Checkout
 --------
@@ -43,7 +43,7 @@ Checkout
 cd /c
 mkdir W
 cd /c/W
-git clone https://github.com/https://github.com/BICCN/cell-locator.git cell-locator
+git clone https://github.com/BICCN/cell-locator.git cell-locator
 ```
 
 Note: use short source and build directory names to avoid the [maximum path length limitation](http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247%28v=vs.85%29.aspx#maxpath).
@@ -57,7 +57,7 @@ Note: The build process will take approximately 3 hours.
 1. Start [CMake GUI](https://cmake.org/runningcmake/), select source directory `C:\W\cell-locator` and set build directory to `C:\W\cell-locator-rel`.
 2. Add an entry `QT_QMAKE_EXECUTABLE` pointing to `C:\D\Support\qt-4.8.7-64-vs2013-rel`.
 2. Generate the project.
-3. Open `C:\W\cell-locator-rel\cell-locator.sln`, select `Release` and build the project.
+3. Open `C:\W\cell-locator-rel\CellLocator.sln`, select `Release` and build the project.
 
 <b>Option 2: Command Line</b>
 

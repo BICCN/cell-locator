@@ -18,11 +18,13 @@
 #ifndef __qAppStyle_h
 #define __qAppStyle_h
 
+// CellLocator includes
+#include "qCellLocatorAppExport.h"
+
 // Slicer includes
-#include "qSlicerAppExport.h"
 #include "qSlicerStyle.h"
 
-class Q_SLICER_APP_EXPORT qAppStyle
+class Q_CELLLOCATOR_APP_EXPORT qAppStyle
   : public qSlicerStyle
 {
   Q_OBJECT

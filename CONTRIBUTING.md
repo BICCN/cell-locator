@@ -1,17 +1,17 @@
-Contributing to Cell-locator
+Contributing to CellLocator
 ===============================
 
-There are many ways to contribute to cell-locator.
+There are many ways to contribute to CellLocator.
 
-  * Submit a feature request or bug, or add to the discussion on the [cell-locator issue tracker][is]
-  * Submit a [Pull Request][pr] to improve cell-locator.
+  * Submit a feature request or bug, or add to the discussion on the [CellLocator issue tracker][is]
+  * Submit a [Pull Request][pr] to improve CellLocator.
 
 The PR Process, and Related Gotchas
 -----------------------------------
 
 #### How to submit a PR ?
 
-If you are new to cell-locator development and you don't have push access to the cell-locator
+If you are new to CellLocator development and you don't have push access to the CellLocator
 repository, here are the steps:
 
 1. [Fork and clone][fk] the repository.
@@ -29,7 +29,7 @@ and will facilitate other developers to checkout your topic without having to
 It will also simplify the workflow when you are _co-developing_ a branch.
 
 When submitting a PR, make sure to add a `Cc: @cell-locator/developers` comment to
-notify cell-locator developers of your awesome contributions. Based on the
+notify CellLocator developers of your awesome contributions. Based on the
 comments posted by the reviewers, you may have to revisit your patches.
 
 ### How to integrate a PR ?
@@ -43,7 +43,7 @@ and a reasonable amount of time passed without anyone objecting. `LGTM` is an
 acronym for _Looks Good to Me_.
 
 Next, there are two scenarios:
-* You do NOT have push access: A cell-locator core developer will integrate your PR.
+* You do NOT have push access: A CellLocator core developer will integrate your PR.
 * You have push access: Simply click on the "Merge pull request" button.
 
 Then, click on the "Delete branch" button that appears afterward.
@@ -51,5 +51,5 @@ Then, click on the "Delete branch" button that appears afterward.
 
 [fk]: http://help.github.com/forking/
 [push]: https://help.github.com/articles/pushing-to-a-remote/
-[pr]: https://github.com/https://github.com/BICCN/cell-locator/merge_requests
-[is]: https://github.com/https://github.com/BICCN/cell-locator/issues
+[pr]: https://github.com/BICCN/cell-locator/merge_requests
+[is]: https://github.com/BICCN/cell-locator/issues

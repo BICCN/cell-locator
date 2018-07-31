@@ -15,31 +15,34 @@
 
 ==============================================================================*/
 
-#ifndef __qAppMainWindow_h
-#define __qAppMainWindow_h
+#ifndef __qCellLocatorAppMainWindow_h
+#define __qCellLocatorAppMainWindow_h
+
+// CellLocator includes
+#include "qCellLocatorAppExport.h"
+class qCellLocatorAppMainWindowPrivate;
 
 // Slicer includes
-#include "qSlicerAppExport.h"
-#include "qSlicerAppMainWindow.h"
-class qAppMainWindowPrivate;
+#include "qSlicerMainWindow.h"
 
-class Q_SLICER_APP_EXPORT qAppMainWindow
-  : public qSlicerAppMainWindow
+class Q_CELLLOCATOR_APP_EXPORT qCellLocatorAppMainWindow : public qSlicerMainWindow
 {
   Q_OBJECT
 public:
+  typedef qSlicerMainWindow Superclass;
 
-  typedef qSlicerAppMainWindow Superclass;
-  qAppMainWindow(QWidget *parent=0);
-  virtual ~qAppMainWindow();
+  qCellLocatorAppMainWindow(QWidget *parent=0);
+  virtual ~qCellLocatorAppMainWindow();
 
-public:
-  /// Reimplemented to use qAppAboutDialog instead of qSlicerAppAboutDialog.
-  virtual void on_HelpAboutSlicerAppAction_triggered();
+public slots:
+  void on_HelpAboutCellLocatorAppAction_triggered();
+
+protected:
+  qCellLocatorAppMainWindow(qCellLocatorAppMainWindowPrivate* pimpl, QWidget* parent);
 
 private:
-  Q_DECLARE_PRIVATE(qAppMainWindow);
-  Q_DISABLE_COPY(qAppMainWindow);
+  Q_DECLARE_PRIVATE(qCellLocatorAppMainWindow);
+  Q_DISABLE_COPY(qCellLocatorAppMainWindow);
 };
 
 #endif

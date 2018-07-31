@@ -11,13 +11,15 @@ endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+project(CellLocator)
+
 # Slicer sources
 include(FetchContent)
 if(NOT DEFINED slicersources_SOURCE_DIR)
   # Download Slicer sources and set variables slicersources_SOURCE_DIR and slicersources_BINARY_DIR
   FetchContent_Populate(slicersources
     GIT_REPOSITORY git://github.com/Slicer/Slicer
-    GIT_TAG        860a61bd5c406a6899d1a9e7390274bc8f8016c6 # 2018-06-27
+    GIT_TAG        2c43c10bf9308277a3769b8d2c70f51857e29600 # 2018-08-31
     GIT_PROGRESS   1
     )
 else()
@@ -27,21 +29,13 @@ endif()
 set(CMAKE_MODULE_PATH ${slicersources_SOURCE_DIR}/CMake ${CMAKE_MODULE_PATH})
 include(SlicerInitializeOSXVariables)
 
-# Set application metadata
-set(APPLICATION_NAME           "CellLocator")
-set(Slicer_VERSION_MAJOR       "0")
-set(Slicer_VERSION_MINOR       "1")
-set(Slicer_VERSION_PATCH       "0")
-project(${APPLICATION_NAME} VERSION "${Slicer_VERSION_MAJOR}.${Slicer_VERSION_MINOR}.${Slicer_VERSION_PATCH}")
-
-# Set organization
-set(Slicer_ORGANIZATION_DOMAIN "AllenInstitute")
-set(Slicer_ORGANIZATION_NAME   "Allen Institute")
-
 # Configure Application
 set(Slicer_APPLICATIONS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Applications)
-set(Slicer_MAIN_PROJECT ${APPLICATION_NAME}App)
-set(${Slicer_MAIN_PROJECT}_APPLICATION_NAME ${APPLICATION_NAME})
+set(Slicer_MAIN_PROJECT "CellLocatorApp")
+
+# Set organization
+set(Slicer_ORGANIZATION_DOMAIN "alleninstitute.org")
+set(Slicer_ORGANIZATION_NAME   "Allen Institute")
 
 # Default home and favorite modules
 set(Slicer_DEFAULT_HOME_MODULE "Home")
@@ -110,18 +104,35 @@ set(Slicer_QTSCRIPTEDMODULES_DISABLED
 
 # Enable/Disable Slicer custom modules: To create a new module, use the SlicerExtensionWizard.
 set(Slicer_EXTENSION_SOURCE_DIRS
-  ${${APPLICATION_NAME}_SOURCE_DIR}/Modules
+  ${CellLocator_SOURCE_DIR}/Modules
   )
 
 # Add remote extension source directories
-include(ExternalProjectAddSource)
 
-# Slicer_Remote_Add(AwesomeModuleOrExtension
-#  GIT_REPOSITORY ${EP_GIT_PROTOCOL}://github.com/Foo/AwesomeModuleOrExtension.git
-#  GIT_TAG "9e2e199b99396c570f5f26c0ccfd5e149f6b9d34"
-#  LABELS REMOTE_MODULE
+# Sequences
+#set(extension_name "Sequences")
+#set(${extension_name}_SOURCE_DIR "${CMAKE_BINARY_DIR}/${extension_name}")
+#FetchContent_Populate(${extension_name}
+#  SOURCE_DIR     ${${extension_name}_SOURCE_DIR}
+#  GIT_REPOSITORY ${EP_GIT_PROTOCOL}://github.com/SlicerRt/Sequences.git
+#  GIT_TAG        a4b32e822505373d34f250123421ac9485f3947c
+#  GIT_PROGRESS   1
+#  QUIET
 #  )
-# list(APPEND Slicer_REMOTE_DEPENDENCIES Foo)
+#list(APPEND Slicer_EXTENSION_SOURCE_DIRS ${${extension_name}_SOURCE_DIR})
+
+# SlicerOpenIGTLink
+#set(extension_name "SlicerOpenIGTLink")
+#set(${extension_name}_SOURCE_DIR "${CMAKE_BINARY_DIR}/${extension_name}")
+#FetchContent_Populate(${extension_name}
+#  SOURCE_DIR     ${${extension_name}_SOURCE_DIR}
+#  GIT_REPOSITORY ${EP_GIT_PROTOCOL}://github.com/openigtlink/SlicerOpenIGTLink.git
+#  GIT_TAG        2b92f7b1ffe02403109b671f28424e8770e902a0
+#  GIT_PROGRESS   1
+#  QUIET
+#  )
+#list(APPEND Slicer_EXTENSION_SOURCE_DIRS ${${extension_name}_SOURCE_DIR})
+
 
 # Add Slicer sources
 add_subdirectory(${slicersources_SOURCE_DIR} ${slicersources_BINARY_DIR})

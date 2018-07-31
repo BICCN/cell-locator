@@ -15,22 +15,24 @@
 
 ==============================================================================*/
 
-#ifndef __qAppMainWindow_p_h
-#define __qAppMainWindow_p_h
+#ifndef __qCellLocatorAppMainWindow_p_h
+#define __qCellLocatorAppMainWindow_p_h
 
-// SlicerApp includes
-#include "qAppMainWindow.h"
-#include "qSlicerAppMainWindow_p.h"
+// CellLocator includes
+#include "qCellLocatorAppMainWindow.h"
+
+// Slicer includes
+#include "qSlicerMainWindow_p.h"
 
 //-----------------------------------------------------------------------------
-class Q_SLICER_APP_EXPORT qAppMainWindowPrivate
-  : public qSlicerAppMainWindowPrivate
+class Q_CELLLOCATOR_APP_EXPORT qCellLocatorAppMainWindowPrivate
+  : public qSlicerMainWindowPrivate
 {
-  Q_DECLARE_PUBLIC(qAppMainWindow);
+  Q_DECLARE_PUBLIC(qCellLocatorAppMainWindow);
 public:
-  typedef qSlicerAppMainWindowPrivate Superclass;
-  qAppMainWindowPrivate(qAppMainWindow& object);
-  virtual ~qAppMainWindowPrivate();
+  typedef qSlicerMainWindowPrivate Superclass;
+  qCellLocatorAppMainWindowPrivate(qCellLocatorAppMainWindow& object);
+  virtual ~qCellLocatorAppMainWindowPrivate();
 
   virtual void init();
   /// Reimplemented for custom behavior
