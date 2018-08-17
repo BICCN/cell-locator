@@ -71,16 +71,18 @@ void qCellLocatorAppMainWindowPrivate::setupUi(QMainWindow * mainWindow)
   //----------------------------------------------------------------------------
   mainWindow->setWindowIcon(QIcon(":/Icons/Medium/DesktopIcon.png"));
 
-  QPixmap logo(":/LogoFull.png");
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
-  qreal dpr = sqrt(app->desktop()->logicalDpiX()*qreal(app->desktop()->logicalDpiY()) / (app->desktop()->physicalDpiX()*app->desktop()->physicalDpiY()));
-  logo.setDevicePixelRatio(dpr);
-#endif
-  this->LogoLabel->setPixmap(logo);
+//  QPixmap logo(":/LogoFull.png");
+//#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+//  qreal dpr = sqrt(app->desktop()->logicalDpiX()*qreal(app->desktop()->logicalDpiY()) / (app->desktop()->physicalDpiX()*app->desktop()->physicalDpiY()));
+//  logo.setDevicePixelRatio(dpr);
+//#endif
+//  this->LogoLabel->setPixmap(logo);
+  this->LogoLabel->setVisible(false);
+  this->ModulePanel->setHelpAndAcknowledgmentVisible(false);
 
   // Hide the toolbars
   this->MainToolBar->setVisible(false);
-  //this->ModuleSelectorToolBar->setVisible(false);
+  this->ModuleSelectorToolBar->setVisible(false);
   this->ModuleToolBar->setVisible(false);
   this->ViewToolBar->setVisible(false);
   this->MouseModeToolBar->setVisible(false);
