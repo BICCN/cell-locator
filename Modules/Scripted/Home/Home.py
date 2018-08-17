@@ -28,15 +28,17 @@ class Home(ScriptedLoadableModule):
 
 class HomeWidget(ScriptedLoadableModuleWidget):
   def __init__(self, parent = None):
-    self.Widget = None
     ScriptedLoadableModuleWidget.__init__(self, parent)
-    self.layoutManager = slicer.app.layoutManager()
+    self.LayoutManager = slicer.app.layoutManager()
+    self.MarkupsAnnotationNode = None
+    self.ThreeDWithReformatCustomLayoutId = None
+    self.Widget = None
 
   def get(self, name):
     return slicer.util.findChildren(self.Widget, name)[0]
 
   def registerCustomLayouts(self):
-    layoutLogic = self.layoutManager.layoutLogic()
+    layoutLogic = self.LayoutManager.layoutLogic()
     customLayout = (
       "<layout type=\"horizontal\" split=\"false\" >"
       " <item>"
@@ -52,8 +54,8 @@ class HomeWidget(ScriptedLoadableModuleWidget):
       "  </view>"
       " </item>"
       "</layout>")
-    self.threeDWithReformatCustomLayoutId = 503
-    layoutLogic.GetLayoutNode().AddLayoutDescription(self.threeDWithReformatCustomLayoutId, customLayout)
+    self.ThreeDWithReformatCustomLayoutId = 503
+    layoutLogic.GetLayoutNode().AddLayoutDescription(self.ThreeDWithReformatCustomLayoutId, customLayout)
 
   def dataPath(self):
     return os.path.join(os.path.dirname(slicer.util.modulePath('Home')), 'CellLocatorData')
@@ -65,16 +67,72 @@ class HomeWidget(ScriptedLoadableModuleWidget):
     return os.path.join(self.dataPath(), 'annotation_%s.nrrd' % resolution)
 
   def loadData(self):
+
+    # Load data
     slicer.util.loadVolume(self.averageTemplateFilePath())
+
+    # Reformat view
+    sliceWidget = self.LayoutManager.sliceWidget("Reformat")
+    sliceController = sliceWidget.sliceController()
+    sliceController.setSliceVisible(True)
+    sliceController.showReformatWidget(True)
+    sliceWidget.mrmlSliceNode().SetWidgetOutlineVisible(False)
+
+    # 3D view
+    threeDWidget = self.LayoutManager.threeDWidget(0)
+    threeDWidget.mrmlViewNode().SetBoxVisible(False)
+
+    self.resetViews()
 
   def onStartupCompleted(self):
     qt.QTimer.singleShot(0, self.loadData)
+
+
+  def saveAnnotationIfModified(self):
+    if self.MarkupsAnnotationNode.GetStorageNode() is not None and \
+         slicer.mrmlScene.GetStorableNodesModifiedSinceRead():
+      question = "The annotation has been modified. Do you want to save before creating a new one ?"
+      if slicer.util.confirmYesNoDisplay(question, parent=slicer.util.mainWindow()):
+         self.onSaveAnnotationButtonClicked()
+
+  def resetViews(self):
+    threeDWidget = self.LayoutManager.threeDWidget(0)
+    threeDWidget.threeDView().resetFocalPoint()
+    # TODO Reset 3D and 2D view
+
+  def onNewAnnotationButtonClicked(self):
+    self.saveAnnotationIfModified()
+    self.onSaveAsAnnotationButtonClicked()
+    self.MarkupsAnnotationNode.RemoveAllMarkups()
+    self.resetViews()
+
+  def onSaveAnnotationButtonClicked(self):
+    if self.MarkupsAnnotationNode.GetStorageNode() is None:
+      self.onSaveAsAnnotationButtonClicked()
+    else:
+      self.MarkupsAnnotationNode.GetStorageNode().WriteData(self.MarkupsAnnotationNode)
+
+  def onSaveAsAnnotationButtonClicked(self):
+    slicer.app.ioManager().openDialog(
+      "MarkupsFiducials", slicer.qSlicerFileDialog.Write, {"nodeID": self.MarkupsAnnotationNode.GetID()})
+    self.onMarkupsAnnotationStorageNodeModified()
+
+  def onLoadAnnotationButtonClicked(self):
+    self.saveAnnotationIfModified()
+    if slicer.util.openAddMarkupsDialog():
+      slicer.mrmlScene.RemoveNode(self.MarkupsAnnotationNode)
+      self.MarkupsAnnotationNode = slicer.mrmlScene.GetFirstNodeByClass("vtkMRMLMarkupsFiducialNode")
+      self.onMarkupsAnnotationStorageNodeModified()
+      self.resetViews()
+
+  def onMarkupsAnnotationStorageNodeModified(self):
+    self.Widget.AnnotationPathLineEdit.currentPath = self.MarkupsAnnotationNode.GetStorageNode().GetFileName()
 
   def setup(self):
     ScriptedLoadableModuleWidget.setup(self)
 
     self.registerCustomLayouts()
-    self.layoutManager.setLayout(self.threeDWithReformatCustomLayoutId)
+    self.LayoutManager.setLayout(self.ThreeDWithReformatCustomLayoutId)
 
     # Load UI file
     moduleName = 'Home'
@@ -84,7 +142,30 @@ class HomeWidget(ScriptedLoadableModuleWidget):
     self.Widget = slicer.util.loadUI(path)
     self.layout.addWidget(self.Widget)
 
+    # Disable undocking/docking of the module panel
+    panelDockWidget = slicer.util.findChildren(name="PanelDockWidget")[0]
+    panelDockWidget.setFeatures(qt.QDockWidget.NoDockWidgetFeatures)
+
+    # Update layout manager viewport
+    slicer.util.findChildren(name="CentralWidget")[0].visible = False
+    self.LayoutManager.setViewport(self.Widget.LayoutWidget)
+
+    # Add markups annotation
+    self.MarkupsAnnotationNode = slicer.vtkMRMLMarkupsFiducialNode()
+    self.MarkupsAnnotationNode.SetName("Annotation");
+    slicer.mrmlScene.AddNode(self.MarkupsAnnotationNode)
+
+    self.setupConnections()
+
+  def setupConnections(self):
     slicer.app.connect("startupCompleted()", self.onStartupCompleted)
+    self.Widget.NewAnnotationButton.connect("clicked()", self.onNewAnnotationButtonClicked)
+    self.Widget.SaveAnnotationButton.connect("clicked()", self.onSaveAnnotationButtonClicked)
+    self.Widget.SaveAsAnnotationButton.connect("clicked()", self.onSaveAsAnnotationButtonClicked)
+    self.Widget.LoadAnnotationButton.connect("clicked()", self.onLoadAnnotationButtonClicked)
+
+  def cleanup(self):
+    self.Widget = None
 
 
 #
