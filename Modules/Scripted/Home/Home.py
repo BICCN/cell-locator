@@ -30,12 +30,35 @@ class HomeWidget(ScriptedLoadableModuleWidget):
   def __init__(self, parent = None):
     self.Widget = None
     ScriptedLoadableModuleWidget.__init__(self, parent)
+    self.layoutManager = slicer.app.layoutManager()
 
   def get(self, name):
     return slicer.util.findChildren(self.Widget, name)[0]
 
+  def registerCustomLayouts(self):
+    layoutLogic = self.layoutManager.layoutLogic()
+    customLayout = (
+      "<layout type=\"horizontal\" split=\"false\" >"
+      " <item>"
+      "  <view class=\"vtkMRMLSliceNode\" singletontag=\"Reformat\">"
+      "   <property name=\"orientation\" action=\"default\">Axial</property>"
+      "   <property name=\"viewlabel\" action=\"default\">R</property>"
+      "   <property name=\"viewcolor\" action=\"default\">#4A50C8</property>"
+      "  </view>"
+      " </item>"
+      " <item>"
+      "  <view class=\"vtkMRMLViewNode\" singletontag=\"1\">"
+      "    <property name=\"viewlabel\" action=\"default\">1</property>"
+      "  </view>"
+      " </item>"
+      "</layout>")
+    self.threeDWithReformatCustomLayoutId = 503
+    layoutLogic.GetLayoutNode().AddLayoutDescription(self.threeDWithReformatCustomLayoutId, customLayout)
   def setup(self):
     ScriptedLoadableModuleWidget.setup(self)
+
+    self.registerCustomLayouts()
+    self.layoutManager.setLayout(self.threeDWithReformatCustomLayoutId)
 
     # Load UI file
     moduleName = 'Home'
