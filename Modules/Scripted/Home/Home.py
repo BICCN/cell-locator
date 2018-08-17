@@ -54,6 +54,22 @@ class HomeWidget(ScriptedLoadableModuleWidget):
       "</layout>")
     self.threeDWithReformatCustomLayoutId = 503
     layoutLogic.GetLayoutNode().AddLayoutDescription(self.threeDWithReformatCustomLayoutId, customLayout)
+
+  def dataPath(self):
+    return os.path.join(os.path.dirname(slicer.util.modulePath('Home')), 'CellLocatorData')
+
+  def averageTemplateFilePath(self, resolution=50):
+    return os.path.join(self.dataPath(), 'average_template_%s.nrrd' % resolution)
+
+  def annotationFilePath(self, resolution=50):
+    return os.path.join(self.dataPath(), 'annotation_%s.nrrd' % resolution)
+
+  def loadData(self):
+    slicer.util.loadVolume(self.averageTemplateFilePath())
+
+  def onStartupCompleted(self):
+    qt.QTimer.singleShot(0, self.loadData)
+
   def setup(self):
     ScriptedLoadableModuleWidget.setup(self)
 
@@ -68,41 +84,8 @@ class HomeWidget(ScriptedLoadableModuleWidget):
     self.Widget = slicer.util.loadUI(path)
     self.layout.addWidget(self.Widget)
 
-    # Setup data buttons
-    numberOfColumns = 2
-    iconPath = os.path.join(os.path.dirname(__file__).replace('\\','/'), 'Resources','Icons')
-    desktop = qt.QDesktopWidget()
-    mainScreenSize = desktop.availableGeometry(desktop.primaryScreen)
-    iconSize = qt.QSize(mainScreenSize.width()/15,mainScreenSize.height()/10)
+    slicer.app.connect("startupCompleted()", self.onStartupCompleted)
 
-    buttonsLayout = self.get('DataCollapsibleGroupBox').layout()
-    columnIndex = 0
-    rowIndex = 0
-
-    files = {
-      'annotation_25': os.path.join(scriptedModulesPath, 'CellLocatorData', 'annotation_25.nrrd'),
-      'annotation_50': os.path.join(scriptedModulesPath, 'CellLocatorData', 'annotation_50.nrrd')
-      }
-    for (file, filepath) in files.iteritems():
-      button = qt.QToolButton()
-      button.setText(file)
-
-      # Set thumbnail
-      thumbnailFileName = os.path.join(scriptedModulesPath, 'Resources', 'Icons', file + '.png')
-      button.setIcon(qt.QIcon(thumbnailFileName))
-      button.setIconSize(iconSize)
-      button.setToolButtonStyle(qt.Qt.ToolButtonTextUnderIcon)
-      qSize = qt.QSizePolicy()
-      qSize.setHorizontalPolicy(qt.QSizePolicy.Expanding)
-      button.setSizePolicy(qSize)
-
-      button.name = '%sPushButton' % file
-      buttonsLayout.addWidget(button, rowIndex, columnIndex)
-      columnIndex += 1
-      if columnIndex==numberOfColumns:
-        rowIndex += 1
-        columnIndex = 0
-      button.connect('clicked()', lambda p=filepath: slicer.util.loadVolume(p))
 
 #
 # HomeLogic
