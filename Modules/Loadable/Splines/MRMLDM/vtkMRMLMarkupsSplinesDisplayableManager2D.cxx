@@ -19,6 +19,7 @@ and was partially funded by Allen Institute
 ==============================================================================*/
 
 // MarkupsModule/MRML includes
+#include <vtkSlicerSplinesLogic.h>
 #include <vtkMRMLMarkupsSplinesNode.h>
 #include <vtkMRMLMarkupsDisplayNode.h>
 
@@ -115,6 +116,8 @@ public:
   vtkSplineWidget2* CreateSplineWidget() const;
   std::vector<int> EventsToObserve() const;
   void StopInteraction();
+
+  bool IsDisplayableOnSlice(vtkMRMLMarkupsSplinesNode* node, int n);
 
 public:
   vtkMRMLMarkupsSplinesDisplayableManager2D* External;
@@ -348,6 +351,7 @@ void vtkMRMLMarkupsSplinesDisplayableManager2D::vtkInternal
 
   int currentSpline = splinesNode->GetCurrentSpline();
   int wasModifying = splinesNode->StartModify();
+
   if (currentSpline == -1)
   {
     splinesNode->AddSpline(worldCoordinates);
@@ -400,6 +404,67 @@ void vtkMRMLMarkupsSplinesDisplayableManager2D::vtkInternal::StopInteraction()
 }
 
 //---------------------------------------------------------------------------
+bool vtkMRMLMarkupsSplinesDisplayableManager2D::vtkInternal
+::IsDisplayableOnSlice(vtkMRMLMarkupsSplinesNode* node, int n)
+{
+  double centroid[3];
+  if (!vtkSlicerSplinesLogic::GetCentroid(node, n, centroid))
+  {
+    return false;
+  }
+
+  vtkMRMLSliceNode* sliceNode = this->External->GetMRMLSliceNode();
+  vtkMRMLDisplayNode *displayNode = node->GetDisplayNode();
+  if (!displayNode || !displayNode->IsDisplayableInView(sliceNode->GetID()))
+  {
+    return false;
+  }
+
+  bool showWidget = true;
+  bool inViewport = false;
+
+  double display[3];
+  this->External->ConvertRASToXYZ(centroid, display);
+
+  // the third coordinate of the displayCoordinates is the distance to the slice
+  float distanceToSlice = display[2];
+  float maxDistance = 0.5 + (sliceNode->GetDimensions()[2] - 1);
+  if (distanceToSlice < -0.5 || distanceToSlice >= maxDistance)
+  {
+    showWidget = false;
+  }
+
+  // -----------------------------------------
+  // special cases when the slices get panned:
+
+  // if all of the controlpoints are outside the viewport coordinates, the widget should not be shown
+  // if one controlpoint is inside the viewport coordinates, the widget should be shown
+
+  // we need to check if we are inside the viewport
+  double coords[2] = { display[0], display[1] };
+  vtkRenderer* pokedRenderer =
+    this->External->GetInteractor()->FindPokedRenderer(coords[0], coords[1]);
+  if (!pokedRenderer)
+  {
+    return false;
+  }
+
+  pokedRenderer->DisplayToNormalizedDisplay(coords[0], coords[1]);
+  pokedRenderer->NormalizedDisplayToViewport(coords[0], coords[1]);
+  pokedRenderer->ViewportToNormalizedViewport(coords[0], coords[1]);
+
+  if ((coords[0]>0.0) && (coords[0]<1.0) && (coords[1]>0.0) && (coords[1]<1.0))
+  {
+    // current point is inside of view
+    inViewport = true;
+  }
+
+  return showWidget && inViewport;
+
+  return true;
+}
+
+//---------------------------------------------------------------------------
 void vtkMRMLMarkupsSplinesDisplayableManager2D::vtkInternal
 ::UpdateWidgetFromNode(vtkMRMLMarkupsDisplayNode* displayNode,
   vtkMRMLMarkupsSplinesNode* splinesNode,
@@ -431,6 +496,10 @@ void vtkMRMLMarkupsSplinesDisplayableManager2D::vtkInternal
     if (visible)
     {
       visible = splinesNode ? splinesNode->GetNthMarkupVisibility(n) : false;
+    }
+    if (visible)
+    {
+      visible = this->IsDisplayableOnSlice(splinesNode, n);
     }
     widget->SetEnabled(visible);
 

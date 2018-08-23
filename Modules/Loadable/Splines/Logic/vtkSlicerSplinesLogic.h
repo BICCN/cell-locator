@@ -28,6 +28,7 @@ and was partially funded by Allen Institute
 #include "vtkSlicerModuleLogic.h"
 
 // MRML includes
+class vtkMRMLMarkupsSplinesNode;
 class vtkMRMLSelectionNode;
 
 // STD includes
@@ -45,6 +46,8 @@ public:
   void PrintSelf(ostream& os, vtkIndent indent);
 
   vtkMRMLSelectionNode* GetSelectionNode() const;
+
+  static bool GetCentroid(vtkMRMLMarkupsSplinesNode* splinesNode, int n, double centroid[3]);
 
 protected:
   vtkSlicerSplinesLogic();

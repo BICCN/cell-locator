@@ -71,6 +71,33 @@ vtkMRMLSelectionNode* vtkSlicerSplinesLogic::GetSelectionNode() const
 }
 
 //---------------------------------------------------------------------------
+bool vtkSlicerSplinesLogic
+::GetCentroid(vtkMRMLMarkupsSplinesNode* splinesNode, int n, double centroid[3])
+{
+  if (!splinesNode || !splinesNode->MarkupExists(n))
+  {
+    return false;
+  }
+  int numberOfPoints = splinesNode->GetNumberOfPointsInNthMarkup(n);
+  if (numberOfPoints <= 0)
+  {
+    return false;
+  }
+
+  centroid[0] = 0.0;
+  centroid[1] = 0.0;
+  centroid[2] = 0.0;
+  for (int i = 0; i < numberOfPoints; ++i)
+  {
+    double point[4];
+    splinesNode->GetMarkupPointWorld(n, i, point);
+    vtkMath::Add(point, centroid, centroid);
+  }
+  vtkMath::MultiplyScalar(centroid, 1.0/numberOfPoints);
+  return true;
+}
+
+//---------------------------------------------------------------------------
 void vtkSlicerSplinesLogic::ObserveMRMLScene()
 {
   if (!this->GetMRMLScene())
