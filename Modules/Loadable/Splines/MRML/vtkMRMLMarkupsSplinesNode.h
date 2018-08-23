@@ -63,6 +63,9 @@ public:
   /// Create and observe default display node(s)
   virtual void CreateDefaultDisplayNodes() VTK_OVERRIDE;
 
+  void SetNthSplineClosed(int n, bool closed);
+  bool GetNthSplineClosed(int n);
+
 protected:
   vtkMRMLMarkupsSplinesNode();
   ~vtkMRMLMarkupsSplinesNode();
@@ -70,7 +73,8 @@ protected:
   void operator=(const vtkMRMLMarkupsSplinesNode&);
 
   int CurrentSpline;
-
+  bool DefaultClosed;
+  std::vector<bool> Closed;
 };
 
 #endif

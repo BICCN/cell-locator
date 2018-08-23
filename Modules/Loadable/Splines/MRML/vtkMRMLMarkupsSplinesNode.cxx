@@ -40,6 +40,7 @@ vtkMRMLNodeNewMacro(vtkMRMLMarkupsSplinesNode);
 vtkMRMLMarkupsSplinesNode::vtkMRMLMarkupsSplinesNode()
 {
   this->CurrentSpline = -1;
+  this->DefaultClosed = true;
 }
 
 //----------------------------------------------------------------------------
@@ -68,6 +69,7 @@ int vtkMRMLMarkupsSplinesNode::GetCurrentSpline() const
 int vtkMRMLMarkupsSplinesNode::AddSpline(vtkVector3d point)
 {
   this->CurrentSpline = this->AddPointToNewMarkup(point);
+  this->Closed.push_back(this->DefaultClosed);
   return this->CurrentSpline;
 }
 
@@ -89,4 +91,29 @@ void vtkMRMLMarkupsSplinesNode::CreateDefaultDisplayNodes()
   vtkNew<vtkMRMLMarkupsDisplayNode> dispNode;
   this->GetScene()->AddNode(dispNode.GetPointer());
   this->SetAndObserveDisplayNodeID(dispNode->GetID());
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLMarkupsSplinesNode::SetNthSplineClosed(int n, bool closed)
+{
+  if (n >= this->Closed.size() || this->Closed[n] == closed)
+  {
+    return;
+  }
+
+  this->Closed[n] = closed;
+  this->Modified();
+  this->InvokeCustomModifiedEvent(
+    vtkMRMLMarkupsNode::NthMarkupModifiedEvent, (void*)&n);
+}
+
+//----------------------------------------------------------------------------
+bool vtkMRMLMarkupsSplinesNode::GetNthSplineClosed(int n)
+{
+  if (n >= this->Closed.size())
+  {
+    vtkErrorMacro("The " << n << "th spline doesn't exist");
+    return this->DefaultClosed;
+  }
+  return this->Closed[n];
 }

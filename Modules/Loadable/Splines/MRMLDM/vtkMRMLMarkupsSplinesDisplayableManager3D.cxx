@@ -463,7 +463,7 @@ void vtkMRMLMarkupsSplinesDisplayableManager3D::vtkInternal
         splinesNode->GetMarkupPointWorld(n, i, world);
         rep->SetHandlePosition(i, world);
       }
-      rep->SetClosed(splinesNode->GetNthMarkupLocked(n) ? 1 : 0);
+      rep->SetClosed(splinesNode->GetNthSplineClosed(n) ? 1 : 0);
 
       rep->BuildRepresentation();
     }

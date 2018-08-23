@@ -527,7 +527,7 @@ void vtkMRMLMarkupsSplinesDisplayableManager2D::vtkInternal
 
         rep->SetHandlePosition(i, worldPos);
       }
-      rep->SetClosed(splinesNode->GetNthMarkupLocked(n) ? 1 : 0);
+      rep->SetClosed(splinesNode->GetNthSplineClosed(n) ? 1 : 0);
 
       rep->BuildRepresentation();
     }
