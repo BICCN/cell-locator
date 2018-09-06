@@ -6,14 +6,18 @@ import sys
 # The json file is assumed to be obtained from:
 # http://api.brain-map.org/api/v2/data/Structure/query.json?criteria=%5Bgraph_id$eq1%5D&num_rows=2000
 
+# Optional, you can prettify the file doing:
+#
+# python -m json.tool query.json query-pretty.json
+
 # Copied from: https://gist.github.com/matthewkremer/3295567
 # Note - Assumes no transparency.
 def hex_to_rgb(hex):
   hex = hex.lstrip('#')
   hlen = len(hex)
-  return tuple(int(hex[i:i+hlen/3], 16) for i in range(0, hlen, hlen/3))
+  return tuple(int(hex[i:i+int(hlen/3)], 16) for i in range(0, hlen, int(hlen/3)))
 
-def read_convert_write(input, output):
+def read_convert_write(input, output, a2s_mapping):
 
   # Read json
   with open(input) as input_file:
@@ -52,20 +56,28 @@ def read_convert_write(input, output):
     if not hex or not pixel_value or not name:
       print("Error for %s - %s " %(i, ctb_data[i]))
 
-  pixel_values = ctb_data.keys()
-  pixel_values.sort()
+  pixel_values = sorted(ctb_data.keys())
 
   with open(output, 'w') as output_file:
     for pixel_value in pixel_values:
+      if pixel_value not in a2s_mapping:
+        continue
       output_file.write(
         '%i %s %i %i %i 255\n'
-        %(pixel_value,
+        %(a2s_mapping[pixel_value],
           ctb_data[pixel_value][0],
           ctb_data[pixel_value][1][0],
           ctb_data[pixel_value][1][1],
           ctb_data[pixel_value][1][2]
           )
         )
+
+
+def load_mapping(filePath):
+  with open(filePath) as fileContents:
+    mapping = json.load(fileContents)
+    return {int(key): int(value) for (key, value) in mapping.items()}
+
 
 def main(argv):
   parser = argparse.ArgumentParser(
@@ -79,16 +91,23 @@ def main(argv):
     help='Path to the input json file'
     )
   parser.add_argument(
+    '--allen2slicer',
+    metavar='/path/to/file.json',
+    type=str,
+    required=True,
+    help='Path to the allen2slicer mapping json file'
+    )
+  parser.add_argument(
     '--output',
     metavar='/path/to/file.ctbl',
     type=str,
     required=True,
-    help='Path to the output color table file file'
+    help='Path to the output color table file'
     )
 
   args = parser.parse_args(argv)
 
-  read_convert_write(args.input, args.output)
+  read_convert_write(args.input, args.output, load_mapping(args.allen2slicer))
 
 if __name__ == '__main__':
   main(sys.argv[1:])
