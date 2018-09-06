@@ -64,12 +64,25 @@ class HomeWidget(ScriptedLoadableModuleWidget):
     return os.path.join(self.dataPath(), 'average_template_%s.nrrd' % resolution)
 
   def annotationFilePath(self, resolution=50):
-    return os.path.join(self.dataPath(), 'annotation_%s.nrrd' % resolution)
+    return os.path.join(self.dataPath(), 'annotation_%s_contiguous.nrrd' % resolution)
+
+  def colorTableFilePath(self):
+    return os.path.join(self.dataPath(), 'annotation_color_table.txt')
 
   def loadData(self):
 
-    # Load data
+    # Load template
     slicer.util.loadVolume(self.averageTemplateFilePath())
+
+    # Load Allen color table
+    colorLogic = slicer.modules.colors.logic()
+    colorNode = colorLogic.LoadColorFile(self.colorTableFilePath(), "allen")
+
+    # Load annotation
+    slicer.util.loadVolume(self.annotationFilePath(), properties={
+      "labelmap": "1",
+      "colorNodeID": colorNode.GetID()
+    })
 
     # Reformat view
     sliceWidget = self.LayoutManager.sliceWidget("Reformat")
