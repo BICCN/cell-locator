@@ -76,13 +76,21 @@ class HomeWidget(ScriptedLoadableModuleWidget):
 
     # Load Allen color table
     colorLogic = slicer.modules.colors.logic()
-    colorNode = colorLogic.LoadColorFile(self.colorTableFilePath(), "allen")
+    colorNodeID = None
+    if os.path.exists(self.colorTableFilePath()):
+      colorNode = colorLogic.LoadColorFile(self.colorTableFilePath(), "allen")
+      colorNodeID = colorNode.GetID()
+    else:
+      logging.error("Color table [%s] does not exist" % self.colorTableFilePath())
 
     # Load annotation
-    slicer.util.loadVolume(self.annotationFilePath(), properties={
-      "labelmap": "1",
-      "colorNodeID": colorNode.GetID()
-    })
+    if os.path.exists(self.annotationFilePath()):
+      slicer.util.loadVolume(self.annotationFilePath(), properties={
+        "labelmap": "1",
+        "colorNodeID": colorNodeID
+      })
+    else:
+      logging.error("Annotation file [%s] does not exist" % self.annotationFilePath())
 
     # Reformat view
     sliceWidget = self.LayoutManager.sliceWidget("Reformat")
