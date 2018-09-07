@@ -22,39 +22,110 @@ slicerMacroBuildScriptedModule(
   )
 
 #-----------------------------------------------------------------------------
-# Download and package the data
+# Convenience function for downloading and installing data files
 
-set(CellLocator_DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/${Slicer_QTSCRIPTEDMODULES_LIB_DIR}/CellLocatorData/)
-set(CellLocator_DATA_URLS
-  "download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/annotation/ccf_2017/annotation_25.nrrd"
-  "download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/average_template/average_template_25.nrrd"
-  "download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/annotation/ccf_2017/annotation_50.nrrd"
-  "download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/average_template/average_template_50.nrrd"
-  )
-
-foreach(data_url ${CellLocator_DATA_URLS})
-
-  set(last_slash_pos)
-  string(FIND ${data_url} "/" last_slash_pos REVERSE)
-  math(EXPR last_slash_pos "${last_slash_pos}+1")
-  string(SUBSTRING ${data_url} ${last_slash_pos} -1 filename)
-
-  string(CONCAT src_path ${CellLocator_DOWNLOAD_DIR} "/" ${filename})
-
-  # Check if we need to download it again
-  if(NOT EXISTS ${src_path})
+function(CellLocator_download_datafile dest_file url expected_sha256)
+  get_filename_component(filename ${dest_file} NAME)
+  message(STATUS "Checking ${filename}")
+  if(NOT EXISTS ${dest_file})
+    message(STATUS "Checking ${filename} - nonexistent")
     message(STATUS "Downloading ${filename}")
-    file(DOWNLOAD ${data_url} ${src_path} SHOW_PROGRESS)
-    message(STATUS "Downloading ${filename} - DONE")
+    file(DOWNLOAD ${url} ${dest_file} EXPECTED_HASH SHA256=${expected_sha256})
+    message(STATUS "Downloading ${filename} - done")
+  else()
+    file(SHA256 ${dest_file} current_hash)
+    if(NOT ${current_hash} STREQUAL ${expected_sha256})
+      message(STATUS "Checking ${filename} - expired")
+      message(STATUS "Downloading ${filename}")
+      file(DOWNLOAD ${url} ${dest_file} EXPECTED_HASH SHA256=${expected_sha256})
+      message(STATUS "Downloading ${filename} - done")
+    else()
+      message(STATUS "Checking ${filename} - up-to-date")
+    endif()
   endif()
+endfunction()
 
+function(CellLocator_install_datafiles datafile)
   install(
-    FILES ${src_path}
+    FILES ${datafile} ${ARGN}
     DESTINATION "${Slicer_INSTALL_QTSCRIPTEDMODULES_LIB_DIR}/"
     COMPONENT RuntimeLibraries
     )
+endfunction()
 
-endforeach()
+#-----------------------------------------------------------------------------
+# Download and package the data
+
+set(CellLocator_DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/${Slicer_QTSCRIPTEDMODULES_LIB_DIR}/CellLocatorData/)
+
+set(average_template_50_file "${CellLocator_DOWNLOAD_DIR}/average_template_50.nrrd")
+CellLocator_download_datafile(${average_template_50_file}
+  "http://download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/average_template/average_template_50.nrrd"
+  "6114c341d526f9782ca93b314b3244bb0c4c6cea17045f432d4cda63339915aa"
+  )
+CellLocator_install_datafiles(${average_template_50_file})
+
+set(annotation_50_file "${CellLocator_DOWNLOAD_DIR}/annotation_50.nrrd")
+CellLocator_download_datafile(${annotation_50_file}
+  "http://download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/annotation/ccf_2017/annotation_50.nrrd"
+  "84e7cecea1b03af16e923c3639602b8324929f833425ba03582bf56f962ea0d4"
+  )
+
+set(ontology_original_file "${CellLocator_DOWNLOAD_DIR}/ontology-original.json")
+CellLocator_download_datafile(${ontology_original_file}
+  "http://api.brain-map.org/api/v2/data/Structure/query.json?criteria=%5Bgraph_id$eq1%5D&num_rows=2000"
+  "7ac9019a06e0621135bb7344be7d904429cc687231d5a3342440bcfb3f7f5b0a"
+  )
+
+#-----------------------------------------------------------------------------
+# Format ontology file
+set(_msg "Prettifying ontology file")
+message(STATUS "${_msg}")
+set(ontology_file "${CellLocator_DOWNLOAD_DIR}/ontology-formatted.json")
+execute_process(
+  COMMAND ${PYTHON_EXECUTABLE} -m json.tool ${ontology_original_file} ${ontology_file}
+  )
+message(STATUS "${_msg} - done")
+
+#-----------------------------------------------------------------------------
+# Generate contiguous annotation and color table
+set(script ${CellLocator_SOURCE_DIR}/Scripts/GenerateContiguousAnnotation.py)
+
+# Outputs: These filenames are hardcoded in Home.py
+set(annotation_contiguous_50_file "${CellLocator_DOWNLOAD_DIR}/annotation_contiguous_50.nrrd")
+set(color_table "${CellLocator_DOWNLOAD_DIR}/annotation_color_table.txt")
+
+add_custom_command(
+  DEPENDS
+    ${annotation_50_file}
+    ${ontology_file}
+    ${script}
+    CellLocatorConfigureLauncher
+  OUTPUT
+    ${annotation_contiguous_50_file}
+    ${color_table}
+  COMMAND ${Slicer_LAUNCH_COMMAND} $<TARGET_FILE:CellLocatorApp>
+    --python-script ${script}
+    --annotation-input ${annotation_50_file}
+    --ontology-input ${ontology_file}
+    --annotation-output ${annotation_contiguous_50_file}
+    --colortable-output ${color_table}
+    --exit-after-startup
+    --no-splash
+  WORKING_DIRECTORY ${CellLocator_DOWNLOAD_DIR}
+  COMMENT "Pre-processing structure ontology and annotation volume"
+  )
+
+add_custom_target(CellLocatorGenerateContiguousAnnotation ALL
+  DEPENDS
+    ${annotation_contiguous_50_file}
+    ${color_table}
+  )
+
+CellLocator_install_datafiles(
+  ${annotation_contiguous_50_file}
+  ${color_table}
+  )
 
 #-----------------------------------------------------------------------------
 if(BUILD_TESTING)
