@@ -42,8 +42,8 @@ class HomeWidget(ScriptedLoadableModuleWidget):
     customLayout = (
       "<layout type=\"horizontal\" split=\"false\" >"
       " <item>"
-      "  <view class=\"vtkMRMLSliceNode\" singletontag=\"Reformat\">"
-      "   <property name=\"orientation\" action=\"default\">Axial</property>"
+      "  <view class=\"vtkMRMLSliceNode\" singletontag=\"Slice\">"
+      "   <property name=\"orientation\" action=\"default\">Coronal</property>"
       "   <property name=\"viewlabel\" action=\"default\">R</property>"
       "   <property name=\"viewcolor\" action=\"default\">#4A50C8</property>"
       "  </view>"
@@ -92,8 +92,8 @@ class HomeWidget(ScriptedLoadableModuleWidget):
     else:
       logging.error("Annotation file [%s] does not exist" % self.annotationFilePath())
 
-    # Reformat view
-    sliceWidget = self.LayoutManager.sliceWidget("Reformat")
+    # Slice view
+    sliceWidget = self.LayoutManager.sliceWidget("Slice")
     sliceController = sliceWidget.sliceController()
     sliceController.setSliceVisible(True)
     sliceController.showReformatWidget(True)
