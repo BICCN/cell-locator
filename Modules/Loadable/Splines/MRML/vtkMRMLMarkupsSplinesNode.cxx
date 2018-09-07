@@ -96,12 +96,12 @@ void vtkMRMLMarkupsSplinesNode::CreateDefaultDisplayNodes()
 //----------------------------------------------------------------------------
 void vtkMRMLMarkupsSplinesNode::SetNthSplineClosed(int n, bool closed)
 {
-  if (n >= this->Closed.size() || this->Closed[n] == closed)
+  if (static_cast<size_t>(n) >= this->Closed.size() || this->Closed[static_cast<size_t>(n)] == closed)
   {
     return;
   }
 
-  this->Closed[n] = closed;
+  this->Closed[static_cast<size_t>(n)] = closed;
   this->Modified();
   this->InvokeCustomModifiedEvent(
     vtkMRMLMarkupsNode::NthMarkupModifiedEvent, (void*)&n);
@@ -110,10 +110,10 @@ void vtkMRMLMarkupsSplinesNode::SetNthSplineClosed(int n, bool closed)
 //----------------------------------------------------------------------------
 bool vtkMRMLMarkupsSplinesNode::GetNthSplineClosed(int n)
 {
-  if (n >= this->Closed.size())
+  if (static_cast<size_t>(n) >= this->Closed.size())
   {
     vtkErrorMacro("The " << n << "th spline doesn't exist");
     return this->DefaultClosed;
   }
-  return this->Closed[n];
+  return this->Closed[static_cast<size_t>(n)];
 }
