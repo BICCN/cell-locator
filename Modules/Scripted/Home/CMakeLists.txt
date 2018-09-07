@@ -92,7 +92,7 @@ message(STATUS "${_msg} - done")
 set(script ${CellLocator_SOURCE_DIR}/Scripts/GenerateContiguousAnnotation.py)
 
 # Outputs: These filenames are hardcoded in Home.py
-set(annotation_contiguous_50_file "${CellLocator_DOWNLOAD_DIR}/annotation_contiguous_50.nrrd")
+set(annotation_50_contiguous_file "${CellLocator_DOWNLOAD_DIR}/annotation_50_contiguous.nrrd")
 set(color_table "${CellLocator_DOWNLOAD_DIR}/annotation_color_table.txt")
 
 add_custom_command(
@@ -102,13 +102,13 @@ add_custom_command(
     ${script}
     CellLocatorConfigureLauncher
   OUTPUT
-    ${annotation_contiguous_50_file}
+    ${annotation_50_contiguous_file}
     ${color_table}
   COMMAND ${Slicer_LAUNCH_COMMAND} $<TARGET_FILE:CellLocatorApp>
     --python-script ${script}
     --annotation-input ${annotation_50_file}
     --ontology-input ${ontology_file}
-    --annotation-output ${annotation_contiguous_50_file}
+    --annotation-output ${annotation_50_contiguous_file}
     --colortable-output ${color_table}
     --exit-after-startup
     --no-splash
@@ -118,12 +118,12 @@ add_custom_command(
 
 add_custom_target(CellLocatorGenerateContiguousAnnotation ALL
   DEPENDS
-    ${annotation_contiguous_50_file}
+    ${annotation_50_contiguous_file}
     ${color_table}
   )
 
 CellLocator_install_datafiles(
-  ${annotation_contiguous_50_file}
+  ${annotation_50_contiguous_file}
   ${color_table}
   )
 
