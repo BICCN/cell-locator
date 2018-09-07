@@ -12,19 +12,19 @@ import sys
 
 # Copied from: https://gist.github.com/matthewkremer/3295567
 # Note - Assumes no transparency.
-def hex_to_rgb(hex):
-  hex = hex.lstrip('#')
-  hlen = len(hex)
-  return tuple(int(hex[i:i+int(hlen/3)], 16) for i in range(0, hlen, int(hlen/3)))
+def hex_to_rgb(_hex):
+  _hex = _hex.lstrip('#')
+  hlen = len(_hex)
+  return tuple(int(_hex[i:i+int(hlen/3)], 16) for i in range(0, hlen, int(hlen/3)))
 
-def read_convert_write(input, output, a2s_mapping):
+def read_convert_write(_input, output, a2s_mapping):
 
   # Read json
-  with open(input) as input_file:
+  with open(_input) as input_file:
     json_data = json.load(input_file)
 
   if not json_data:
-    print('Error while reading %s' %input)
+    print('Error while reading %s' % _input)
     return
 
   # Some sanity checking
@@ -45,15 +45,15 @@ def read_convert_write(input, output, a2s_mapping):
     if not pixel_value or pixel_value < 0:
       continue
 
-    hex = json_data['msg'][i]['color_hex_triplet']
+    _hex = json_data['msg'][i]['color_hex_triplet']
     name = json_data['msg'][i]['safe_name']
     # Slicer does not support spaces in names, replace them by underscores
     name = name.replace(" ", "_")
 
-    rgb = hex_to_rgb(hex)
+    rgb = hex_to_rgb(_hex)
     ctb_data[pixel_value] = [name, rgb]
     
-    if not hex or not pixel_value or not name:
+    if not _hex or not pixel_value or not name:
       print("Error for %s - %s " %(i, ctb_data[i]))
 
   pixel_values = sorted(ctb_data.keys())
@@ -73,9 +73,9 @@ def read_convert_write(input, output, a2s_mapping):
         )
 
 
-def load_mapping(filePath):
-  with open(filePath) as fileContents:
-    mapping = json.load(fileContents)
+def load_mapping(file_path):
+  with open(file_path) as content:
+    mapping = json.load(content)
     return {int(key): int(value) for (key, value) in mapping.items()}
 
 
@@ -86,21 +86,18 @@ def main(argv):
   parser.add_argument(
     '--input',
     metavar='/path/to/file.json',
-    type=str,
     required=True,
     help='Path to the input json file'
     )
   parser.add_argument(
     '--allen2slicer',
     metavar='/path/to/file.json',
-    type=str,
     required=True,
     help='Path to the allen2slicer mapping json file'
     )
   parser.add_argument(
     '--output',
     metavar='/path/to/file.ctbl',
-    type=str,
     required=True,
     help='Path to the output color table file'
     )
