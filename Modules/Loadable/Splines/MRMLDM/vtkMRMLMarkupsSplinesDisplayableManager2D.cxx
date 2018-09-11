@@ -114,7 +114,7 @@ public:
   void ClearDisplayableNodes();
   void ClearPipeline(Pipeline* pipeline);
   vtkSplineWidget2* CreateSplineWidget() const;
-  std::vector<int> EventsToObserve() const;
+  std::vector<unsigned long> EventsToObserve() const;
   void StopInteraction();
 
   bool IsDisplayableOnSlice(vtkMRMLMarkupsSplinesNode* node, int n);
@@ -470,7 +470,7 @@ void vtkMRMLMarkupsSplinesDisplayableManager2D::vtkInternal
   vtkMRMLMarkupsSplinesNode* splinesNode,
   Pipeline* pipeline)
 {
-  size_t numberOfWidgets = pipeline->Widgets.size();
+  int numberOfWidgets = static_cast<int>(pipeline->Widgets.size());
 
   // If we need to remove plane widgets, we don't know which one
   // were deleted, so remove all of them.
@@ -489,9 +489,9 @@ void vtkMRMLMarkupsSplinesDisplayableManager2D::vtkInternal
     }
   }
 
-  for (size_t n = 0; n < pipeline->Widgets.size(); ++n)
+  for (int n = 0; n < static_cast<int>(pipeline->Widgets.size()); ++n)
   {
-    vtkSplineWidget2* widget = pipeline->Widgets[n];
+    vtkSplineWidget2* widget = pipeline->Widgets[static_cast<size_t>(n)];
     bool visible = displayNode->GetVisibility();
     if (visible)
     {
@@ -511,7 +511,7 @@ void vtkMRMLMarkupsSplinesDisplayableManager2D::vtkInternal
     {
       vtkSplineRepresentation* rep =
         vtkSplineRepresentation::SafeDownCast(widget->GetRepresentation());
-      int numberOfPoints = splinesNode->GetNumberOfPointsInNthMarkup(n);
+      int numberOfPoints = splinesNode->GetNumberOfPointsInNthMarkup(static_cast<int>(n));
       rep->SetNumberOfHandles(numberOfPoints);
 
       for (int i = 0; i < numberOfPoints; ++i)
@@ -548,9 +548,9 @@ void vtkMRMLMarkupsSplinesDisplayableManager2D::vtkInternal
     vtkSplineRepresentation::SafeDownCast(widget->GetRepresentation());
 
   Pipeline* pipeline = this->DisplayPipelines[displayNode];
-  size_t index =
-    std::find(pipeline->Widgets.begin(), pipeline->Widgets.end(), widget)
-    - pipeline->Widgets.begin();
+  int index = static_cast<int>(
+        std::find(pipeline->Widgets.begin(), pipeline->Widgets.end(), widget)
+        - pipeline->Widgets.begin());
 
   int wasModifying = splinesNode->StartModify();
 
@@ -612,10 +612,10 @@ void vtkMRMLMarkupsSplinesDisplayableManager2D::vtkInternal
 }
 
 //---------------------------------------------------------------------------
-std::vector<int> vtkMRMLMarkupsSplinesDisplayableManager2D::vtkInternal
+std::vector<unsigned long> vtkMRMLMarkupsSplinesDisplayableManager2D::vtkInternal
 ::EventsToObserve() const
 {
-  std::vector<int> events;
+  std::vector<unsigned long> events;
   events.push_back(vtkMRMLDisplayableNode::DisplayModifiedEvent);
   events.push_back(vtkMRMLMarkupsSplinesNode::MarkupAddedEvent);
   events.push_back(vtkMRMLMarkupsSplinesNode::MarkupRemovedEvent);
@@ -629,7 +629,7 @@ std::vector<int> vtkMRMLMarkupsSplinesDisplayableManager2D::vtkInternal
 void vtkMRMLMarkupsSplinesDisplayableManager2D::vtkInternal
 ::AddObservations(vtkMRMLMarkupsSplinesNode* node)
 {
-  std::vector<int> events = this->EventsToObserve();
+  std::vector<unsigned long> events = this->EventsToObserve();
   vtkEventBroker* broker = vtkEventBroker::GetInstance();
   for (size_t i = 0; i < events.size(); ++i)
   {
@@ -646,7 +646,7 @@ void vtkMRMLMarkupsSplinesDisplayableManager2D::vtkInternal
 {
   vtkEventBroker* broker = vtkEventBroker::GetInstance();
   vtkEventBroker::ObservationVector observations;
-  std::vector<int> events = this->EventsToObserve();
+  std::vector<unsigned long> events = this->EventsToObserve();
   for (size_t i = 0; i < events.size(); ++i)
   {
     observations = broker->GetObservations(node, events[i], this->External, this->External->GetMRMLNodesCallbackCommand());
@@ -847,7 +847,7 @@ void vtkMRMLMarkupsSplinesDisplayableManager2D::UpdateFromMRML()
   int nnodes = scene ? scene->GetNodesByClass("vtkMRMLMarkupsSplinesNode", mNodes) : 0;
   for (int i = 0; i < nnodes; i++)
   {
-    mNode = vtkMRMLMarkupsSplinesNode::SafeDownCast(mNodes[i]);
+    mNode = vtkMRMLMarkupsSplinesNode::SafeDownCast(mNodes[static_cast<size_t>(i)]);
     if (mNode)
     {
       this->Internal->AddNode(mNode);
