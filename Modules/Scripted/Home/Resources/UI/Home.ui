@@ -27,8 +27,75 @@
     <number>0</number>
    </property>
    <item>
-    <layout class="QGridLayout" name="gridLayout" rowstretch="0,1,0">
-     <item row="0" column="0" rowspan="2">
+    <layout class="QGridLayout" name="gridLayout" rowstretch="0,1,0,0">
+     <item row="3" column="0">
+      <layout class="QFormLayout" name="formLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="SampleIDLabel">
+         <property name="text">
+          <string>Sample ID</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="SampleIDLineEdit"/>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="UserIDLineEdit"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="UserIDLabel">
+         <property name="text">
+          <string>User ID:</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="2" column="1" rowspan="2">
+      <widget class="QGroupBox" name="groupBox">
+       <property name="title">
+        <string>Annotations Properties</string>
+       </property>
+       <layout class="QFormLayout" name="formLayout_2">
+        <item row="0" column="0">
+         <widget class="QLabel" name="ThicknessLabel">
+          <property name="text">
+           <string>Thickness</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="ctkDoubleSlider" name="ThicknessDoubleSlider">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QDoubleSpinBox" name="ThicknessDoubleSpinBox"/>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="0" column="0" rowspan="3">
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout">
@@ -77,69 +144,42 @@
        </item>
       </layout>
      </item>
-     <item row="2" column="0">
-      <layout class="QFormLayout" name="formLayout">
-       <item row="0" column="0">
-        <widget class="QLabel" name="SampleIDLabel">
-         <property name="text">
-          <string>Sample ID</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="SampleIDLineEdit"/>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLineEdit" name="UserIDLineEdit"/>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="UserIDLabel">
-         <property name="text">
-          <string>User ID:</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item row="0" column="1">
-      <spacer name="verticalSpacer">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>40</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item row="1" column="1" rowspan="2">
-      <widget class="QGroupBox" name="groupBox">
+     <item row="1" column="1">
+      <widget class="QGroupBox" name="groupBox_2">
        <property name="title">
-        <string>Annotations Properties</string>
+        <string>View Properties</string>
        </property>
-       <layout class="QFormLayout" name="formLayout_2">
-        <item row="0" column="0">
-         <widget class="QLabel" name="ThicknessLabel">
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QLabel" name="label">
           <property name="text">
-           <string>Thickness</string>
+           <string>Reset view to:</string>
           </property>
          </widget>
         </item>
-        <item row="0" column="1">
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
-          <item>
-           <widget class="ctkDoubleSlider" name="ThicknessDoubleSlider">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QDoubleSpinBox" name="ThicknessDoubleSpinBox"/>
-          </item>
-         </layout>
+        <item>
+         <widget class="QPushButton" name="AxialPushButton">
+          <property name="text">
+           <string>Axial</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="CoronalPushButton">
+          <property name="text">
+           <string>Coronal</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="SagittalPushButton">
+          <property name="text">
+           <string>Sagittal</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
