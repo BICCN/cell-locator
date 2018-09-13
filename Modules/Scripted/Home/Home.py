@@ -99,6 +99,7 @@ class HomeWidget(ScriptedLoadableModuleWidget):
     sliceController.showReformatWidget(True)
     sliceWidget.mrmlSliceNode().SetWidgetOutlineVisible(False)
 
+
     # 3D view
     threeDWidget = self.LayoutManager.threeDWidget(0)
     threeDWidget.mrmlViewNode().SetBoxVisible(False)
@@ -149,6 +150,16 @@ class HomeWidget(ScriptedLoadableModuleWidget):
   def onMarkupsAnnotationStorageNodeModified(self):
     self.Widget.AnnotationPathLineEdit.currentPath = self.MarkupsAnnotationNode.GetStorageNode().GetFileName()
 
+  def onResetViewClicked(self, orientation):
+    sliceWidget = self.LayoutManager.sliceWidget("Slice")
+    sliceNode = sliceWidget.mrmlSliceNode()
+
+    matrix = sliceNode.GetSliceOrientationPreset(orientation)
+    for i in range(3):
+      for j in range(3):
+        sliceNode.GetSliceToRAS().SetElement(i, j, matrix.GetElement(i, j))
+    sliceNode.UpdateMatrices()
+
   def setup(self):
     ScriptedLoadableModuleWidget.setup(self)
 
@@ -178,12 +189,19 @@ class HomeWidget(ScriptedLoadableModuleWidget):
 
     self.setupConnections()
 
+  def get(self, name):
+    return slicer.util.findChildren(self.Widget, name)[0]
+
   def setupConnections(self):
     slicer.app.connect("startupCompleted()", self.onStartupCompleted)
-    self.Widget.NewAnnotationButton.connect("clicked()", self.onNewAnnotationButtonClicked)
-    self.Widget.SaveAnnotationButton.connect("clicked()", self.onSaveAnnotationButtonClicked)
-    self.Widget.SaveAsAnnotationButton.connect("clicked()", self.onSaveAsAnnotationButtonClicked)
-    self.Widget.LoadAnnotationButton.connect("clicked()", self.onLoadAnnotationButtonClicked)
+    self.get('NewAnnotationButton').connect("clicked()", self.onNewAnnotationButtonClicked)
+    self.get('SaveAnnotationButton').connect("clicked()", self.onSaveAnnotationButtonClicked)
+    self.get('SaveAsAnnotationButton').connect("clicked()", self.onSaveAsAnnotationButtonClicked)
+    self.get('LoadAnnotationButton').connect("clicked()", self.onLoadAnnotationButtonClicked)
+
+    self.get('AxialPushButton').connect("clicked()", lambda: self.onResetViewClicked('Axial'))
+    self.get('CoronalPushButton').connect("clicked()", lambda: self.onResetViewClicked('Coronal'))
+    self.get('SagittalPushButton').connect("clicked()", lambda: self.onResetViewClicked('Sagittal'))
 
   def cleanup(self):
     self.Widget = None
