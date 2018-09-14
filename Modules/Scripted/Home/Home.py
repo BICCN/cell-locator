@@ -128,6 +128,12 @@ class HomeWidget(ScriptedLoadableModuleWidget):
     self.MarkupsAnnotationNode.RemoveAllMarkups()
     self.resetViews()
 
+    interactionNode = slicer.app.applicationLogic().GetInteractionNode()
+    selectionNode = slicer.app.applicationLogic().GetSelectionNode()
+    selectionNode.SetActivePlaceNodeID(self.MarkupsAnnotationNode.GetID())
+    interactionNode.SetCurrentInteractionMode(interactionNode.Place)
+    interactionNode.SetPlaceModePersistence(1)
+
   def onSaveAnnotationButtonClicked(self):
     if self.MarkupsAnnotationNode.GetStorageNode() is None:
       self.onSaveAsAnnotationButtonClicked()
@@ -136,14 +142,14 @@ class HomeWidget(ScriptedLoadableModuleWidget):
 
   def onSaveAsAnnotationButtonClicked(self):
     slicer.app.ioManager().openDialog(
-      "MarkupsFiducials", slicer.qSlicerFileDialog.Write, {"nodeID": self.MarkupsAnnotationNode.GetID()})
+      "Markups", slicer.qSlicerFileDialog.Write, {"nodeID": self.MarkupsAnnotationNode.GetID()})
     self.onMarkupsAnnotationStorageNodeModified()
 
   def onLoadAnnotationButtonClicked(self):
     self.saveAnnotationIfModified()
     if slicer.util.openAddMarkupsDialog():
       slicer.mrmlScene.RemoveNode(self.MarkupsAnnotationNode)
-      self.MarkupsAnnotationNode = slicer.mrmlScene.GetFirstNodeByClass("vtkMRMLMarkupsFiducialNode")
+      self.MarkupsAnnotationNode = slicer.mrmlScene.GetFirstNodeByClass("vtkMRMLMarkupsSplinesNode")
       self.onMarkupsAnnotationStorageNodeModified()
       self.resetViews()
 
@@ -183,9 +189,8 @@ class HomeWidget(ScriptedLoadableModuleWidget):
     self.LayoutManager.setViewport(self.Widget.LayoutWidget)
 
     # Add markups annotation
-    self.MarkupsAnnotationNode = slicer.vtkMRMLMarkupsFiducialNode()
-    self.MarkupsAnnotationNode.SetName("Annotation");
-    slicer.mrmlScene.AddNode(self.MarkupsAnnotationNode)
+    self.MarkupsAnnotationNode = slicer.mrmlScene.AddNode(slicer.vtkMRMLMarkupsSplinesNode())
+    self.MarkupsAnnotationNode.SetName("Annotation")
 
     self.setupConnections()
 
