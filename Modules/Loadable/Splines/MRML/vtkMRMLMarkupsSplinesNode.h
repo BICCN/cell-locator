@@ -63,6 +63,9 @@ public:
   /// Create and observe default display node(s)
   virtual void CreateDefaultDisplayNodes() VTK_OVERRIDE;
 
+  /// Create and observe default storage node
+  virtual vtkMRMLStorageNode* CreateDefaultStorageNode() VTK_OVERRIDE;
+
   void SetNthSplineClosed(int n, bool closed);
   bool GetNthSplineClosed(int n);
 

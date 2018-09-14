@@ -190,6 +190,8 @@ class HomeWidget(ScriptedLoadableModuleWidget):
 
     # Add markups annotation
     self.MarkupsAnnotationNode = slicer.mrmlScene.AddNode(slicer.vtkMRMLMarkupsSplinesNode())
+    storageNode = slicer.mrmlScene.AddNode(slicer.vtkMRMLMarkupsSplinesStorageNode())
+    self.MarkupsAnnotationNode.SetAndObserveStorageNodeID(storageNode.GetID())
     self.MarkupsAnnotationNode.SetName("Annotation")
 
     self.setupConnections()

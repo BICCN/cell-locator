@@ -27,8 +27,9 @@ and was partially funded by Allen Institute
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
 
-// Planner includes
+// Locator includes
 #include "vtkMRMLMarkupsSplinesNode.h"
+#include "vtkMRMLMarkupsSplinesStorageNode.h"
 
 // STD includes
 #include <sstream>
@@ -91,6 +92,12 @@ void vtkMRMLMarkupsSplinesNode::CreateDefaultDisplayNodes()
   vtkNew<vtkMRMLMarkupsDisplayNode> dispNode;
   this->GetScene()->AddNode(dispNode.GetPointer());
   this->SetAndObserveDisplayNodeID(dispNode->GetID());
+}
+
+//-------------------------------------------------------------------------
+vtkMRMLStorageNode* vtkMRMLMarkupsSplinesNode::CreateDefaultStorageNode()
+{
+  return vtkMRMLMarkupsSplinesStorageNode::New();
 }
 
 //----------------------------------------------------------------------------

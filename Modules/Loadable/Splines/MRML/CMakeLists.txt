@@ -10,6 +10,7 @@ set(${KIT}_INCLUDE_DIRECTORIES
 
 set(${KIT}_SRCS
   vtkMRMLMarkupsSplinesNode.cxx
+  vtkMRMLMarkupsSplinesStorageNode.cxx
   )
 
 set(${KIT}_TARGET_LIBRARIES
