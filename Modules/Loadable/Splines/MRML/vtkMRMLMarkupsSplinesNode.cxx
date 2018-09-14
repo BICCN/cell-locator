@@ -42,6 +42,7 @@ vtkMRMLMarkupsSplinesNode::vtkMRMLMarkupsSplinesNode()
 {
   this->CurrentSpline = -1;
   this->DefaultClosed = true;
+  this->DefaultThickness = 1.0;
 }
 
 //----------------------------------------------------------------------------
@@ -71,6 +72,7 @@ int vtkMRMLMarkupsSplinesNode::AddSpline(vtkVector3d point)
 {
   this->CurrentSpline = this->AddPointToNewMarkup(point);
   this->Closed.push_back(this->DefaultClosed);
+  this->Thickness.push_back(this->DefaultThickness);
   return this->CurrentSpline;
 }
 
@@ -123,4 +125,30 @@ bool vtkMRMLMarkupsSplinesNode::GetNthSplineClosed(int n)
     return this->DefaultClosed;
   }
   return this->Closed[static_cast<size_t>(n)];
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLMarkupsSplinesNode::SetNthSplineThickness(int n, double thickness)
+{
+  if (static_cast<size_t>(n) >= this->Thickness.size()
+    || this->Thickness[static_cast<size_t>(n)] == thickness)
+  {
+    return;
+  }
+
+  this->Thickness[static_cast<size_t>(n)] = thickness;
+  this->Modified();
+  this->InvokeCustomModifiedEvent(
+    vtkMRMLMarkupsNode::NthMarkupModifiedEvent, (void*)&n);
+}
+
+//----------------------------------------------------------------------------
+double vtkMRMLMarkupsSplinesNode::GetNthSplineThickness(int n)
+{
+  if (static_cast<size_t>(n) >= this->Thickness.size())
+  {
+    vtkErrorMacro("The " << n << "th spline doesn't exist");
+    return this->DefaultThickness;
+  }
+  return this->Thickness[static_cast<size_t>(n)];
 }

@@ -69,6 +69,9 @@ public:
   void SetNthSplineClosed(int n, bool closed);
   bool GetNthSplineClosed(int n);
 
+  void SetNthSplineThickness(int n, double thickness);
+  double GetNthSplineThickness(int n);
+
 protected:
   vtkMRMLMarkupsSplinesNode();
   ~vtkMRMLMarkupsSplinesNode();
@@ -78,6 +81,8 @@ protected:
   int CurrentSpline;
   bool DefaultClosed;
   std::vector<bool> Closed;
+  double DefaultThickness;
+  std::vector<double> Thickness;
 };
 
 #endif
