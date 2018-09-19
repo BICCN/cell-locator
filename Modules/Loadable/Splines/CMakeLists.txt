@@ -20,6 +20,7 @@ set(MODULE_INCLUDE_DIRECTORIES
   ${CMAKE_CURRENT_BINARY_DIR}/MRMLDM
   ${CMAKE_CURRENT_SOURCE_DIR}/Logic
   ${CMAKE_CURRENT_BINARY_DIR}/Logic
+  ${qSlicerMarkupsModule_INCLUDE_DIRS}
   )
 
 set(MODULE_SRCS
@@ -27,11 +28,14 @@ set(MODULE_SRCS
   qSlicer${MODULE_NAME}Module.h
   qSlicer${MODULE_NAME}ModuleWidget.cxx
   qSlicer${MODULE_NAME}ModuleWidget.h
+  qSlicer${MODULE_NAME}Reader.cxx
+  qSlicer${MODULE_NAME}Reader.h
   )
 
 set(MODULE_MOC_SRCS
   qSlicer${MODULE_NAME}Module.h
   qSlicer${MODULE_NAME}ModuleWidget.h
+  qSlicer${MODULE_NAME}Reader.h
   )
 
 set(MODULE_UI_SRCS
@@ -41,6 +45,7 @@ set(MODULE_UI_SRCS
 set(MODULE_TARGET_LIBRARIES
   vtkSlicer${MODULE_NAME}ModuleMRMLDisplayableManager
   vtkSlicer${MODULE_NAME}ModuleLogic
+  qSlicerMarkupsModule
   )
 
 set(MODULE_RESOURCES

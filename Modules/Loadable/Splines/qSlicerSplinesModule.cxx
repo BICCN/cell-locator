@@ -24,6 +24,12 @@ and was partially funded by Allen Institute
 // Splines includes
 #include "qSlicerSplinesModule.h"
 #include "qSlicerSplinesModuleWidget.h"
+#include "qSlicerSplinesReader.h"
+
+/// Slicer includes
+#include <qSlicerApplication.h>
+#include <qSlicerIOManager.h>
+#include <qSlicerNodeWriter.h>
 
 #include <vtkMRMLSliceViewDisplayableManagerFactory.h>
 #include <vtkMRMLThreeDViewDisplayableManagerFactory.h>
@@ -128,6 +134,17 @@ void qSlicerSplinesModule::setup()
     ->RegisterDisplayableManager("vtkMRMLMarkupsSplinesDisplayableManager2D");
   vtkMRMLThreeDViewDisplayableManagerFactory::GetInstance()
     ->RegisterDisplayableManager("vtkMRMLMarkupsSplinesDisplayableManager3D");
+
+  // Register IO
+  qSlicerIOManager* ioManager = qSlicerApplication::application()->ioManager();
+  // Readers
+  qSlicerSplinesReader *splinesIO = new qSlicerSplinesReader(this);
+  splinesIO->setSplinesLogic(vtkSlicerSplinesLogic::SafeDownCast(this->logic()));
+  ioManager->registerIO(splinesIO);
+  // Writers
+  ioManager->registerIO(new qSlicerNodeWriter(
+    "MarkupsSplines", splinesIO->fileType(),
+    QStringList() << "vtkMRMLMarkupsSplinesNode", true, this));
 }
 
 //-----------------------------------------------------------------------------

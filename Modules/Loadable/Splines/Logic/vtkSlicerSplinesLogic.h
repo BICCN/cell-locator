@@ -49,6 +49,9 @@ public:
 
   static bool GetCentroid(vtkMRMLMarkupsSplinesNode* splinesNode, int n, double centroid[3]);
 
+  /// Load a markups splines from fileName.
+  char *LoadMarkupsSplines(const char *fileName, const char *name);
+
 protected:
   vtkSlicerSplinesLogic();
   virtual ~vtkSlicerSplinesLogic();

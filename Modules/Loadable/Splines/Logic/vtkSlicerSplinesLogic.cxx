@@ -99,6 +99,43 @@ bool vtkSlicerSplinesLogic
 }
 
 //---------------------------------------------------------------------------
+char* vtkSlicerSplinesLogic
+::LoadMarkupsSplines(const char *fileName, const char *name)
+{
+  char *nodeID = NULL;
+  std::string idList;
+  if (!fileName)
+  {
+    vtkErrorMacro("LoadMarkupSplines: null file name, cannot load");
+    return nodeID;
+  }
+
+  // turn on batch processing
+  this->GetMRMLScene()->StartState(vtkMRMLScene::BatchProcessState);
+
+  // make a storage node and fiducial node and set the file name
+  vtkNew<vtkMRMLMarkupsGenericStorageNode> storageNode;
+  storageNode->SetFileName(fileName);
+  vtkNew<vtkMRMLMarkupsSplinesNode> splinesNode;
+  splinesNode->SetName(name);
+
+  // add the nodes to the scene and set up the observation on the storage node
+  this->GetMRMLScene()->AddNode(storageNode.GetPointer());
+  this->GetMRMLScene()->AddNode(splinesNode.GetPointer());
+  splinesNode->SetAndObserveStorageNodeID(storageNode->GetID());
+
+  // read the file
+  if (storageNode->ReadData(splinesNode.GetPointer()))
+    {
+    nodeID = splinesNode->GetID();
+    }
+
+  // turn off batch processing
+  this->GetMRMLScene()->EndState(vtkMRMLScene::BatchProcessState);
+  return nodeID;
+}
+
+//---------------------------------------------------------------------------
 void vtkSlicerSplinesLogic::ObserveMRMLScene()
 {
   if (!this->GetMRMLScene())
