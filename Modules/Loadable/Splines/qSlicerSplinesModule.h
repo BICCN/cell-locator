@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-This file was originally developed by Julien Finet, Kitware Inc.
+This file was originally developed by Johan Andruejol, Kitware Inc.
 and was partially funded by Allen Institute
 
 ==============================================================================*/
