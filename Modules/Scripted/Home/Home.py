@@ -157,7 +157,10 @@ class HomeWidget(ScriptedLoadableModuleWidget):
     if not app.coreIOManager().openDialog('MarkupsSplines', qSlicerFileDialog.Read):
       return
 
-    self.initializeAnnotation(slicer.mrmlScene.GetFirstNodeByClass("vtkMRMLMarkupsSplinesNode"))
+    nodes = slicer.mrmlScene.GetNodesByClass('vtkMRMLMarkupsSplinesNode')
+    nodes.UnRegister(slicer.mrmlScene)
+    newNode = nodes.GetItemAsObject(nodes.GetNumberOfItems() - 1)
+    self.initializeAnnotation(newNode)
     self.onMarkupsAnnotationStorageNodeModified()
     self.resetViews()
     self.updateSaveButtonsState()
@@ -201,7 +204,8 @@ class HomeWidget(ScriptedLoadableModuleWidget):
 
   def initializeAnnotation(self, newNode=None):
     if newNode:
-      slicer.mrmlScene.RemoveNode(self.MarkupsAnnotationNode)
+      if self.MarkupsAnnotationNode:
+        slicer.mrmlScene.RemoveNode(self.MarkupsAnnotationNode)
       self.MarkupsAnnotationNode = newNode
     else:
       self.MarkupsAnnotationNode = slicer.mrmlScene.AddNode(slicer.vtkMRMLMarkupsSplinesNode())
