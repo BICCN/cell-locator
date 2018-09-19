@@ -32,6 +32,7 @@ and was partially funded by Allen Institute
 
 // Splines includes
 #include "vtkMRMLMarkupsSplinesNode.h"
+#include "vtkMRMLMarkupsSplinesStorageNode.h"
 
 // STD includes
 #include <cassert>
@@ -130,4 +131,5 @@ void vtkSlicerSplinesLogic::RegisterNodes()
   vtkMRMLScene* scene = this->GetMRMLScene();
   assert(scene != 0);
   scene->RegisterNodeClass(vtkSmartPointer<vtkMRMLMarkupsSplinesNode>::New());
+  scene->RegisterNodeClass(vtkSmartPointer<vtkMRMLMarkupsSplinesStorageNode>::New());
 }
