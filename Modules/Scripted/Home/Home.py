@@ -109,13 +109,13 @@ class HomeWidget(ScriptedLoadableModuleWidget):
   def onStartupCompleted(self):
     qt.QTimer.singleShot(0, self.loadData)
 
-
   def saveAnnotationIfModified(self):
-    if self.MarkupsAnnotationNode.GetStorageNode() is not None and \
-         slicer.mrmlScene.GetStorableNodesModifiedSinceRead():
-      question = "The annotation has been modified. Do you want to save before creating a new one ?"
-      if slicer.util.confirmYesNoDisplay(question, parent=slicer.util.mainWindow()):
-         self.onSaveAnnotationButtonClicked()
+    if not self.MarkupsAnnotationNode:
+      return
+
+    question = "The annotation has been modified. Do you want to save before creating a new one ?"
+    if slicer.util.confirmYesNoDisplay(question, parent=slicer.util.mainWindow()):
+       self.onSaveAnnotationButtonClicked()
 
   def resetViews(self):
     threeDWidget = self.LayoutManager.threeDWidget(0)
@@ -124,9 +124,13 @@ class HomeWidget(ScriptedLoadableModuleWidget):
 
   def onNewAnnotationButtonClicked(self):
     self.saveAnnotationIfModified()
+    if not self.MarkupsAnnotationNode:
+      self.initializeAnnotation()
+
     self.onSaveAsAnnotationButtonClicked()
     self.MarkupsAnnotationNode.RemoveAllMarkups()
     self.resetViews()
+    self.updateSaveButtonsState()
 
     interactionNode = slicer.app.applicationLogic().GetInteractionNode()
     selectionNode = slicer.app.applicationLogic().GetSelectionNode()
@@ -135,10 +139,11 @@ class HomeWidget(ScriptedLoadableModuleWidget):
     interactionNode.SetPlaceModePersistence(1)
 
   def onSaveAnnotationButtonClicked(self):
-    if self.MarkupsAnnotationNode.GetStorageNode() is None:
-      self.onSaveAsAnnotationButtonClicked()
-    else:
-      self.MarkupsAnnotationNode.GetStorageNode().WriteData(self.MarkupsAnnotationNode)
+    if not self.MarkupsAnnotationNode or \
+       not self.MarkupsAnnotationNode.GetStorageNode():
+      return
+
+    self.MarkupsAnnotationNode.GetStorageNode().WriteData(self.MarkupsAnnotationNode)
 
   def onSaveAsAnnotationButtonClicked(self):
     slicer.app.ioManager().openDialog(
@@ -147,11 +152,13 @@ class HomeWidget(ScriptedLoadableModuleWidget):
 
   def onLoadAnnotationButtonClicked(self):
     self.saveAnnotationIfModified()
-    if slicer.util.openAddMarkupsDialog():
-      slicer.mrmlScene.RemoveNode(self.MarkupsAnnotationNode)
-      self.MarkupsAnnotationNode = slicer.mrmlScene.GetFirstNodeByClass("vtkMRMLMarkupsSplinesNode")
-      self.onMarkupsAnnotationStorageNodeModified()
-      self.resetViews()
+    if not slicer.util.openAddMarkupsDialog():
+      return
+
+    self.initializeAnnotation(slicer.mrmlScene.GetFirstNodeByClass("vtkMRMLMarkupsSplinesNode"))
+    self.onMarkupsAnnotationStorageNodeModified()
+    self.resetViews()
+    self.updateSaveButtonsState()
 
   def onMarkupsAnnotationStorageNodeModified(self):
     self.Widget.AnnotationPathLineEdit.currentPath = self.MarkupsAnnotationNode.GetStorageNode().GetFileName()
@@ -188,13 +195,21 @@ class HomeWidget(ScriptedLoadableModuleWidget):
     slicer.util.findChildren(name="CentralWidget")[0].visible = False
     self.LayoutManager.setViewport(self.Widget.LayoutWidget)
 
-    # Add markups annotation
-    self.MarkupsAnnotationNode = slicer.mrmlScene.AddNode(slicer.vtkMRMLMarkupsSplinesNode())
-    storageNode = slicer.mrmlScene.AddNode(slicer.vtkMRMLMarkupsSplinesStorageNode())
-    self.MarkupsAnnotationNode.SetAndObserveStorageNodeID(storageNode.GetID())
-    self.MarkupsAnnotationNode.SetName("Annotation")
-
     self.setupConnections()
+
+  def initializeAnnotation(self, newNode=None):
+    if newNode:
+      slicer.mrmlScene.RemoveNode(self.MarkupsAnnotationNode)
+      self.MarkupsAnnotationNode = newNode
+    else:
+      self.MarkupsAnnotationNode = slicer.mrmlScene.AddNode(slicer.vtkMRMLMarkupsSplinesNode())
+
+    self.MarkupsAnnotationNode.SetName("Annotation")
+    self.MarkupsAnnotationNode.AddDefaultStorageNode()
+
+  def updateSaveButtonsState(self):
+    self.get('SaveAnnotationButton').setEnabled(self.MarkupsAnnotationNode != None)
+    self.get('SaveAsAnnotationButton').setEnabled(self.MarkupsAnnotationNode != None)
 
   def get(self, name):
     return slicer.util.findChildren(self.Widget, name)[0]

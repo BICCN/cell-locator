@@ -108,6 +108,9 @@
          </item>
          <item>
           <widget class="QPushButton" name="SaveAnnotationButton">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="text">
             <string>Save</string>
            </property>
@@ -115,6 +118,9 @@
          </item>
          <item>
           <widget class="QPushButton" name="SaveAsAnnotationButton">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="text">
             <string>Save As</string>
            </property>
@@ -131,6 +137,9 @@
        </item>
        <item>
         <widget class="ctkPathLineEdit" name="AnnotationPathLineEdit">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="filters">
           <set>ctkPathLineEdit::AllEntries|ctkPathLineEdit::Dirs|ctkPathLineEdit::Drives|ctkPathLineEdit::Files|ctkPathLineEdit::NoDot|ctkPathLineEdit::NoDotDot|ctkPathLineEdit::Readable</set>
          </property>
