@@ -72,6 +72,9 @@ public:
   void SetNthSplineThickness(int n, double thickness);
   double GetNthSplineThickness(int n);
 
+  void SetNthSplineNormal(int n, vtkVector3d normal);
+  vtkVector3d GetNthSplineNormal(int n);
+
 protected:
   vtkMRMLMarkupsSplinesNode();
   ~vtkMRMLMarkupsSplinesNode();
@@ -83,6 +86,8 @@ protected:
   std::vector<bool> Closed;
   double DefaultThickness;
   std::vector<double> Thickness;
+  vtkVector3d DefaultNormal;
+  std::vector<vtkVector3d> Normal;
 };
 
 #endif

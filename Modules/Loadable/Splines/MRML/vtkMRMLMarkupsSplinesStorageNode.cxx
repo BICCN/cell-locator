@@ -68,6 +68,12 @@ int vtkMRMLMarkupsSplinesStorageNode::ReadNthMarkupFromTranslationMap(
 
   splinesNode->SetNthSplineClosed(n, markupsMap[key + "Closed"].ToInt());
   splinesNode->SetNthSplineThickness(n, markupsMap[key + "Thickness"].ToDouble());
+  vtkVector3d normal;
+  normal.SetX(markupsMap[key + "Normal/x"].ToDouble());
+  normal.SetY(markupsMap[key + "Normal/y"].ToDouble());
+  normal.SetZ(markupsMap[key + "Normal/z"].ToDouble());
+  splinesNode->SetNthSplineNormal(n, normal);
+
   return 1;
 }
 
@@ -87,5 +93,9 @@ int vtkMRMLMarkupsSplinesStorageNode::WriteNthMarkupToTranslationMap(
 
   markupsMap[key + "Closed"] = splinesNode->GetNthSplineClosed(n) ? 1 : 0;
   markupsMap[key + "Thickness"] = splinesNode->GetNthSplineThickness(n);
+  vtkVector3d normal = splinesNode->GetNthSplineNormal(n);
+  markupsMap[key + "Normal/x"] = normal.GetX();
+  markupsMap[key + "Normal/y"] = normal.GetY();
+  markupsMap[key + "Normal/z"] = normal.GetZ();
   return 1;
 }
