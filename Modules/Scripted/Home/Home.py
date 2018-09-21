@@ -1,6 +1,7 @@
 import os
 import unittest
 import vtk, qt, ctk, slicer
+from slicer.util import VTKObservationMixin
 from slicer.ScriptedLoadableModule import *
 import logging
 
@@ -26,9 +27,10 @@ class Home(ScriptedLoadableModule):
 # HomeWidget
 #
 
-class HomeWidget(ScriptedLoadableModuleWidget):
+class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def __init__(self, parent = None):
     ScriptedLoadableModuleWidget.__init__(self, parent)
+    VTKObservationMixin.__init__(self)
     self.LayoutManager = slicer.app.layoutManager()
     self.MarkupsAnnotationNode = None
     self.ThreeDWithReformatCustomLayoutId = None
@@ -126,13 +128,13 @@ class HomeWidget(ScriptedLoadableModuleWidget):
     self.saveAnnotationIfModified()
 
     if self.MarkupsAnnotationNode:
-      slicer.mrmlScene.RemoveNode(self.MarkupsAnnotationNode)
-      self.MarkupsAnnotationNode = None
+      self.removeAnnotation()
 
     if not self.MarkupsAnnotationNode:
       self.initializeAnnotation()
 
     if not self.onSaveAsAnnotationButtonClicked():
+      self.removeAnnotation()
       return
 
     self.resetViews()
@@ -174,6 +176,8 @@ class HomeWidget(ScriptedLoadableModuleWidget):
     self.updateSaveButtonsState()
 
   def onMarkupsAnnotationStorageNodeModified(self):
+    if not self.MarkupsAnnotationNode:
+      return
     self.Widget.AnnotationPathLineEdit.currentPath = self.MarkupsAnnotationNode.GetStorageNode().GetFileName()
 
   def onResetViewClicked(self, orientation):
@@ -185,6 +189,13 @@ class HomeWidget(ScriptedLoadableModuleWidget):
       for j in range(3):
         sliceNode.GetSliceToRAS().SetElement(i, j, matrix.GetElement(i, j))
     sliceNode.UpdateMatrices()
+
+  def onThicknessChanged(self, value):
+    if not self.MarkupsAnnotationNode:
+      return
+
+    for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
+      self.MarkupsAnnotationNode.SetNthSplineThickness(i, value)
 
   def setup(self):
     ScriptedLoadableModuleWidget.setup(self)
@@ -210,17 +221,33 @@ class HomeWidget(ScriptedLoadableModuleWidget):
 
     self.setupConnections()
 
+  def removeAnnotationObservations(self):
+    self.removeObserver(
+      self.MarkupsAnnotationNode, slicer.vtkMRMLMarkupsNode.MarkupAddedEvent, self.OnMarkupAddedEvent)
+
+  def addAnnotationObservations(self):
+    self.addObserver(
+      self.MarkupsAnnotationNode, slicer.vtkMRMLMarkupsNode.MarkupAddedEvent, self.OnMarkupAddedEvent)
+
+  def removeAnnotation(self):
+    self.removeAnnotationObservations()
+    slicer.mrmlScene.RemoveNode(self.MarkupsAnnotationNode)
+    self.MarkupsAnnotationNode = None
+
   def initializeAnnotation(self, newNode=None):
     if newNode:
       if self.MarkupsAnnotationNode:
-        slicer.mrmlScene.RemoveNode(self.MarkupsAnnotationNode)
+        self.removeAnnotation()
       self.MarkupsAnnotationNode = newNode
     else:
       self.MarkupsAnnotationNode = slicer.mrmlScene.AddNode(slicer.vtkMRMLMarkupsSplinesNode())
       self.MarkupsAnnotationNode.AddDefaultStorageNode()
 
     self.MarkupsAnnotationNode.SetName("Annotation")
+    self.addAnnotationObservations()
 
+  def OnMarkupAddedEvent(self, caller=None, event=None):
+    self.onThicknessChanged(self.get('ThicknessSliderWidget').value)
 
   def updateSaveButtonsState(self):
     self.get('SaveAnnotationButton').setEnabled(self.MarkupsAnnotationNode != None)
@@ -239,6 +266,8 @@ class HomeWidget(ScriptedLoadableModuleWidget):
     self.get('AxialPushButton').connect("clicked()", lambda: self.onResetViewClicked('Axial'))
     self.get('CoronalPushButton').connect("clicked()", lambda: self.onResetViewClicked('Coronal'))
     self.get('SagittalPushButton').connect("clicked()", lambda: self.onResetViewClicked('Sagittal'))
+
+    self.get('ThicknessSliderWidget').connect("valueChanged(double)", self.onThicknessChanged)
 
   def cleanup(self):
     self.Widget = None

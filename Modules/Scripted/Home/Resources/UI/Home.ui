@@ -68,14 +68,17 @@
         <item row="0" column="1">
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <widget class="ctkDoubleSlider" name="ThicknessDoubleSlider">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+           <widget class="ctkSliderWidget" name="ThicknessSliderWidget">
+            <property name="minimum">
+             <double>0.010000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>10000.000000000000000</double>
+            </property>
+            <property name="value">
+             <double>50.000000000000000</double>
             </property>
            </widget>
-          </item>
-          <item>
-           <widget class="QDoubleSpinBox" name="ThicknessDoubleSpinBox"/>
           </item>
          </layout>
         </item>
@@ -214,14 +217,14 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>ctkDoubleSlider</class>
-   <extends>QWidget</extends>
-   <header>ctkDoubleSlider.h</header>
-  </customwidget>
-  <customwidget>
    <class>ctkPathLineEdit</class>
    <extends>QWidget</extends>
    <header>ctkPathLineEdit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ctkSliderWidget</class>
+   <extends>QWidget</extends>
+   <header>ctkSliderWidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
