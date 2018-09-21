@@ -29,10 +29,13 @@ and was partially funded by Allen Institute
 
 // MRML includes
 class vtkMRMLMarkupsSplinesNode;
+class vtkMRMLModelNode;
 class vtkMRMLSelectionNode;
 
-// STD includes
-#include <cstdlib>
+// VTK includes
+#include <vtkSmartPointer.h>
+#include <vtkVector.h>
+class vtkPolyData;
 
 #include "vtkSlicerSplinesModuleLogicExport.h"
 
@@ -52,12 +55,23 @@ public:
   /// Load a markups splines from fileName.
   char *LoadMarkupsSplines(const char *fileName, const char *name);
 
+  /// Create a 3D slab from the given contour, normal and thickness.
+  static vtkSmartPointer<vtkPolyData> CreateModelFromContour(
+    vtkPolyData* inputContour, vtkVector3d normal, double thickness);
+
 protected:
   vtkSlicerSplinesLogic();
   virtual ~vtkSlicerSplinesLogic();
 
-  virtual void RegisterNodes();
-  virtual void ObserveMRMLScene();
+  virtual void RegisterNodes() VTK_OVERRIDE;
+  virtual void ObserveMRMLScene() VTK_OVERRIDE;
+  virtual void SetMRMLSceneInternal(vtkMRMLScene* newScene) VTK_OVERRIDE;
+
+  virtual void OnMRMLNodeModified(vtkMRMLNode* node) VTK_OVERRIDE;
+  virtual void OnMRMLSceneNodeAdded(vtkMRMLNode* node) VTK_OVERRIDE;
+  virtual void OnMRMLSceneNodeRemoved(vtkMRMLNode* node) VTK_OVERRIDE;
+
+  void UpdateSlabModelNode(vtkMRMLMarkupsSplinesNode* splinesNode);
 
 private:
 

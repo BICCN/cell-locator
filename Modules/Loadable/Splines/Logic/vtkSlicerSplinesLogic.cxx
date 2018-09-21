@@ -22,13 +22,23 @@ and was partially funded by Allen Institute
 #include "vtkSlicerSplinesLogic.h"
 
 // MRML includes
+#include <vtkMRMLModelNode.h>
 #include <vtkMRMLScene.h>
 #include <vtkMRMLSelectionNode.h>
 
 // VTK includes
+#include <vtkEventBroker.h>
 #include <vtkIntArray.h>
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
+#include <vtkPolyData.h>
+#include <vtkTransform.h>
+#include <vtkTransformPolyDataFilter.h>
+#include <vtkTriangle.h>
+#include <vtkPoints.h>
+#include <vtkCellArray.h>
+#include <vtkPolyDataWriter.h>
+#include <vtkCenterOfMass.h>
 
 // Splines includes
 #include "vtkMRMLMarkupsSplinesNode.h"
@@ -136,6 +146,108 @@ char* vtkSlicerSplinesLogic
 }
 
 //---------------------------------------------------------------------------
+vtkSmartPointer<vtkPolyData> vtkSlicerSplinesLogic::CreateModelFromContour(
+  vtkPolyData* inputContour, vtkVector3d normal, double thickness)
+{
+  if (!inputContour
+    || !inputContour->GetPoints()
+    || inputContour->GetPoints()->GetNumberOfPoints() < 3)
+  {
+    return nullptr;
+  }
+
+  vtkNew<vtkCenterOfMass> centroidFilter;
+  centroidFilter->SetInputData(inputContour);
+  centroidFilter->SetUseScalarsAsWeights(false);
+  centroidFilter->Update();
+
+  double centroid[3];
+  centroidFilter->GetCenter(centroid);
+
+  vtkNew<vtkTransform> topHalfTransform;
+  topHalfTransform->Translate(
+    thickness * 0.5 * normal.GetX(),
+    thickness * 0.5 * normal.GetY(),
+    thickness * 0.5 * normal.GetZ());
+  vtkNew<vtkTransform> bottomHalfTransform;
+  bottomHalfTransform->Translate(
+    -thickness * 0.5 * normal.GetX(),
+    -thickness * 0.5 * normal.GetY(),
+    -thickness * 0.5 * normal.GetZ());
+
+  vtkNew<vtkTransformPolyDataFilter> topHalfFilter;
+  topHalfFilter->SetInputData(inputContour);
+  topHalfFilter->SetTransform(topHalfTransform.GetPointer());
+  topHalfFilter->Update();
+
+  vtkNew<vtkTransformPolyDataFilter> bottomHalfFilter;
+  bottomHalfFilter->SetInputData(inputContour);
+  bottomHalfFilter->SetTransform(bottomHalfTransform.GetPointer());
+  bottomHalfFilter->Update();
+
+  vtkPolyData* topHalf = topHalfFilter->GetOutput();
+  vtkPolyData* bottomHalf = bottomHalfFilter->GetOutput();
+  vtkNew<vtkPoints> points;
+  for (vtkIdType i = 0; i < topHalf->GetNumberOfPoints(); ++i)
+  {
+    points->InsertNextPoint(topHalf->GetPoint(i));
+    points->InsertNextPoint(bottomHalf->GetPoint(i));
+  }
+  vtkIdType numberOfBeltPoints = points->GetNumberOfPoints();
+
+  // Also insert the top and bottom centroid
+  vtkIdType topCentroidPointId = points->InsertNextPoint(
+    topHalfTransform->TransformDoublePoint(centroid));
+  vtkIdType bottomCentroidPointId = points->InsertNextPoint(
+    bottomHalfTransform->TransformDoublePoint(centroid));
+
+  vtkNew<vtkCellArray> cells;
+  for (vtkIdType i = 0; i < numberOfBeltPoints - 2; i += 2)
+  {
+    vtkNew<vtkTriangle> beltTriangle1;
+    beltTriangle1->GetPointIds()->SetId(0, i);
+    beltTriangle1->GetPointIds()->SetId(1, i + 1);
+    beltTriangle1->GetPointIds()->SetId(2, i + 2);
+    cells->InsertNextCell(beltTriangle1.GetPointer());
+
+    vtkNew<vtkTriangle> beltTriangle2;
+    beltTriangle2->GetPointIds()->SetId(0, i + 1);
+    beltTriangle2->GetPointIds()->SetId(1, i + 3);
+    beltTriangle2->GetPointIds()->SetId(2, i + 2);
+    cells->InsertNextCell(beltTriangle2.GetPointer());
+
+    // Top cap
+   vtkNew<vtkTriangle> topCapTriangle;
+   topCapTriangle->GetPointIds()->SetId(0, i);
+   topCapTriangle->GetPointIds()->SetId(1, topCentroidPointId);
+   topCapTriangle->GetPointIds()->SetId(2, i + 2);
+   cells->InsertNextCell(topCapTriangle.GetPointer());
+
+   vtkNew<vtkTriangle> bottomCapTriangle;
+   bottomCapTriangle->GetPointIds()->SetId(0, i + 1);
+   bottomCapTriangle->GetPointIds()->SetId(1, i + 3);
+   bottomCapTriangle->GetPointIds()->SetId(2, bottomCentroidPointId);
+   cells->InsertNextCell(bottomCapTriangle.GetPointer());
+  }
+
+  vtkNew<vtkPolyData> surface;
+  surface->SetPoints(points.GetPointer());
+  surface->SetPolys(cells.GetPointer());
+
+  return surface;
+}
+
+//---------------------------------------------------------------------------
+void vtkSlicerSplinesLogic::SetMRMLSceneInternal(vtkMRMLScene* newScene)
+{
+  vtkNew<vtkIntArray> sceneEvents;
+  sceneEvents->InsertNextValue(vtkMRMLScene::NodeAddedEvent);
+  sceneEvents->InsertNextValue(vtkMRMLScene::NodeRemovedEvent);
+
+  this->SetAndObserveMRMLSceneEventsInternal(newScene, sceneEvents.GetPointer());
+}
+
+//---------------------------------------------------------------------------
 void vtkSlicerSplinesLogic::ObserveMRMLScene()
 {
   if (!this->GetMRMLScene())
@@ -169,4 +281,98 @@ void vtkSlicerSplinesLogic::RegisterNodes()
   assert(scene != 0);
   scene->RegisterNodeClass(vtkSmartPointer<vtkMRMLMarkupsSplinesNode>::New());
   scene->RegisterNodeClass(vtkSmartPointer<vtkMRMLMarkupsSplinesStorageNode>::New());
+}
+
+//----------------------------------------------------------------------------
+void vtkSlicerSplinesLogic::OnMRMLSceneNodeAdded(vtkMRMLNode* node)
+{
+  vtkMRMLMarkupsSplinesNode* splinesNode =
+    vtkMRMLMarkupsSplinesNode::SafeDownCast(node);
+  if (!splinesNode)
+  {
+    return;
+  }
+
+  vtkEventBroker::GetInstance()->AddObservation(
+    splinesNode, vtkCommand::ModifiedEvent, this, this->GetMRMLNodesCallbackCommand());
+  this->UpdateSlabModelNode(splinesNode);
+}
+
+//----------------------------------------------------------------------------
+void vtkSlicerSplinesLogic::OnMRMLSceneNodeRemoved(vtkMRMLNode* node)
+{
+  vtkMRMLMarkupsSplinesNode* splinesNode =
+    vtkMRMLMarkupsSplinesNode::SafeDownCast(node);
+  if (!splinesNode)
+  {
+    return;
+  }
+
+  vtkEventBroker::GetInstance()->RemoveObservations(
+    splinesNode, vtkCommand::ModifiedEvent, this, this->GetMRMLNodesCallbackCommand());
+
+  // Remove all the associated model nodes
+  for (int i = 0; i < splinesNode->GetNumberOfMarkups(); ++i)
+  {
+    std::string modelID = splinesNode->GetNthMarkupAssociatedNodeID(i);
+    vtkMRMLModelNode* modelNode =
+      vtkMRMLModelNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(modelID));
+    if (modelNode)
+    {
+      this->GetMRMLScene()->RemoveNode(modelNode);
+    }
+  }
+}
+
+//-----------------------------------------------------------------------------
+void vtkSlicerSplinesLogic::OnMRMLNodeModified(vtkMRMLNode* node)
+{
+  vtkMRMLMarkupsSplinesNode* splinesNode =
+    vtkMRMLMarkupsSplinesNode::SafeDownCast(node);
+  if (!splinesNode)
+  {
+    return;
+  }
+
+  this->UpdateSlabModelNode(splinesNode);
+}
+
+//-----------------------------------------------------------------------------
+void vtkSlicerSplinesLogic::UpdateSlabModelNode(vtkMRMLMarkupsSplinesNode* splinesNode)
+{
+  if (!splinesNode)
+  {
+    return;
+  }
+
+  for (int i = 0; i < splinesNode->GetNumberOfMarkups(); ++i)
+  {
+    std::string modelID = splinesNode->GetNthMarkupAssociatedNodeID(i);
+    vtkMRMLModelNode* modelNode =
+      vtkMRMLModelNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(modelID));
+
+    bool shouldHaveModel = splinesNode->GetNumberOfPointsInNthMarkup(i) > 2;
+
+    // Cases:
+    // 1- Should have model && model exits -> All good             | DO NOTHING
+    // 2- Should not have model && model doesn't exist -> All good | DO NOTHING
+    // 3- Should have model && model doesn't exist -> Add it
+    // 4- Should not have model && model exist -> Remove it
+
+    if (shouldHaveModel && !modelNode)
+    {
+      std::stringstream modelName;
+      modelName << splinesNode->GetName() << "_Model_" << i;
+
+      vtkMRMLModelNode* newModelNode = vtkMRMLModelNode::SafeDownCast(
+        this->GetMRMLScene()->AddNewNodeByClass(
+          "vtkMRMLModelNode", modelName.str()));
+      splinesNode->SetNthMarkupAssociatedNodeID(i, newModelNode->GetID());
+    }
+    else if (!shouldHaveModel && modelNode)
+    {
+      this->GetMRMLScene()->RemoveNode(modelNode);
+      splinesNode->SetNthMarkupAssociatedNodeID(i, "");
+    }
+  }
 }

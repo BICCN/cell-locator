@@ -124,11 +124,17 @@ class HomeWidget(ScriptedLoadableModuleWidget):
 
   def onNewAnnotationButtonClicked(self):
     self.saveAnnotationIfModified()
+
+    if self.MarkupsAnnotationNode:
+      slicer.mrmlScene.RemoveNode(self.MarkupsAnnotationNode)
+      self.MarkupsAnnotationNode = None
+
     if not self.MarkupsAnnotationNode:
       self.initializeAnnotation()
 
-    self.onSaveAsAnnotationButtonClicked()
-    self.MarkupsAnnotationNode.RemoveAllMarkups()
+    if not self.onSaveAsAnnotationButtonClicked():
+      return
+
     self.resetViews()
     self.updateSaveButtonsState()
 
@@ -146,9 +152,11 @@ class HomeWidget(ScriptedLoadableModuleWidget):
     self.MarkupsAnnotationNode.GetStorageNode().WriteData(self.MarkupsAnnotationNode)
 
   def onSaveAsAnnotationButtonClicked(self):
-    slicer.app.ioManager().openDialog(
+    valid = slicer.app.ioManager().openDialog(
       "MarkupsSplines", slicer.qSlicerFileDialog.Write, {"nodeID": self.MarkupsAnnotationNode.GetID()})
-    self.onMarkupsAnnotationStorageNodeModified()
+    if valid:
+      self.onMarkupsAnnotationStorageNodeModified()
+    return valid
 
   def onLoadAnnotationButtonClicked(self):
     from slicer import app, qSlicerFileDialog

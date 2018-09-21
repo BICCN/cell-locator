@@ -13,17 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-This file was originally developed by Julien Finet, Kitware Inc.
+This file was originally developed by Johan Andruejol, Kitware Inc.
 and was partially funded by Allen Institute
 
 ==============================================================================*/
 
-// MarkupsModule/MRML includes
+// Splines includes
 #include <vtkMRMLMarkupsSplinesNode.h>
 #include <vtkMRMLMarkupsDisplayNode.h>
-
-// MarkupsModule/MRMLDisplayableManager includes
 #include "vtkMRMLMarkupsSplinesDisplayableManager3D.h"
+#include <vtkSlicerSplinesLogic.h>
 
 // MRML includes
 #include <vtkMRMLApplicationLogic.h>
@@ -31,6 +30,7 @@ and was partially funded by Allen Institute
 #include <vtkMRMLInteractionNode.h>
 #include <vtkMRMLMarkupsClickCounter.h>
 #include <vtkMRMLModelDisplayableManager.h>
+#include <vtkMRMLModelDisplayNode.h>
 #include <vtkMRMLScene.h>
 #include <vtkMRMLSelectionNode.h>
 #include <vtkMRMLViewNode.h>
@@ -466,6 +466,34 @@ void vtkMRMLMarkupsSplinesDisplayableManager3D::vtkInternal
       rep->SetClosed(splinesNode->GetNthSplineClosed(n) ? 1 : 0);
 
       rep->BuildRepresentation();
+
+      // Get the associated MRML node
+      vtkMRMLModelNode* modelNode =
+        vtkMRMLModelNode::SafeDownCast(this->External->GetMRMLScene()->GetNodeByID(
+          splinesNode->GetNthMarkupAssociatedNodeID(n)));
+      if (modelNode)
+        {
+        vtkNew<vtkPolyData> contour;
+        rep->GetPolyData(contour.GetPointer());
+
+        // Build polydata surface
+        vtkSmartPointer<vtkPolyData> surface = vtkSlicerSplinesLogic::CreateModelFromContour(
+          contour.GetPointer(),
+          splinesNode->GetNthSplineNormal(n),
+          splinesNode->GetNthSplineThickness(n));
+        modelNode->SetAndObserveMesh(surface);
+
+        vtkMRMLDisplayNode* modelDisplayNode = modelNode->GetDisplayNode();
+        if (!modelDisplayNode)
+        {
+          modelDisplayNode = vtkMRMLModelDisplayNode::SafeDownCast(
+            this->External->GetMRMLScene()->AddNewNodeByClass("vtkMRMLModelDisplayNode"));
+          modelNode->SetAndObserveDisplayNodeID(modelDisplayNode->GetID());
+          modelDisplayNode->SetOpacity(0.5);
+          modelDisplayNode->SetFrontfaceCulling(false);
+          modelDisplayNode->SetBackfaceCulling(false);
+        }
+      }
     }
   }
 }
