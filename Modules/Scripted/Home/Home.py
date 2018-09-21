@@ -197,11 +197,30 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
       self.MarkupsAnnotationNode.SetNthSplineThickness(i, value)
 
+  def onSliceOrientationModified(self, caller=None, event=None):
+    if not self.MarkupsAnnotationNode:
+      return
+
+    sliceNode = caller
+    if not sliceNode:
+      sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
+
+    normal = [0.0, 0.0, 0.0, 0.0]
+    sliceNode.GetSliceToRAS().MultiplyPoint([0.0, 0.0, 1.0, 0.0], normal)
+
+    for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
+      if not self.MarkupsAnnotationNode.GetNthMarkupLocked(i):
+        self.MarkupsAnnotationNode.SetNthSplineNormal(i,
+          vtk.vtkVector3d(normal[:3]))
+
   def setup(self):
     ScriptedLoadableModuleWidget.setup(self)
 
     self.registerCustomLayouts()
     self.LayoutManager.setLayout(self.ThreeDWithReformatCustomLayoutId)
+
+    sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
+    self.addObserver(sliceNode, vtk.vtkCommand.ModifiedEvent, self.onSliceOrientationModified)
 
     # Load UI file
     moduleName = 'Home'
@@ -248,6 +267,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
   def OnMarkupAddedEvent(self, caller=None, event=None):
     self.onThicknessChanged(self.get('ThicknessSliderWidget').value)
+    self.onSliceOrientationModified()
 
   def updateSaveButtonsState(self):
     self.get('SaveAnnotationButton').setEnabled(self.MarkupsAnnotationNode != None)
