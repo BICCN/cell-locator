@@ -38,7 +38,9 @@ and was partially funded by Allen Institute
 #include <vtkPoints.h>
 #include <vtkCellArray.h>
 #include <vtkPolyDataWriter.h>
-#include <vtkCenterOfMass.h>
+#include <vtkAppendPolyData.h>
+#include <vtkCleanPolyData.h>
+#include <vtkContourTriangulator.h>
 
 // Splines includes
 #include "vtkMRMLMarkupsSplinesNode.h"
@@ -156,13 +158,8 @@ vtkSmartPointer<vtkPolyData> vtkSlicerSplinesLogic::CreateModelFromContour(
     return nullptr;
   }
 
-  vtkNew<vtkCenterOfMass> centroidFilter;
-  centroidFilter->SetInputData(inputContour);
-  centroidFilter->SetUseScalarsAsWeights(false);
-  centroidFilter->Update();
-
-  double centroid[3];
-  centroidFilter->GetCenter(centroid);
+  vtkNew<vtkContourTriangulator> contourTriangulator;
+  contourTriangulator->SetInputData(inputContour);
 
   vtkNew<vtkTransform> topHalfTransform;
   topHalfTransform->Translate(
@@ -176,14 +173,12 @@ vtkSmartPointer<vtkPolyData> vtkSlicerSplinesLogic::CreateModelFromContour(
     -thickness * 0.5 * normal.GetZ());
 
   vtkNew<vtkTransformPolyDataFilter> topHalfFilter;
-  topHalfFilter->SetInputData(inputContour);
+  topHalfFilter->SetInputConnection(contourTriangulator->GetOutputPort());
   topHalfFilter->SetTransform(topHalfTransform.GetPointer());
-  topHalfFilter->Update();
 
   vtkNew<vtkTransformPolyDataFilter> bottomHalfFilter;
-  bottomHalfFilter->SetInputData(inputContour);
+  bottomHalfFilter->SetInputConnection(contourTriangulator->GetOutputPort());
   bottomHalfFilter->SetTransform(bottomHalfTransform.GetPointer());
-  bottomHalfFilter->Update();
 
   vtkPolyData* topHalf = topHalfFilter->GetOutput();
   vtkPolyData* bottomHalf = bottomHalfFilter->GetOutput();
@@ -193,16 +188,9 @@ vtkSmartPointer<vtkPolyData> vtkSlicerSplinesLogic::CreateModelFromContour(
     points->InsertNextPoint(topHalf->GetPoint(i));
     points->InsertNextPoint(bottomHalf->GetPoint(i));
   }
-  vtkIdType numberOfBeltPoints = points->GetNumberOfPoints();
-
-  // Also insert the top and bottom centroid
-  vtkIdType topCentroidPointId = points->InsertNextPoint(
-    topHalfTransform->TransformDoublePoint(centroid));
-  vtkIdType bottomCentroidPointId = points->InsertNextPoint(
-    bottomHalfTransform->TransformDoublePoint(centroid));
 
   vtkNew<vtkCellArray> cells;
-  for (vtkIdType i = 0; i < numberOfBeltPoints - 2; i += 2)
+  for (vtkIdType i = 0; i < points->GetNumberOfPoints() - 2; i += 2)
   {
     vtkNew<vtkTriangle> beltTriangle1;
     beltTriangle1->GetPointIds()->SetId(0, i);
@@ -215,26 +203,22 @@ vtkSmartPointer<vtkPolyData> vtkSlicerSplinesLogic::CreateModelFromContour(
     beltTriangle2->GetPointIds()->SetId(1, i + 3);
     beltTriangle2->GetPointIds()->SetId(2, i + 2);
     cells->InsertNextCell(beltTriangle2.GetPointer());
-
-    // Top cap
-   vtkNew<vtkTriangle> topCapTriangle;
-   topCapTriangle->GetPointIds()->SetId(0, i);
-   topCapTriangle->GetPointIds()->SetId(1, topCentroidPointId);
-   topCapTriangle->GetPointIds()->SetId(2, i + 2);
-   cells->InsertNextCell(topCapTriangle.GetPointer());
-
-   vtkNew<vtkTriangle> bottomCapTriangle;
-   bottomCapTriangle->GetPointIds()->SetId(0, i + 1);
-   bottomCapTriangle->GetPointIds()->SetId(1, i + 3);
-   bottomCapTriangle->GetPointIds()->SetId(2, bottomCentroidPointId);
-   cells->InsertNextCell(bottomCapTriangle.GetPointer());
   }
 
-  vtkNew<vtkPolyData> surface;
-  surface->SetPoints(points.GetPointer());
-  surface->SetPolys(cells.GetPointer());
+  vtkNew<vtkPolyData> beltSurface;
+  beltSurface->SetPoints(points.GetPointer());
+  beltSurface->SetPolys(cells.GetPointer());
 
-  return surface;
+  vtkNew<vtkAppendPolyData> appendFilter;
+  appendFilter->AddInputConnection(bottomHalfFilter->GetOutputPort());
+  appendFilter->AddInputData(beltSurface);
+  appendFilter->AddInputConnection(topHalfFilter->GetOutputPort());
+
+  vtkNew<vtkCleanPolyData> cleanFilter;
+  cleanFilter->SetInputConnection(appendFilter->GetOutputPort());
+  cleanFilter->Update();
+
+  return cleanFilter->GetOutput();
 }
 
 //---------------------------------------------------------------------------
