@@ -74,7 +74,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def loadData(self):
 
     # Load template
-    slicer.util.loadVolume(self.averageTemplateFilePath())
+    loaded, averageTemplate = slicer.util.loadVolume(
+      self.averageTemplateFilePath(), returnNode=True)
 
     # Load Allen color table
     colorLogic = slicer.modules.colors.logic()
@@ -87,10 +88,14 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     # Load annotation
     if os.path.exists(self.annotationFilePath()):
-      slicer.util.loadVolume(self.annotationFilePath(), properties={
-        "labelmap": "1",
-        "colorNodeID": colorNodeID
-      })
+      loaded, annotation = slicer.util.loadVolume(
+        self.annotationFilePath(),
+        properties={
+          "labelmap": "1",
+          "colorNodeID": colorNodeID
+        },
+        returnNode=True
+        )
     else:
       logging.error("Annotation file [%s] does not exist" % self.annotationFilePath())
 
@@ -101,6 +106,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sliceController.showReformatWidget(True)
     sliceWidget.mrmlSliceNode().SetWidgetOutlineVisible(False)
 
+    compositeNode = sliceWidget.mrmlSliceCompositeNode()
+    compositeNode.SetBackgroundVolumeID(averageTemplate.GetID())
+    compositeNode.SetLabelVolumeID(annotation.GetID())
 
     # 3D view
     threeDWidget = self.LayoutManager.threeDWidget(0)
@@ -108,8 +116,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self.resetViews()
 
-  def onStartupCompleted(self):
-    qt.QTimer.singleShot(0, self.loadData)
+  def onStartupCompleted(self, *unused):
+    qt.QTimer.singleShot(0, lambda: self.onSceneEndClose(slicer.mrmlScene))
 
   def saveAnnotationIfModified(self):
     if not self.MarkupsAnnotationNode:
@@ -213,14 +221,32 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self.MarkupsAnnotationNode.SetNthSplineNormal(i,
           vtk.vtkVector3d(normal[:3]))
 
+  def onSceneStartClose(self, caller=None, event=None):
+    scene = caller
+    if not scene or not scene.IsA('vtkMRMLScene'):
+      return
+
+    sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
+    self.removeObserver(sliceNode, vtk.vtkCommand.ModifiedEvent, self.onSliceOrientationModified)
+
+  def onSceneEndClose(self, caller=None, event=None):
+    scene = caller
+    if not scene or not scene.IsA('vtkMRMLScene'):
+      return
+
+    self.loadData()
+
+    sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
+    self.addObserver(sliceNode, vtk.vtkCommand.ModifiedEvent, self.onSliceOrientationModified)
+
   def setup(self):
     ScriptedLoadableModuleWidget.setup(self)
 
     self.registerCustomLayouts()
     self.LayoutManager.setLayout(self.ThreeDWithReformatCustomLayoutId)
 
-    sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
-    self.addObserver(sliceNode, vtk.vtkCommand.ModifiedEvent, self.onSliceOrientationModified)
+    self.addObserver(slicer.mrmlScene, slicer.mrmlScene.StartCloseEvent, self.onSceneStartClose)
+    self.addObserver(slicer.mrmlScene, slicer.mrmlScene.EndCloseEvent, self.onStartupCompleted)
 
     # Load UI file
     moduleName = 'Home'
