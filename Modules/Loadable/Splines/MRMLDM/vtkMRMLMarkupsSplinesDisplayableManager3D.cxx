@@ -391,23 +391,6 @@ void vtkMRMLMarkupsSplinesDisplayableManager3D::vtkInternal::StopInteraction()
     this->External->GetInteractionNode();
   interactionNode->SwitchToViewTransformMode();
 
-  // Lock the active node.
-  vtkMRMLSelectionNode* selectionNode = this->External->GetSelectionNode();
-  vtkMRMLMarkupsSplinesNode* splinesNode =
-    vtkMRMLMarkupsSplinesNode::SafeDownCast(
-      this->External->GetMRMLScene()->GetNodeByID(
-        selectionNode ? selectionNode->GetActivePlaceNodeID() : NULL));
-  if (splinesNode)
-  {
-    int currentSpline = splinesNode->GetCurrentSpline();
-    if (currentSpline != -1)
-    {
-      splinesNode->SetNthMarkupLocked(currentSpline, true);
-    }
-
-    splinesNode->SetCurrentSpline(-1);
-  }
-
   this->External->RequestRender();
 }
 

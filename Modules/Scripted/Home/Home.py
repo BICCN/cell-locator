@@ -35,6 +35,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.MarkupsAnnotationNode = None
     self.ThreeDWithReformatCustomLayoutId = None
     self.Widget = None
+    self.InteractionState = 'scrolling'
+    self.ModifyingInteractionState = False
 
   def get(self, name):
     return slicer.util.findChildren(self.Widget, name)[0]
@@ -147,12 +149,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self.resetViews()
     self.updateSaveButtonsState()
+    self.updateInteractingButtonsState()
 
-    interactionNode = slicer.app.applicationLogic().GetInteractionNode()
-    selectionNode = slicer.app.applicationLogic().GetSelectionNode()
-    selectionNode.SetActivePlaceNodeID(self.MarkupsAnnotationNode.GetID())
-    interactionNode.SetCurrentInteractionMode(interactionNode.Place)
-    interactionNode.SetPlaceModePersistence(1)
+    self.setInteractionState('placing')
 
   def onSaveAnnotationButtonClicked(self):
     if not self.MarkupsAnnotationNode or \
@@ -182,6 +181,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.onMarkupsAnnotationStorageNodeModified()
     self.resetViews()
     self.updateSaveButtonsState()
+    self.updateInteractingButtonsState()
+    self.setInteractionState('scrolling')
 
   def onMarkupsAnnotationStorageNodeModified(self):
     if not self.MarkupsAnnotationNode:
@@ -229,6 +230,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
     self.removeObserver(sliceNode, vtk.vtkCommand.ModifiedEvent, self.onSliceOrientationModified)
 
+    interactionNode = slicer.app.applicationLogic().GetInteractionNode()
+    self.removeObserver(interactionNode, vtk.vtkCommand.ModifiedEvent, self.onInteractionNodeModified)
+
   def onSceneEndClose(self, caller=None, event=None):
     scene = caller
     if not scene or not scene.IsA('vtkMRMLScene'):
@@ -238,6 +242,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
     self.addObserver(sliceNode, vtk.vtkCommand.ModifiedEvent, self.onSliceOrientationModified)
+
+    interactionNode = slicer.app.applicationLogic().GetInteractionNode()
+    self.addObserver(interactionNode, vtk.vtkCommand.ModifiedEvent, self.onInteractionNodeModified)
 
   def setup(self):
     ScriptedLoadableModuleWidget.setup(self)
@@ -299,8 +306,54 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get('SaveAnnotationButton').setEnabled(self.MarkupsAnnotationNode != None)
     self.get('SaveAsAnnotationButton').setEnabled(self.MarkupsAnnotationNode != None)
 
+  def updateInteractingButtonsState(self):
+    self.get('PlacingRadioButton').setEnabled(self.MarkupsAnnotationNode != None)
+    self.get('InteractingRadioButton').setEnabled(self.MarkupsAnnotationNode != None)
+
   def get(self, name):
     return slicer.util.findChildren(self.Widget, name)[0]
+
+  def onInteractionNodeModified(self, caller=None, event=None):
+    interactionNode = caller
+    if not interactionNode or not interactionNode.IsA('vtkMRMLInteractionNode'):
+      return
+
+    if (interactionNode.GetCurrentInteractionMode() == interactionNode.ViewTransform
+        and not self.ModifyingInteractionState):
+      self.setInteractionState('scrolling')
+
+  def setInteractionState(self, newState):
+    if self.InteractionState == newState:
+      return
+
+    # Update the GUI if we need to
+    buttonName = '%sRadioButton' %newState.title()
+    if not self.get(buttonName).isChecked():
+      self.get(buttonName).setChecked(True)
+      return
+
+    self.ModifyingInteractionState = True
+
+    # 1: update selection node
+    selectionNode = slicer.app.applicationLogic().GetSelectionNode()
+    selectionNode.SetActivePlaceNodeID(self.MarkupsAnnotationNode.GetID())
+
+    # 2: update interaction mode:
+    interactionNode = slicer.app.applicationLogic().GetInteractionNode()
+    interactionMode = interactionNode.ViewTransform
+    if newState == 'placing':
+      interactionMode = interactionNode.Place
+    interactionNode.SetCurrentInteractionMode(interactionMode)
+    interactionNode.SetPlaceModePersistence(1)
+
+    # 3: update markup as locked
+    locked = (newState == 'scrolling')
+    for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
+      self.MarkupsAnnotationNode.SetNthMarkupLocked(i, locked)
+
+    self.InteractionState = newState
+    self.ModifyingInteractionState = False
+
 
   def setupConnections(self):
     slicer.app.connect("startupCompleted()", self.onStartupCompleted)
@@ -314,6 +367,10 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get('SagittalPushButton').connect("clicked()", lambda: self.onResetViewClicked('Sagittal'))
 
     self.get('ThicknessSliderWidget').connect("valueChanged(double)", self.onThicknessChanged)
+
+    self.get('ScrollingRadioButton').connect('toggled(bool)', lambda: self.setInteractionState('scrolling'))
+    self.get('PlacingRadioButton').connect('toggled(bool)', lambda: self.setInteractionState('placing'))
+    self.get('InteractingRadioButton').connect('toggled(bool)', lambda: self.setInteractionState('interacting'))
 
   def cleanup(self):
     self.Widget = None
