@@ -148,9 +148,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       return
 
     self.resetViews()
-    self.updateSaveButtonsState()
-    self.updateInteractingButtonsState()
-
+    self.updateGUIFromMRML()
+    self.onSliceNodeModified() # Init values
     self.setInteractionState('placing')
 
   def onSaveAnnotationButtonClicked(self):
@@ -164,7 +163,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     valid = slicer.app.ioManager().openDialog(
       "MarkupsSplines", slicer.qSlicerFileDialog.Write, {"nodeID": self.MarkupsAnnotationNode.GetID()})
     if valid:
-      self.onMarkupsAnnotationStorageNodeModified()
+      self.updateGUIFromMRML()
     return valid
 
   def onLoadAnnotationButtonClicked(self):
@@ -177,12 +176,22 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     nodes = slicer.mrmlScene.GetNodesByClass('vtkMRMLMarkupsSplinesNode')
     nodes.UnRegister(slicer.mrmlScene)
     newNode = nodes.GetItemAsObject(nodes.GetNumberOfItems() - 1)
+
     self.initializeAnnotation(newNode)
-    self.onMarkupsAnnotationStorageNodeModified()
+    self.updateGUIFromMRML()
+
     self.resetViews()
+    self.jumpSliceToAnnotation()
+    self.setInteractionState('scrolling')
+
+  def updateGUIFromMRML(self):
+    self.updateGUIFromAnnotation()
+
+  def updateGUIFromAnnotation(self):
+    self.onMarkupsAnnotationStorageNodeModified()
+
     self.updateSaveButtonsState()
     self.updateInteractingButtonsState()
-    self.setInteractionState('scrolling')
 
   def onMarkupsAnnotationStorageNodeModified(self):
     if not self.MarkupsAnnotationNode:
@@ -206,6 +215,18 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
       self.MarkupsAnnotationNode.SetNthSplineThickness(i, value)
 
+  def jumpSliceToAnnotation(self):
+    if not self.MarkupsAnnotationNode:
+      return
+
+    if self.MarkupsAnnotationNode.GetNumberOfMarkups() < 1:
+      return
+
+    sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
+    sliceNode.GetSliceToRAS().DeepCopy(
+      self.MarkupsAnnotationNode.GetNthSplineOrientation(0))
+    sliceNode.UpdateMatrices()
+
   def onSliceNodeModified(self, caller=None, event=None):
     if not self.MarkupsAnnotationNode:
       return
@@ -216,23 +237,21 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     wasModifying = self.MarkupsAnnotationNode.StartModify()
 
+    # Update the spline's normal and origin
+    for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
+      if not self.MarkupsAnnotationNode.GetNthMarkupLocked(i):
+        self.MarkupsAnnotationNode.SetNthSplineOrientation(i,
+          sliceNode.GetSliceToRAS())
+
+    if self.InteractionState == 'scrolling':
+      self.MarkupsAnnotationNode.EndModify(wasModifying)
+      return
+
     normal = [0.0, 0.0, 0.0, 0.0]
     sliceNode.GetSliceToRAS().MultiplyPoint([0.0, 0.0, 1.0, 0.0], normal)
     normal = normal[:3]
     vtk.vtkMath.Normalize(normal)
     origin = [sliceNode.GetSliceToRAS().GetElement(i, 3) for i in range(3)]
-
-    # Update the spline's normal and origin
-    for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
-      if not self.MarkupsAnnotationNode.GetNthMarkupLocked(i):
-        self.MarkupsAnnotationNode.SetNthSplineNormal(i,
-          vtk.vtkVector3d(normal))
-        self.MarkupsAnnotationNode.SetNthSplineOrigin(i,
-          vtk.vtkVector3d(origin))
-
-    if self.InteractionState == 'scrolling':
-      self.MarkupsAnnotationNode.EndModify(wasModifying)
-      return
 
     # Project points onto the current slice if needed
     for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
@@ -374,11 +393,12 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
       self.MarkupsAnnotationNode.SetNthMarkupLocked(i, locked)
 
-    self.InteractionState = newState
+    # If we're going from scrolling to another state -> snap the slice to the
+    # spline
+    if self.InteractionState == 'scrolling':
+      self.jumpSliceToAnnotation()
 
-    # 4: update markup location
-    if newState != 'scrolling':
-      self.onSliceNodeModified()
+    self.InteractionState = newState
 
     self.ModifyingInteractionState = False
 

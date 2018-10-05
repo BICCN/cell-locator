@@ -126,7 +126,7 @@ char* vtkSlicerSplinesLogic
   this->GetMRMLScene()->StartState(vtkMRMLScene::BatchProcessState);
 
   // make a storage node and fiducial node and set the file name
-  vtkNew<vtkMRMLMarkupsGenericStorageNode> storageNode;
+  vtkNew<vtkMRMLMarkupsSplinesStorageNode> storageNode;
   storageNode->SetFileName(fileName);
   vtkNew<vtkMRMLMarkupsSplinesNode> splinesNode;
   splinesNode->SetName(name);

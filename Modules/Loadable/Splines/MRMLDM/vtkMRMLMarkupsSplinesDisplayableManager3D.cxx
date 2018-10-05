@@ -460,9 +460,13 @@ void vtkMRMLMarkupsSplinesDisplayableManager3D::vtkInternal
         rep->GetPolyData(contour.GetPointer());
 
         // Build polydata surface
+        double Z[4] = { 0.0, 0.0, 1.0, 0.0 };
+        double normal[4];
+        splinesNode->GetNthSplineOrientation(n)->MultiplyPoint(Z, normal);
+
         vtkSmartPointer<vtkPolyData> surface = vtkSlicerSplinesLogic::CreateModelFromContour(
           contour.GetPointer(),
-          splinesNode->GetNthSplineNormal(n),
+          vtkVector3d(normal[0], normal[1], normal[2]),
           splinesNode->GetNthSplineThickness(n));
         modelNode->SetAndObserveMesh(surface);
 
