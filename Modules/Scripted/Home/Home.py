@@ -206,7 +206,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
       self.MarkupsAnnotationNode.SetNthSplineThickness(i, value)
 
-  def onSliceOrientationModified(self, caller=None, event=None):
+  def onSliceNodeModified(self, caller=None, event=None):
     if not self.MarkupsAnnotationNode:
       return
 
@@ -214,13 +214,31 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     if not sliceNode:
       sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
 
+    wasModifying = self.MarkupsAnnotationNode.StartModify()
+
     normal = [0.0, 0.0, 0.0, 0.0]
     sliceNode.GetSliceToRAS().MultiplyPoint([0.0, 0.0, 1.0, 0.0], normal)
+    normal = normal[:3]
+    vtk.vtkMath.Normalize(normal)
+    origin = [sliceNode.GetSliceToRAS().GetElement(i, 3) for i in range(3)]
 
+    # Project points onto the current slice if needed
+    if self.InteractionState == 'placing':
+      for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
+        for n in range(self.MarkupsAnnotationNode.GetNumberOfPointsInNthMarkup(i)):
+          point = [0.0, 0.0, 0.0]
+          self.MarkupsAnnotationNode.GetMarkupPoint(i, n, point)
+          proj = [0.0, 0.0, 0.0]
+          vtk.vtkPlane.ProjectPoint(point, origin, normal, proj)
+          self.MarkupsAnnotationNode.SetMarkupPointFromArray(i, n, proj)
+
+    # Update the spline's normal
     for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
       if not self.MarkupsAnnotationNode.GetNthMarkupLocked(i):
         self.MarkupsAnnotationNode.SetNthSplineNormal(i,
-          vtk.vtkVector3d(normal[:3]))
+          vtk.vtkVector3d(normal))
+
+    self.MarkupsAnnotationNode.EndModify(wasModifying)
 
   def onSceneStartClose(self, caller=None, event=None):
     scene = caller
@@ -228,7 +246,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       return
 
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
-    self.removeObserver(sliceNode, vtk.vtkCommand.ModifiedEvent, self.onSliceOrientationModified)
+    self.removeObserver(sliceNode, vtk.vtkCommand.ModifiedEvent, self.onSliceNodeModified)
 
     interactionNode = slicer.app.applicationLogic().GetInteractionNode()
     self.removeObserver(interactionNode, vtk.vtkCommand.ModifiedEvent, self.onInteractionNodeModified)
@@ -241,7 +259,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.loadData()
 
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
-    self.addObserver(sliceNode, vtk.vtkCommand.ModifiedEvent, self.onSliceOrientationModified)
+    self.addObserver(sliceNode, vtk.vtkCommand.ModifiedEvent, self.onSliceNodeModified)
 
     interactionNode = slicer.app.applicationLogic().GetInteractionNode()
     self.addObserver(interactionNode, vtk.vtkCommand.ModifiedEvent, self.onInteractionNodeModified)
@@ -300,7 +318,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
   def OnMarkupAddedEvent(self, caller=None, event=None):
     self.onThicknessChanged(self.get('ThicknessSliderWidget').value)
-    self.onSliceOrientationModified()
+    self.onSliceNodeModified()
 
   def updateSaveButtonsState(self):
     self.get('SaveAnnotationButton').setEnabled(self.MarkupsAnnotationNode != None)
@@ -350,6 +368,10 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     locked = (newState == 'scrolling')
     for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
       self.MarkupsAnnotationNode.SetNthMarkupLocked(i, locked)
+
+    # 4: update markup location
+    if newState == 'placing':
+      self.onSliceNodeModified()
 
     self.InteractionState = newState
     self.ModifyingInteractionState = False
