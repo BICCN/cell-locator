@@ -222,21 +222,26 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     vtk.vtkMath.Normalize(normal)
     origin = [sliceNode.GetSliceToRAS().GetElement(i, 3) for i in range(3)]
 
-    # Project points onto the current slice if needed
-    if self.InteractionState == 'placing':
-      for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
-        for n in range(self.MarkupsAnnotationNode.GetNumberOfPointsInNthMarkup(i)):
-          point = [0.0, 0.0, 0.0]
-          self.MarkupsAnnotationNode.GetMarkupPoint(i, n, point)
-          proj = [0.0, 0.0, 0.0]
-          vtk.vtkPlane.ProjectPoint(point, origin, normal, proj)
-          self.MarkupsAnnotationNode.SetMarkupPointFromArray(i, n, proj)
-
-    # Update the spline's normal
+    # Update the spline's normal and origin
     for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
       if not self.MarkupsAnnotationNode.GetNthMarkupLocked(i):
         self.MarkupsAnnotationNode.SetNthSplineNormal(i,
           vtk.vtkVector3d(normal))
+        self.MarkupsAnnotationNode.SetNthSplineOrigin(i,
+          vtk.vtkVector3d(origin))
+
+    if self.InteractionState == 'scrolling':
+      self.MarkupsAnnotationNode.EndModify(wasModifying)
+      return
+
+    # Project points onto the current slice if needed
+    for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
+      for n in range(self.MarkupsAnnotationNode.GetNumberOfPointsInNthMarkup(i)):
+        point = [0.0, 0.0, 0.0]
+        self.MarkupsAnnotationNode.GetMarkupPoint(i, n, point)
+        proj = [0.0, 0.0, 0.0]
+        vtk.vtkPlane.ProjectPoint(point, origin, normal, proj)
+        self.MarkupsAnnotationNode.SetMarkupPointFromArray(i, n, proj)
 
     self.MarkupsAnnotationNode.EndModify(wasModifying)
 
@@ -369,11 +374,12 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
       self.MarkupsAnnotationNode.SetNthMarkupLocked(i, locked)
 
+    self.InteractionState = newState
+
     # 4: update markup location
-    if newState == 'placing':
+    if newState != 'scrolling':
       self.onSliceNodeModified()
 
-    self.InteractionState = newState
     self.ModifyingInteractionState = False
 
 
