@@ -60,6 +60,10 @@ public:
   // the current spline.
   int AddSpline(vtkVector3d point);
 
+  // Init the correct variable for the nth spline. The markup must already
+  // exists.
+  bool InitSpline(int n);
+
   /// Create and observe default display node(s)
   virtual void CreateDefaultDisplayNodes() VTK_OVERRIDE;
 
@@ -72,8 +76,8 @@ public:
   void SetNthSplineThickness(int n, double thickness);
   double GetNthSplineThickness(int n);
 
-  void SetNthSplineNormal(int n, vtkVector3d normal);
-  vtkVector3d GetNthSplineNormal(int n);
+  void SetNthSplineOrientation(int n, vtkMatrix4x4* matrix);
+  vtkMatrix4x4* GetNthSplineOrientation(int n);
 
 protected:
   vtkMRMLMarkupsSplinesNode();
@@ -86,8 +90,8 @@ protected:
   std::vector<bool> Closed;
   double DefaultThickness;
   std::vector<double> Thickness;
-  vtkVector3d DefaultNormal;
-  std::vector<vtkVector3d> Normal;
+  vtkSmartPointer<vtkMatrix4x4> DefaultSplineOrientation;
+  std::vector< vtkSmartPointer<vtkMatrix4x4> > SplineOrientation;
 };
 
 #endif

@@ -26,6 +26,8 @@ and was partially funded by Allen Institute
 #include <vtkBoundingBox.h>
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
+#include <vtkMatrix4x4.h>
+#include <vtkAddonMathUtilities.h>
 
 // Locator includes
 #include "vtkMRMLMarkupsSplinesNode.h"
@@ -43,7 +45,7 @@ vtkMRMLMarkupsSplinesNode::vtkMRMLMarkupsSplinesNode()
   this->CurrentSpline = -1;
   this->DefaultClosed = true;
   this->DefaultThickness = 1000.0;
-  this->DefaultNormal = vtkVector3d(0.0, 1.0, 0.0);
+  this->DefaultSplineOrientation = vtkSmartPointer<vtkMatrix4x4>::New();
 }
 
 //----------------------------------------------------------------------------
@@ -74,8 +76,29 @@ int vtkMRMLMarkupsSplinesNode::AddSpline(vtkVector3d point)
   this->CurrentSpline = this->AddPointToNewMarkup(point);
   this->Closed.push_back(this->DefaultClosed);
   this->Thickness.push_back(this->DefaultThickness);
-  this->Normal.push_back(this->DefaultNormal);
+  vtkNew<vtkMatrix4x4> orientation;
+  orientation->DeepCopy(this->DefaultSplineOrientation);
+  this->SplineOrientation.push_back(orientation);
   return this->CurrentSpline;
+}
+
+//----------------------------------------------------------------------------
+bool vtkMRMLMarkupsSplinesNode::InitSpline(int n)
+{
+  if (!this->MarkupExists(n))
+  {
+    return false;
+  }
+
+  for (int i = this->Closed.size(); i < n+1; ++i)
+  {
+    this->Closed.push_back(this->DefaultClosed);
+    this->Thickness.push_back(this->DefaultThickness);
+    vtkNew<vtkMatrix4x4> orientation;
+    orientation->DeepCopy(this->DefaultSplineOrientation);
+    this->SplineOrientation.push_back(orientation);
+  }
+  return true;
 }
 
 //-------------------------------------------------------------------------
@@ -156,27 +179,32 @@ double vtkMRMLMarkupsSplinesNode::GetNthSplineThickness(int n)
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLMarkupsSplinesNode::SetNthSplineNormal(int n, vtkVector3d normal)
+void vtkMRMLMarkupsSplinesNode::SetNthSplineOrientation(int n, vtkMatrix4x4* matrix)
 {
-  if (static_cast<size_t>(n) >= this->Normal.size()
-    || this->Normal[static_cast<size_t>(n)] == normal)
+  size_t i = static_cast<size_t>(n);
+  if (i >= this->SplineOrientation.size()
+    || !matrix
+    || vtkAddonMathUtilities::MatrixAreEqual(this->SplineOrientation[i], matrix))
   {
     return;
   }
 
-  this->Normal[static_cast<size_t>(n)] = normal;
+  vtkNew<vtkMatrix4x4> orientation;
+  orientation->DeepCopy(matrix);
+  this->SplineOrientation[i] = orientation;
   this->Modified();
   this->InvokeCustomModifiedEvent(
     vtkMRMLMarkupsNode::NthMarkupModifiedEvent, (void*)&n);
 }
 
 //----------------------------------------------------------------------------
-vtkVector3d vtkMRMLMarkupsSplinesNode::GetNthSplineNormal(int n)
+vtkMatrix4x4* vtkMRMLMarkupsSplinesNode::GetNthSplineOrientation(int n)
 {
-  if (static_cast<size_t>(n) >= this->Thickness.size())
+  size_t i = static_cast<size_t>(n);
+  if (i >= this->SplineOrientation.size())
   {
     vtkErrorMacro("The " << n << "th spline doesn't exist");
-    return this->DefaultNormal;
+    return this->DefaultSplineOrientation;
   }
-  return this->Normal[static_cast<size_t>(n)];
+  return this->SplineOrientation[i];
 }

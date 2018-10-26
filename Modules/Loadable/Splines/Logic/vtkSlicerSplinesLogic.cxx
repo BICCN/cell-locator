@@ -126,7 +126,7 @@ char* vtkSlicerSplinesLogic
   this->GetMRMLScene()->StartState(vtkMRMLScene::BatchProcessState);
 
   // make a storage node and fiducial node and set the file name
-  vtkNew<vtkMRMLMarkupsGenericStorageNode> storageNode;
+  vtkNew<vtkMRMLMarkupsSplinesStorageNode> storageNode;
   storageNode->SetFileName(fileName);
   vtkNew<vtkMRMLMarkupsSplinesNode> splinesNode;
   splinesNode->SetName(name);
@@ -175,10 +175,12 @@ vtkSmartPointer<vtkPolyData> vtkSlicerSplinesLogic::CreateModelFromContour(
   vtkNew<vtkTransformPolyDataFilter> topHalfFilter;
   topHalfFilter->SetInputConnection(contourTriangulator->GetOutputPort());
   topHalfFilter->SetTransform(topHalfTransform.GetPointer());
+  topHalfFilter->Update();
 
   vtkNew<vtkTransformPolyDataFilter> bottomHalfFilter;
   bottomHalfFilter->SetInputConnection(contourTriangulator->GetOutputPort());
   bottomHalfFilter->SetTransform(bottomHalfTransform.GetPointer());
+  bottomHalfFilter->Update();
 
   vtkPolyData* topHalf = topHalfFilter->GetOutput();
   vtkPolyData* bottomHalf = bottomHalfFilter->GetOutput();

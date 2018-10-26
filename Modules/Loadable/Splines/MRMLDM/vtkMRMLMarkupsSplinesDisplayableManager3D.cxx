@@ -391,23 +391,6 @@ void vtkMRMLMarkupsSplinesDisplayableManager3D::vtkInternal::StopInteraction()
     this->External->GetInteractionNode();
   interactionNode->SwitchToViewTransformMode();
 
-  // Lock the active node.
-  vtkMRMLSelectionNode* selectionNode = this->External->GetSelectionNode();
-  vtkMRMLMarkupsSplinesNode* splinesNode =
-    vtkMRMLMarkupsSplinesNode::SafeDownCast(
-      this->External->GetMRMLScene()->GetNodeByID(
-        selectionNode ? selectionNode->GetActivePlaceNodeID() : NULL));
-  if (splinesNode)
-  {
-    int currentSpline = splinesNode->GetCurrentSpline();
-    if (currentSpline != -1)
-    {
-      splinesNode->SetNthMarkupLocked(currentSpline, true);
-    }
-
-    splinesNode->SetCurrentSpline(-1);
-  }
-
   this->External->RequestRender();
 }
 
@@ -477,9 +460,13 @@ void vtkMRMLMarkupsSplinesDisplayableManager3D::vtkInternal
         rep->GetPolyData(contour.GetPointer());
 
         // Build polydata surface
+        double Z[4] = { 0.0, 0.0, 1.0, 0.0 };
+        double normal[4];
+        splinesNode->GetNthSplineOrientation(n)->MultiplyPoint(Z, normal);
+
         vtkSmartPointer<vtkPolyData> surface = vtkSlicerSplinesLogic::CreateModelFromContour(
           contour.GetPointer(),
-          splinesNode->GetNthSplineNormal(n),
+          vtkVector3d(normal[0], normal[1], normal[2]),
           splinesNode->GetNthSplineThickness(n));
         modelNode->SetAndObserveMesh(surface);
 

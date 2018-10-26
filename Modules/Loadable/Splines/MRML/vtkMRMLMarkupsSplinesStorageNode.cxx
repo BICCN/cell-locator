@@ -31,6 +31,7 @@
 #include <vtksys/SystemTools.hxx>
 #include "vtkVariantArray.h"
 #include "vtkDoubleArray.h"
+#include "vtkMatrix4x4.h"
 
 //------------------------------------------------------------------------------
 vtkMRMLNodeNewMacro(vtkMRMLMarkupsSplinesStorageNode);
@@ -59,20 +60,29 @@ int vtkMRMLMarkupsSplinesStorageNode::ReadNthMarkupFromTranslationMap(
 {
   int success =
     Superclass::ReadNthMarkupFromTranslationMap(n, key, markupsNode, markupsMap);
+
   vtkMRMLMarkupsSplinesNode* splinesNode =
     vtkMRMLMarkupsSplinesNode::SafeDownCast(markupsNode);
   if (!success || !splinesNode)
-    {
+  {
     return 0;
-    }
+  }
 
+  splinesNode->InitSpline(n);
   splinesNode->SetNthSplineClosed(n, markupsMap[key + "Closed"].ToInt());
   splinesNode->SetNthSplineThickness(n, markupsMap[key + "Thickness"].ToDouble());
-  vtkVector3d normal;
-  normal.SetX(markupsMap[key + "Normal/x"].ToDouble());
-  normal.SetY(markupsMap[key + "Normal/y"].ToDouble());
-  normal.SetZ(markupsMap[key + "Normal/z"].ToDouble());
-  splinesNode->SetNthSplineNormal(n, normal);
+
+  vtkNew<vtkMatrix4x4> matrix;
+  for (int i = 0; i < 4; ++i)
+  {
+    for (int j = 0; j < 4; ++j)
+    {
+      std::stringstream orientationKey;
+      orientationKey << key << "SplineOrientation/" << i * 4 + j;
+      matrix->SetElement(i, j, markupsMap[orientationKey.str()].ToDouble());
+    }
+  }
+  splinesNode->SetNthSplineOrientation(n, matrix);
 
   return 1;
 }
@@ -93,9 +103,16 @@ int vtkMRMLMarkupsSplinesStorageNode::WriteNthMarkupToTranslationMap(
 
   markupsMap[key + "Closed"] = splinesNode->GetNthSplineClosed(n) ? 1 : 0;
   markupsMap[key + "Thickness"] = splinesNode->GetNthSplineThickness(n);
-  vtkVector3d normal = splinesNode->GetNthSplineNormal(n);
-  markupsMap[key + "Normal/x"] = normal.GetX();
-  markupsMap[key + "Normal/y"] = normal.GetY();
-  markupsMap[key + "Normal/z"] = normal.GetZ();
+
+  vtkMatrix4x4* matrix = splinesNode->GetNthSplineOrientation(n);
+  for (int i = 0; i < 4; ++i)
+  {
+    for (int j = 0; j < 4; ++j)
+    {
+      std::stringstream orientationKey;
+      orientationKey << key << "SplineOrientation/" << i * 4 + j;
+      markupsMap[orientationKey.str()] = matrix->GetElement(i, j);
+    }
+  }
   return 1;
 }
