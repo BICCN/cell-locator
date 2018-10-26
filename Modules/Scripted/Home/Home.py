@@ -78,6 +78,21 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     # Load template
     loaded, averageTemplate = slicer.util.loadVolume(
       self.averageTemplateFilePath(), returnNode=True)
+    if not loaded:
+      logging.error('Average template [%s] does not exists' %self.averageTemplateFilePath())
+
+    # Set the min/max window level
+    range = averageTemplate.GetImageData().GetScalarRange()
+    averageTemplateDisplay = averageTemplate.GetDisplayNode()
+    averageTemplateDisplay.SetAutoWindowLevel(0)
+    # No option to set the window level to min/max through the node. Instead
+    # do it manually (see qMRMLWindowLevelWidget::setMinMaxRangeValue)
+    window = range[1] - range[0]
+    level = 0.5 * (range[0] + range[1])
+    averageTemplateDisplay.SetWindowLevel(window, level)
+
+    # Lock the window level
+    averageTemplateDisplay.SetWindowLevelLocked(True)
 
     # Load Allen color table
     colorLogic = slicer.modules.colors.logic()
