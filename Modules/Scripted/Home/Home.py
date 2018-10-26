@@ -126,6 +126,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     compositeNode = sliceWidget.mrmlSliceCompositeNode()
     compositeNode.SetBackgroundVolumeID(averageTemplate.GetID())
     compositeNode.SetLabelVolumeID(annotation.GetID())
+    compositeNode.SetLabelOpacity(0.4)
 
     # 3D view
     threeDWidget = self.LayoutManager.threeDWidget(0)
