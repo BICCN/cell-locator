@@ -9,6 +9,15 @@ import logging
 # Home
 #
 
+class SignalBlocker(object):
+  def __init__(self, widget):
+    self.widget = widget
+    self.wasBlocking = widget.blockSignals(True)
+  def __enter__(self):
+    return self.widget
+  def __exit__(self, type, value, traceback):
+    self.widget.blockSignals(self.wasBlocking)
+
 class Home(ScriptedLoadableModule):
   """
   """
@@ -203,12 +212,73 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
   def updateGUIFromMRML(self):
     self.updateGUIFromAnnotation()
+    self.updateGUIFromSliceNode()
 
   def updateGUIFromAnnotation(self):
     self.onMarkupsAnnotationStorageNodeModified()
 
     self.updateSaveButtonsState()
     self.updateInteractingButtonsState()
+
+  def updateGUIFromSliceNode(self):
+    sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
+
+    referenceOrientation = sliceNode.GetSliceOrientationPreset(self.ReferenceView)
+    referenceMatrix = vtk.vtkMatrix4x4()
+    for row in range(3):
+      for column in range(3):
+        referenceMatrix.SetElement(row, column, referenceOrientation.GetElement(row, column))
+
+    toWorld = vtk.vtkTransform()
+    toWorld.SetMatrix(referenceMatrix)
+    toWorld.Inverse()
+
+    # Careful here: Transform is PreMultiply
+    #  -> We want T(X) = M_to_world * M_slice_to_ras (X)
+    transform = vtk.vtkTransform()
+    transform.SetMatrix(sliceNode.GetSliceToRAS())
+    transform.Concatenate(toWorld)
+    transform.Update()
+
+    angles = [0., 0., 0.]
+    transform.GetOrientation(angles)
+
+    with SignalBlocker(self.get('RollSpinBox')):
+      self.get('RollSpinBox').value = angles[0]
+    with SignalBlocker(self.get('PitchSpinBox')):
+      self.get('PitchSpinBox').value = angles[1]
+    with SignalBlocker(self.get('YawSpinBox')):
+      self.get('YawSpinBox').value = angles[2]
+    self.onViewOrientationChanged()
+
+  def onViewOrientationChanged(self):
+    roll = self.get('RollSpinBox').value
+    yaw =  self.get('YawSpinBox').value
+    pitch =  self.get('PitchSpinBox').value
+
+    sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
+    referenceOrientation = sliceNode.GetSliceOrientationPreset(self.ReferenceView)
+    referenceMatrix = vtk.vtkMatrix4x4()
+    for row in range(3):
+      for column in range(3):
+        referenceMatrix.SetElement(row, column, referenceOrientation.GetElement(row, column))
+
+    toReference = vtk.vtkTransform()
+    toReference.SetMatrix(referenceMatrix)
+
+    # Careful here: Transform is PreMultiply
+    #  -> We want T(X) = M_to_reference * R_z*R_y*R_x (X)
+    transform = vtk.vtkTransform()
+    transform.RotateX(roll)
+    transform.RotateY(pitch)
+    transform.RotateZ(yaw)
+    transform.Concatenate(toReference)
+
+    newOrientation = transform.GetMatrix()
+    for i in range(3):
+      for j in range(3):
+        sliceNode.GetSliceToRAS().SetElement(i, j, newOrientation.GetElement(i, j))
+    sliceNode.UpdateMatrices()
 
   def onMarkupsAnnotationStorageNodeModified(self):
     if not self.MarkupsAnnotationNode:
@@ -254,12 +324,16 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sliceNode.UpdateMatrices()
 
   def onSliceNodeModified(self, caller=None, event=None):
-    if not self.MarkupsAnnotationNode:
-      return
-
     sliceNode = caller
     if not sliceNode:
       sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
+
+    # GUI update
+    self.updateGUIFromMRML()
+
+    # Markup Annotation update
+    if not self.MarkupsAnnotationNode:
+      return
 
     wasModifying = self.MarkupsAnnotationNode.StartModify()
 
@@ -444,6 +518,10 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get('AxialRadioButton').connect("toggled(bool)", lambda: self.onReferenceViewChanged('Axial'))
     self.get('CoronalRadioButton').connect("toggled(bool)", lambda: self.onReferenceViewChanged('Coronal'))
     self.get('SagittalRadioButton').connect("toggled(bool)", lambda: self.onReferenceViewChanged('Sagittal'))
+
+    self.get('RollSpinBox').connect("valueChanged(double)", self.onViewOrientationChanged)
+    self.get('YawSpinBox').connect("valueChanged(double)", self.onViewOrientationChanged)
+    self.get('PitchSpinBox').connect("valueChanged(double)", self.onViewOrientationChanged)
 
     self.get('ThicknessSliderWidget').connect("valueChanged(double)", self.onThicknessChanged)
 
