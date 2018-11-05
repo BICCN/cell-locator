@@ -37,6 +37,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.Widget = None
     self.InteractionState = 'scrolling'
     self.ModifyingInteractionState = False
+    self.ReferenceView = 'Coronal'
 
   def get(self, name):
     return slicer.util.findChildren(self.Widget, name)[0]
@@ -47,7 +48,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       "<layout type=\"horizontal\" split=\"false\" >"
       " <item>"
       "  <view class=\"vtkMRMLSliceNode\" singletontag=\"Slice\">"
-      "   <property name=\"orientation\" action=\"default\">Coronal</property>"
+      "   <property name=\"orientation\" action=\"default\">%s</property>"
       "   <property name=\"viewlabel\" action=\"default\">R</property>"
       "   <property name=\"viewcolor\" action=\"default\">#4A50C8</property>"
       "  </view>"
@@ -57,7 +58,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       "    <property name=\"viewlabel\" action=\"default\">1</property>"
       "  </view>"
       " </item>"
-      "</layout>")
+      "</layout>") %self.ReferenceView
     self.ThreeDWithReformatCustomLayoutId = 503
     layoutLogic.GetLayoutNode().AddLayoutDescription(self.ThreeDWithReformatCustomLayoutId, customLayout)
 
@@ -214,7 +215,16 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       return
     self.Widget.AnnotationPathLineEdit.currentPath = self.MarkupsAnnotationNode.GetStorageNode().GetFileName()
 
-  def onResetViewClicked(self, orientation):
+  def resetToReferenceView(self):
+    referenceView = self.ReferenceView
+    self.ReferenceView = ''
+    self.onReferenceViewChanged(referenceView)
+
+  def onReferenceViewChanged(self, orientation):
+    if orientation == self.ReferenceView:
+      return
+
+    self.ReferenceView = orientation
     sliceWidget = self.LayoutManager.sliceWidget("Slice")
     sliceNode = sliceWidget.mrmlSliceNode()
 
@@ -321,6 +331,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.Widget = slicer.util.loadUI(path)
     self.layout.addWidget(self.Widget)
 
+    # Update the reference default button
+    self.get('%sRadioButton' %self.ReferenceView).setChecked(True)
+
     # Disable undocking/docking of the module panel
     panelDockWidget = slicer.util.findChildren(name="PanelDockWidget")[0]
     panelDockWidget.setFeatures(qt.QDockWidget.NoDockWidgetFeatures)
@@ -426,9 +439,11 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get('SaveAsAnnotationButton').connect("clicked()", self.onSaveAsAnnotationButtonClicked)
     self.get('LoadAnnotationButton').connect("clicked()", self.onLoadAnnotationButtonClicked)
 
-    self.get('AxialPushButton').connect("clicked()", lambda: self.onResetViewClicked('Axial'))
-    self.get('CoronalPushButton').connect("clicked()", lambda: self.onResetViewClicked('Coronal'))
-    self.get('SagittalPushButton').connect("clicked()", lambda: self.onResetViewClicked('Sagittal'))
+    self.get('ResetToReferenceViewPushButton').connect("clicked()", self.resetToReferenceView)
+
+    self.get('AxialRadioButton').connect("toggled(bool)", lambda: self.onReferenceViewChanged('Axial'))
+    self.get('CoronalRadioButton').connect("toggled(bool)", lambda: self.onReferenceViewChanged('Coronal'))
+    self.get('SagittalRadioButton').connect("toggled(bool)", lambda: self.onReferenceViewChanged('Sagittal'))
 
     self.get('ThicknessSliderWidget').connect("valueChanged(double)", self.onThicknessChanged)
 
