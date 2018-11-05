@@ -9,6 +9,15 @@ import logging
 # Home
 #
 
+class SignalBlocker(object):
+  def __init__(self, widget):
+    self.widget = widget
+    self.wasBlocking = widget.blockSignals(True)
+  def __enter__(self):
+    return self.widget
+  def __exit__(self, type, value, traceback):
+    self.widget.blockSignals(self.wasBlocking)
+
 class Home(ScriptedLoadableModule):
   """
   """
@@ -37,6 +46,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.Widget = None
     self.InteractionState = 'scrolling'
     self.ModifyingInteractionState = False
+    self.ReferenceView = 'Coronal'
 
   def get(self, name):
     return slicer.util.findChildren(self.Widget, name)[0]
@@ -47,7 +57,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       "<layout type=\"horizontal\" split=\"false\" >"
       " <item>"
       "  <view class=\"vtkMRMLSliceNode\" singletontag=\"Slice\">"
-      "   <property name=\"orientation\" action=\"default\">Coronal</property>"
+      "   <property name=\"orientation\" action=\"default\">%s</property>"
       "   <property name=\"viewlabel\" action=\"default\">R</property>"
       "   <property name=\"viewcolor\" action=\"default\">#4A50C8</property>"
       "  </view>"
@@ -57,7 +67,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       "    <property name=\"viewlabel\" action=\"default\">1</property>"
       "  </view>"
       " </item>"
-      "</layout>")
+      "</layout>") %self.ReferenceView
     self.ThreeDWithReformatCustomLayoutId = 503
     layoutLogic.GetLayoutNode().AddLayoutDescription(self.ThreeDWithReformatCustomLayoutId, customLayout)
 
@@ -202,6 +212,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
   def updateGUIFromMRML(self):
     self.updateGUIFromAnnotation()
+    self.updateGUIFromSliceNode()
 
   def updateGUIFromAnnotation(self):
     self.onMarkupsAnnotationStorageNodeModified()
@@ -209,12 +220,81 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.updateSaveButtonsState()
     self.updateInteractingButtonsState()
 
+  def updateGUIFromSliceNode(self):
+    sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
+
+    referenceOrientation = sliceNode.GetSliceOrientationPreset(self.ReferenceView)
+    referenceMatrix = vtk.vtkMatrix4x4()
+    for row in range(3):
+      for column in range(3):
+        referenceMatrix.SetElement(row, column, referenceOrientation.GetElement(row, column))
+
+    toWorld = vtk.vtkTransform()
+    toWorld.SetMatrix(referenceMatrix)
+    toWorld.Inverse()
+
+    # Careful here: Transform is PreMultiply
+    #  -> We want T(X) = M_to_world * M_slice_to_ras (X)
+    transform = vtk.vtkTransform()
+    transform.SetMatrix(sliceNode.GetSliceToRAS())
+    transform.Concatenate(toWorld)
+    transform.Update()
+
+    angles = [0., 0., 0.]
+    transform.GetOrientation(angles)
+
+    with SignalBlocker(self.get('RollSpinBox')):
+      self.get('RollSpinBox').value = angles[0]
+    with SignalBlocker(self.get('PitchSpinBox')):
+      self.get('PitchSpinBox').value = angles[1]
+    with SignalBlocker(self.get('YawSpinBox')):
+      self.get('YawSpinBox').value = angles[2]
+    self.onViewOrientationChanged()
+
+  def onViewOrientationChanged(self):
+    roll = self.get('RollSpinBox').value
+    yaw =  self.get('YawSpinBox').value
+    pitch =  self.get('PitchSpinBox').value
+
+    sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
+    referenceOrientation = sliceNode.GetSliceOrientationPreset(self.ReferenceView)
+    referenceMatrix = vtk.vtkMatrix4x4()
+    for row in range(3):
+      for column in range(3):
+        referenceMatrix.SetElement(row, column, referenceOrientation.GetElement(row, column))
+
+    toReference = vtk.vtkTransform()
+    toReference.SetMatrix(referenceMatrix)
+
+    # Careful here: Transform is PreMultiply
+    #  -> We want T(X) = M_to_reference * R_z*R_y*R_x (X)
+    transform = vtk.vtkTransform()
+    transform.RotateX(roll)
+    transform.RotateY(pitch)
+    transform.RotateZ(yaw)
+    transform.Concatenate(toReference)
+
+    newOrientation = transform.GetMatrix()
+    for i in range(3):
+      for j in range(3):
+        sliceNode.GetSliceToRAS().SetElement(i, j, newOrientation.GetElement(i, j))
+    sliceNode.UpdateMatrices()
+
   def onMarkupsAnnotationStorageNodeModified(self):
     if not self.MarkupsAnnotationNode:
       return
     self.Widget.AnnotationPathLineEdit.currentPath = self.MarkupsAnnotationNode.GetStorageNode().GetFileName()
 
-  def onResetViewClicked(self, orientation):
+  def resetToReferenceView(self):
+    referenceView = self.ReferenceView
+    self.ReferenceView = ''
+    self.onReferenceViewChanged(referenceView)
+
+  def onReferenceViewChanged(self, orientation):
+    if orientation == self.ReferenceView:
+      return
+
+    self.ReferenceView = orientation
     sliceWidget = self.LayoutManager.sliceWidget("Slice")
     sliceNode = sliceWidget.mrmlSliceNode()
 
@@ -244,12 +324,16 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sliceNode.UpdateMatrices()
 
   def onSliceNodeModified(self, caller=None, event=None):
-    if not self.MarkupsAnnotationNode:
-      return
-
     sliceNode = caller
     if not sliceNode:
       sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
+
+    # GUI update
+    self.updateGUIFromMRML()
+
+    # Markup Annotation update
+    if not self.MarkupsAnnotationNode:
+      return
 
     wasModifying = self.MarkupsAnnotationNode.StartModify()
 
@@ -320,6 +404,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self.Widget = slicer.util.loadUI(path)
     self.layout.addWidget(self.Widget)
+
+    # Update the reference default button
+    self.get('%sRadioButton' %self.ReferenceView).setChecked(True)
 
     # Disable undocking/docking of the module panel
     panelDockWidget = slicer.util.findChildren(name="PanelDockWidget")[0]
@@ -426,9 +513,15 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get('SaveAsAnnotationButton').connect("clicked()", self.onSaveAsAnnotationButtonClicked)
     self.get('LoadAnnotationButton').connect("clicked()", self.onLoadAnnotationButtonClicked)
 
-    self.get('AxialPushButton').connect("clicked()", lambda: self.onResetViewClicked('Axial'))
-    self.get('CoronalPushButton').connect("clicked()", lambda: self.onResetViewClicked('Coronal'))
-    self.get('SagittalPushButton').connect("clicked()", lambda: self.onResetViewClicked('Sagittal'))
+    self.get('ResetToReferenceViewPushButton').connect("clicked()", self.resetToReferenceView)
+
+    self.get('AxialRadioButton').connect("toggled(bool)", lambda: self.onReferenceViewChanged('Axial'))
+    self.get('CoronalRadioButton').connect("toggled(bool)", lambda: self.onReferenceViewChanged('Coronal'))
+    self.get('SagittalRadioButton').connect("toggled(bool)", lambda: self.onReferenceViewChanged('Sagittal'))
+
+    self.get('RollSpinBox').connect("valueChanged(double)", self.onViewOrientationChanged)
+    self.get('YawSpinBox').connect("valueChanged(double)", self.onViewOrientationChanged)
+    self.get('PitchSpinBox').connect("valueChanged(double)", self.onViewOrientationChanged)
 
     self.get('ThicknessSliderWidget').connect("valueChanged(double)", self.onThicknessChanged)
 
