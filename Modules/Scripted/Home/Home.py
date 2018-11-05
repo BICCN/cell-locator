@@ -223,6 +223,29 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def updateGUIFromSliceNode(self):
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
 
+    # Update step size
+    # Code to find the step size range taken from qMRMLSliceControllerWidgetPrivate::onSliceLogicModified
+    sliceLogic = slicer.app.applicationLogic().GetSliceLogic(sliceNode)
+    bounds = [0, -1, 0, -1, 0, -1]
+    sliceLogic.GetLowestVolumeSliceBounds(bounds)
+    sliceOffset = sliceLogic.GetSliceOffset()
+    spacingRange = bounds[5] - bounds[4]
+    if spacingRange > 0:
+      self.get('StepSizeSliderWidget').minimum = 0
+      self.get('StepSizeSliderWidget').maximum = spacingRange
+    else:
+      self.get('StepSizeSliderWidget').minimum = 0
+      self.get('StepSizeSliderWidget').maximum = 100
+
+    if sliceNode.GetSliceSpacingMode != sliceNode.PrescribedSliceSpacingMode:
+      initialSpacing = sliceLogic.GetLowestVolumeSliceSpacing()
+      sliceNode.SetPrescribedSliceSpacing(initialSpacing)
+      sliceNode.SetSliceSpacingModeToPrescribed()
+
+    sliceSpacing = sliceNode.GetPrescribedSliceSpacing()
+    self.get('StepSizeSliderWidget').value = sliceSpacing[2]
+
+    # Update Roll/Pitch/Yaw
     referenceOrientation = sliceNode.GetSliceOrientationPreset(self.ReferenceView)
     referenceMatrix = vtk.vtkMatrix4x4()
     for row in range(3):
@@ -279,6 +302,11 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       for j in range(3):
         sliceNode.GetSliceToRAS().SetElement(i, j, newOrientation.GetElement(i, j))
     sliceNode.UpdateMatrices()
+
+  def onStepSizeChanged(self, spacing):
+    sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
+    sliceSpacing = sliceNode.GetPrescribedSliceSpacing()
+    sliceNode.SetPrescribedSliceSpacing(sliceSpacing[0], sliceSpacing[1], spacing)
 
   def onMarkupsAnnotationStorageNodeModified(self):
     if not self.MarkupsAnnotationNode:
@@ -387,6 +415,10 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     interactionNode = slicer.app.applicationLogic().GetInteractionNode()
     self.addObserver(interactionNode, vtk.vtkCommand.ModifiedEvent, self.onInteractionNodeModified)
+
+    self.get('StepSizeSliderWidget').setMRMLScene(slicer.mrmlScene)
+
+    self.updateGUIFromMRML()
 
   def setup(self):
     ScriptedLoadableModuleWidget.setup(self)
@@ -505,7 +537,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self.ModifyingInteractionState = False
 
-
   def setupConnections(self):
     slicer.app.connect("startupCompleted()", self.onStartupCompleted)
     self.get('NewAnnotationButton').connect("clicked()", self.onNewAnnotationButtonClicked)
@@ -522,6 +553,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get('RollSpinBox').connect("valueChanged(double)", self.onViewOrientationChanged)
     self.get('YawSpinBox').connect("valueChanged(double)", self.onViewOrientationChanged)
     self.get('PitchSpinBox').connect("valueChanged(double)", self.onViewOrientationChanged)
+
+    self.get('StepSizeSliderWidget').connect("valueChanged(double)", self.onStepSizeChanged)
 
     self.get('ThicknessSliderWidget').connect("valueChanged(double)", self.onThicknessChanged)
 
