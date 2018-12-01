@@ -50,6 +50,7 @@ public:
 protected:
   QScopedPointer<qSlicerSplinesReaderPrivate> d_ptr;
 
+  using qSlicerMarkupsReader::load;
   virtual char* load(const QString& filename, const QString& name);
 
 private:
