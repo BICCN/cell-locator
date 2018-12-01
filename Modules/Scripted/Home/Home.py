@@ -309,7 +309,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sliceNode.SetPrescribedSliceSpacing(sliceSpacing[0], sliceSpacing[1], spacing)
 
   def onMarkupsAnnotationStorageNodeModified(self):
-    if not self.MarkupsAnnotationNode:
+    if not self.MarkupsAnnotationNode or not self.MarkupsAnnotationNode.GetStorageNode():
       return
     self.Widget.AnnotationPathLineEdit.currentPath = self.MarkupsAnnotationNode.GetStorageNode().GetFileName()
 
