@@ -56,7 +56,7 @@ endfunction()
 #-----------------------------------------------------------------------------
 # Download and package the data
 
-set(CellLocator_DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/${Slicer_QTSCRIPTEDMODULES_LIB_DIR}/CellLocatorData/)
+set(CellLocator_DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/${Slicer_QTSCRIPTEDMODULES_LIB_DIR}/CellLocatorData)
 
 set(average_template_50_file "${CellLocator_DOWNLOAD_DIR}/average_template_50.nrrd")
 CellLocator_download_datafile(${average_template_50_file}
@@ -71,21 +71,43 @@ CellLocator_download_datafile(${annotation_50_file}
   "84e7cecea1b03af16e923c3639602b8324929f833425ba03582bf56f962ea0d4"
   )
 
+#-----------------------------------------------------------------------------
+# Download Ontology
+
+set(script "${CMAKE_BINARY_DIR}/ontology_download.cmake")
+set(ontology_download_url "http://api.brain-map.org/api/v2/data/Structure/query.json?criteria=%5Bgraph_id$eq1%5D&num_rows=2000")
 set(ontology_original_file "${CellLocator_DOWNLOAD_DIR}/ontology-original.json")
-CellLocator_download_datafile(${ontology_original_file}
-  "http://api.brain-map.org/api/v2/data/Structure/query.json?criteria=%5Bgraph_id$eq1%5D&num_rows=2000"
-  "7ac9019a06e0621135bb7344be7d904429cc687231d5a3342440bcfb3f7f5b0a"
+
+file(WRITE ${script} "
+set(url \"${ontology_download_url}\")
+set(dest_file \"${ontology_original_file}\")
+get_filename_component(filename \${dest_file} NAME)
+message(STATUS \"Downloading \${filename}\")
+file(DOWNLOAD \${url} \${dest_file})
+message(STATUS \"Downloading \${filename} - done\")
+")
+
+add_custom_command(
+  OUTPUT
+    ${ontology_original_file}
+  COMMAND ${CMAKE_COMMAND} -P ${script}
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+  COMMENT "Downloading ontology"
   )
 
 #-----------------------------------------------------------------------------
 # Format ontology file
-set(_msg "Prettifying ontology file")
-message(STATUS "${_msg}")
 set(ontology_file "${CellLocator_DOWNLOAD_DIR}/ontology-formatted.json")
-execute_process(
+
+add_custom_command(
+  OUTPUT
+    ${ontology_file}
+  DEPENDS
+    ${ontology_original_file}
   COMMAND ${PYTHON_EXECUTABLE} -m json.tool ${ontology_original_file} ${ontology_file}
+  WORKING_DIRECTORY ${CellLocator_BINARY_DIR}
+  COMMENT "Prettifying ontology file"
   )
-message(STATUS "${_msg} - done")
 
 #-----------------------------------------------------------------------------
 # Generate contiguous annotation and color table
