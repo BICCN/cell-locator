@@ -18,8 +18,8 @@ include(FetchContent)
 if(NOT DEFINED slicersources_SOURCE_DIR)
   # Download Slicer sources and set variables slicersources_SOURCE_DIR and slicersources_BINARY_DIR
   FetchContent_Populate(slicersources
-    GIT_REPOSITORY git://github.com/vovythevov/Slicer
-    GIT_TAG        610aa6a843728b7e7d8d011ca76547c27990bfa2 # 2018-08-30
+    GIT_REPOSITORY git://github.com/KitwareMedical/Slicer
+    GIT_TAG        610aa6a843728b7e7d8d011ca76547c27990bfa2 # cell-locator-v4.9.0-2018-08-30-99d12d5bf
     GIT_PROGRESS   1
     )
 else()
