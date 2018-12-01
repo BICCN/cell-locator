@@ -156,6 +156,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
        self.onSaveAnnotationButtonClicked()
 
   def resetViews(self):
+    self.resetToReferenceView()
     # Reset 2D
     sliceWidget = self.LayoutManager.sliceWidget("Slice")
     sliceWidget.sliceController().fitSliceToBackground()
@@ -222,6 +223,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self.updateSaveButtonsState()
     self.updateInteractingButtonsState()
+    self.updateReferenceViewButtonsState()
 
   def updateGUIFromSliceNode(self):
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
@@ -531,6 +533,13 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def updateInteractingButtonsState(self):
     self.get('PlacingRadioButton').setEnabled(self.MarkupsAnnotationNode != None)
     self.get('InteractingRadioButton').setEnabled(self.MarkupsAnnotationNode != None)
+
+  def updateReferenceViewButtonsState(self):
+    hasMarkups = self.MarkupsAnnotationNode is not None and self.MarkupsAnnotationNode.GetNumberOfMarkups() > 0
+    self.get('ResetToReferenceViewPushButton').setDisabled(hasMarkups)
+    self.get('AxialRadioButton').setDisabled(hasMarkups)
+    self.get('SagittalRadioButton').setDisabled(hasMarkups)
+    self.get('CoronalRadioButton').setDisabled(hasMarkups)
 
   def get(self, name):
     return slicer.util.findChildren(self.Widget, name)[0]
