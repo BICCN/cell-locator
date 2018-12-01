@@ -142,8 +142,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     threeDWidget = self.LayoutManager.threeDWidget(0)
     threeDWidget.mrmlViewNode().SetBoxVisible(False)
 
-    self.resetViews()
-
     return averageTemplate, annotation
 
   def onStartupCompleted(self, *unused):
@@ -158,9 +156,12 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
        self.onSaveAnnotationButtonClicked()
 
   def resetViews(self):
+    # Reset 2D
+    sliceWidget = self.LayoutManager.sliceWidget("Slice")
+    sliceWidget.sliceController().fitSliceToBackground()
+    # Reset 3D
     threeDWidget = self.LayoutManager.threeDWidget(0)
     threeDWidget.threeDView().resetFocalPoint()
-    # TODO Reset 3D and 2D view
 
   def onNewAnnotationButtonClicked(self):
     self.saveAnnotationIfModified()
@@ -459,6 +460,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sliceNode.RemoveSliceOrientationPreset("Coronal")
     sliceNode.AddSliceOrientationPreset("Coronal", orientationMatrix)
     sliceNode.DisableModifiedEventOff()
+
+    self.resetViews()
 
     self.updateGUIFromMRML()
 
