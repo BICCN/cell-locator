@@ -117,12 +117,15 @@ set(script ${CellLocator_SOURCE_DIR}/Scripts/GenerateContiguousAnnotation.py)
 set(annotation_50_contiguous_file "${CellLocator_DOWNLOAD_DIR}/annotation_50_contiguous.nrrd")
 set(color_table "${CellLocator_DOWNLOAD_DIR}/annotation_color_table.txt")
 
+get_property(module_targets GLOBAL PROPERTY SLICER_MODULE_TARGETS)
+
 add_custom_command(
   DEPENDS
     ${annotation_50_file}
     ${ontology_file}
     ${script}
     CellLocatorConfigureLauncher
+    ${module_targets}
   OUTPUT
     ${annotation_50_contiguous_file}
     ${color_table}
@@ -133,6 +136,8 @@ add_custom_command(
     --annotation-output ${annotation_50_contiguous_file}
     --colortable-output ${color_table}
     --exit-after-startup
+    --modules-to-ignore Home
+    --no-main-window
     --no-splash
   WORKING_DIRECTORY ${CellLocator_DOWNLOAD_DIR}
   COMMENT "Pre-processing structure ontology and annotation volume"
