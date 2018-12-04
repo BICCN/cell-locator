@@ -495,6 +495,14 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     slicer.util.findChildren(name="CentralWidget")[0].visible = False
     self.LayoutManager.setViewport(self.Widget.LayoutWidget)
 
+    # Prevent accidental placement of polyline point by associating the 3D view
+    # with its own interaction node.
+    interactionNode = slicer.vtkMRMLInteractionNode()
+    interactionNode.SetSingletonOff()
+    slicer.mrmlScene.AddNode(interactionNode)
+    self.LayoutManager.threeDWidget(0).threeDView().mrmlViewNode().SetInteractionNode(interactionNode)
+    self.InteractionNode = interactionNode
+
     self.setupConnections()
 
   def removeAnnotationObservations(self):
