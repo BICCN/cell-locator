@@ -135,6 +135,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sliceController.setSliceVisible(True)
     sliceController.showReformatWidget(True)
     sliceWidget.mrmlSliceNode().SetWidgetOutlineVisible(False)
+    sliceWidget.sliceView().interactorStyle().SetActionEnabled(slicer.vtkSliceViewInteractorStyle.Zoom, False)
 
     compositeNode = sliceWidget.mrmlSliceCompositeNode()
     compositeNode.SetBackgroundVolumeID(averageTemplate.GetID())
