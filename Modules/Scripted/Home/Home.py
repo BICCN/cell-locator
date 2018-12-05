@@ -47,9 +47,12 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.InteractionState = 'scrolling'
     self.ModifyingInteractionState = False
     self.ReferenceView = 'Coronal'
+    self._widget_lookup_cache = {}
 
   def get(self, name):
-    return slicer.util.findChildren(self.Widget, name)[0]
+    if name not in self._widget_lookup_cache:
+      self._widget_lookup_cache[name] = slicer.util.findChildren(self.Widget, name)[0]
+    return self._widget_lookup_cache[name]
 
   def registerCustomLayouts(self):
     layoutLogic = self.LayoutManager.layoutLogic()
@@ -548,9 +551,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get('AxialRadioButton').setDisabled(hasMarkups)
     self.get('SagittalRadioButton').setDisabled(hasMarkups)
     self.get('CoronalRadioButton').setDisabled(hasMarkups)
-
-  def get(self, name):
-    return slicer.util.findChildren(self.Widget, name)[0]
 
   def onInteractionNodeModified(self, caller=None, event=None):
     interactionNode = caller
