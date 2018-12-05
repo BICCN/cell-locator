@@ -274,18 +274,17 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     angles = [0., 0., 0.]
     transform.GetOrientation(angles)
 
-    with SignalBlocker(self.get('RollSpinBox')):
-      self.get('RollSpinBox').value = angles[0]
-    with SignalBlocker(self.get('PitchSpinBox')):
-      self.get('PitchSpinBox').value = angles[1]
-    with SignalBlocker(self.get('YawSpinBox')):
-      self.get('YawSpinBox').value = angles[2]
-    self.onViewOrientationChanged()
+    with SignalBlocker(self.get('RollSliderWidget')):
+      self.get('RollSliderWidget').value = angles[0]
+    with SignalBlocker(self.get('PitchSliderWidget')):
+      self.get('PitchSliderWidget').value = angles[1]
+    with SignalBlocker(self.get('YawSliderWidget')):
+      self.get('YawSliderWidget').value = angles[2]
 
   def onViewOrientationChanged(self):
-    roll = self.get('RollSpinBox').value
-    yaw =  self.get('YawSpinBox').value
-    pitch =  self.get('PitchSpinBox').value
+    roll = self.get('RollSliderWidget').value
+    yaw =  self.get('YawSliderWidget').value
+    pitch =  self.get('PitchSliderWidget').value
 
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
     referenceOrientation = sliceNode.GetSliceOrientationPreset(self.ReferenceView)
@@ -310,6 +309,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       for j in range(3):
         sliceNode.GetSliceToRAS().SetElement(i, j, newOrientation.GetElement(i, j))
     sliceNode.UpdateMatrices()
+
+    self.get('AdjustViewPushButton').enabled = False
 
   def onStepSizeChanged(self, spacing):
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
@@ -466,6 +467,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sliceNode.AddSliceOrientationPreset("Coronal", orientationMatrix)
     sliceNode.DisableModifiedEventOff()
 
+    self.setInteractionState('scrolling')
+
     self.resetViews()
 
     self.updateGUIFromMRML()
@@ -612,9 +615,10 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get('CoronalRadioButton').connect("toggled(bool)", lambda: self.onReferenceViewChanged('Coronal'))
     self.get('SagittalRadioButton').connect("toggled(bool)", lambda: self.onReferenceViewChanged('Sagittal'))
 
-    self.get('RollSpinBox').connect("valueChanged(double)", self.onViewOrientationChanged)
-    self.get('YawSpinBox').connect("valueChanged(double)", self.onViewOrientationChanged)
-    self.get('PitchSpinBox').connect("valueChanged(double)", self.onViewOrientationChanged)
+    for axe in ['Roll', 'Yaw', 'Pitch']:
+      self.get('%sSliderWidget' % axe).connect("valueChanged(double)", lambda: self.get('AdjustViewPushButton').setEnabled(True))
+
+    self.get('AdjustViewPushButton').connect("clicked()", self.onViewOrientationChanged)
 
     self.get('StepSizeSliderWidget').connect("valueChanged(double)", self.onStepSizeChanged)
 
