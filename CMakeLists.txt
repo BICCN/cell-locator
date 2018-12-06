@@ -1,13 +1,7 @@
 cmake_minimum_required(VERSION 3.11)
 
 # Enable C++11
-if(NOT DEFINED CMAKE_CXX_STANDARD)
-  if(DEFINED Qt5_DIR)
-    set(CMAKE_CXX_STANDARD 11)
-  else()
-    set(CMAKE_CXX_STANDARD 98)
-  endif()
-endif()
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
