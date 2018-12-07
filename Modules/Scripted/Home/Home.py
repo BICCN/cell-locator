@@ -460,6 +460,16 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     annotation.SetAndObserveTransformNodeID(ras2pirTransform.GetID())
 
     # Update Coronal preset so that +x is +P - See https://github.com/BICCN/cell-locator/issues/48#issuecomment-443423073
+    # Original matrix:
+    #  -1  0  0
+    #   0  0  1
+    #   0  1  0
+    #
+    # Updated matrix:
+    #  -1  0  0
+    #   0  0  1
+    #   0 -1  0
+    #
     sliceNode.DisableModifiedEventOn()
     orientationMatrix = vtk.vtkMatrix3x3()
     slicer.vtkMRMLSliceNode.InitializeCoronalMatrix(orientationMatrix)
