@@ -29,7 +29,6 @@ class vtkSlicerSplinesLogic;
 class vtkSlicerMarkupsLogic;
 
 //----------------------------------------------------------------------------
-/// \ingroup Slicer_QtModules_Splines
 class qSlicerSplinesReader : public qSlicerMarkupsReader
 {
   Q_OBJECT

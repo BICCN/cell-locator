@@ -35,8 +35,6 @@ class qSlicerSplinesReaderPrivate
 };
 
 //-----------------------------------------------------------------------------
-/// \ingroup Slicer_QtModules_Annotations
-//-----------------------------------------------------------------------------
 qSlicerSplinesReader::qSlicerSplinesReader(QObject* _parent)
   : Superclass(_parent)
   , d_ptr(new qSlicerSplinesReaderPrivate)

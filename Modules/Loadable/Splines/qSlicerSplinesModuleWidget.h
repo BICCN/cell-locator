@@ -30,7 +30,6 @@ and was partially funded by Allen Institute
 class qSlicerSplinesModuleWidgetPrivate;
 class vtkMRMLNode;
 
-/// \ingroup Slicer_QtModules_ExtensionTemplate
 class Q_SLICER_QTMODULES_SPLINES_EXPORT qSlicerSplinesModuleWidget :
   public qSlicerAbstractModuleWidget
 {
