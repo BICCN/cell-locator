@@ -2,8 +2,18 @@
 set(MODULE_NAME Home)
 
 #-----------------------------------------------------------------------------
+set(annotation_resolution 25) # Possible values are 25 or 50
+configure_file(
+  ${MODULE_NAME}Lib/CellLocatorConfig.py.in
+  ${CMAKE_CURRENT_BINARY_DIR}/${MODULE_NAME}Lib/CellLocatorConfig.py
+  @ONLY
+  )
+
+#-----------------------------------------------------------------------------
 set(MODULE_PYTHON_SCRIPTS
   ${MODULE_NAME}.py
+  ${MODULE_NAME}Lib/__init__.py
+  ${CMAKE_CURRENT_BINARY_DIR}/${MODULE_NAME}Lib/CellLocatorConfig.py
   )
 
 set(MODULE_PYTHON_RESOURCES
@@ -58,18 +68,30 @@ endfunction()
 
 set(CellLocator_DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/${Slicer_QTSCRIPTEDMODULES_LIB_DIR}/CellLocatorData)
 
-set(average_template_50_file "${CellLocator_DOWNLOAD_DIR}/average_template_50.nrrd")
-CellLocator_download_datafile(${average_template_50_file}
-  "http://download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/average_template/average_template_50.nrrd"
-  "6114c341d526f9782ca93b314b3244bb0c4c6cea17045f432d4cda63339915aa"
-  )
-CellLocator_install_datafiles(${average_template_50_file})
+set(average_template_file "${CellLocator_DOWNLOAD_DIR}/average_template_${annotation_resolution}.nrrd")
+set(annotation_file "${CellLocator_DOWNLOAD_DIR}/annotation_${annotation_resolution}.nrrd")
 
-set(annotation_50_file "${CellLocator_DOWNLOAD_DIR}/annotation_50.nrrd")
-CellLocator_download_datafile(${annotation_50_file}
-  "http://download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/annotation/ccf_2017/annotation_50.nrrd"
-  "84e7cecea1b03af16e923c3639602b8324929f833425ba03582bf56f962ea0d4"
-  )
+if(annotation_resolution STREQUAL "50")
+  CellLocator_download_datafile(${average_template_file}
+    "http://download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/average_template/average_template_50.nrrd"
+    "6114c341d526f9782ca93b314b3244bb0c4c6cea17045f432d4cda63339915aa"
+    )
+  CellLocator_download_datafile(${annotation_file}
+    "http://download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/annotation/ccf_2017/annotation_50.nrrd"
+    "84e7cecea1b03af16e923c3639602b8324929f833425ba03582bf56f962ea0d4"
+    )
+elseif(annotation_resolution STREQUAL "25")
+  CellLocator_download_datafile(${average_template_file}
+    "http://download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/average_template/average_template_25.nrrd"
+    "e4a2b483e842b4c8c1b5452d940ea59e14bc1ebaa38fe6a9c3bacac6db2a8f4b"
+    )
+  CellLocator_download_datafile(${annotation_file}
+    "http://download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/annotation/ccf_2017/annotation_25.nrrd"
+    "c620cbcc562183e4dcd40250d440130501781f74b41de35b1c1bdabace290c42"
+    )
+else()
+  message(FATAL_ERROR "Unkown annotation resolution: ${annotation_resolution}")
+endif()
 
 #-----------------------------------------------------------------------------
 # Download Ontology
@@ -114,26 +136,26 @@ add_custom_command(
 set(script ${CellLocator_SOURCE_DIR}/Scripts/GenerateContiguousAnnotation.py)
 
 # Outputs: These filenames are hardcoded in Home.py
-set(annotation_50_contiguous_file "${CellLocator_DOWNLOAD_DIR}/annotation_50_contiguous.nrrd")
+set(annotation_contiguous_file "${CellLocator_DOWNLOAD_DIR}/annotation_${annotation_resolution}_contiguous.nrrd")
 set(color_table "${CellLocator_DOWNLOAD_DIR}/annotation_color_table.txt")
 
 get_property(module_targets GLOBAL PROPERTY SLICER_MODULE_TARGETS)
 
 add_custom_command(
   DEPENDS
-    ${annotation_50_file}
+    ${annotation_file}
     ${ontology_file}
     ${script}
     CellLocatorConfigureLauncher
     ${module_targets}
   OUTPUT
-    ${annotation_50_contiguous_file}
+    ${annotation_contiguous_file}
     ${color_table}
   COMMAND ${Slicer_LAUNCH_COMMAND} $<TARGET_FILE:CellLocatorApp>
     --python-script ${script}
-    --annotation-input ${annotation_50_file}
+    --annotation-input ${annotation_file}
     --ontology-input ${ontology_file}
-    --annotation-output ${annotation_50_contiguous_file}
+    --annotation-output ${annotation_contiguous_file}
     --colortable-output ${color_table}
     --exit-after-startup
     --modules-to-ignore Home
@@ -145,12 +167,13 @@ add_custom_command(
 
 add_custom_target(CellLocatorGenerateContiguousAnnotation ALL
   DEPENDS
-    ${annotation_50_contiguous_file}
+    ${annotation_contiguous_file}
     ${color_table}
   )
 
 CellLocator_install_datafiles(
-  ${annotation_50_contiguous_file}
+  ${average_template_file}
+  ${annotation_contiguous_file}
   ${color_table}
   )
 

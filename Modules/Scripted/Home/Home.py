@@ -4,6 +4,7 @@ import vtk, qt, ctk, slicer
 from slicer.util import VTKObservationMixin
 from slicer.ScriptedLoadableModule import *
 import logging
+from HomeLib import CellLocatorConfig as Config
 
 #
 # Home
@@ -77,11 +78,11 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def dataPath(self):
     return os.path.join(os.path.dirname(slicer.util.modulePath('Home')), 'CellLocatorData')
 
-  def averageTemplateFilePath(self, resolution=50):
-    return os.path.join(self.dataPath(), 'average_template_%s.nrrd' % resolution)
+  def averageTemplateFilePath(self):
+    return os.path.join(self.dataPath(), 'average_template_%s.nrrd' % Config.ANNOTATION_RESOLUTION)
 
-  def annotationFilePath(self, resolution=50):
-    return os.path.join(self.dataPath(), 'annotation_%s_contiguous.nrrd' % resolution)
+  def annotationFilePath(self):
+    return os.path.join(self.dataPath(), 'annotation_%s_contiguous.nrrd' % Config.ANNOTATION_RESOLUTION)
 
   def colorTableFilePath(self):
     return os.path.join(self.dataPath(), 'annotation_color_table.txt')
