@@ -191,6 +191,12 @@ CellLocator_install_datafiles(
 #-----------------------------------------------------------------------------
 # Prepare layer ontology file
 
+# File generated doing:
+#
+#  pip install allensdk
+#  python /path/to/Scripts/GenerateLayerOntology.py --output /path/to/layer-ontology-formatted.json
+#
+
 set(layer_ontology_file "${CellLocator_DOWNLOAD_DIR}/layer-ontology-formatted.json")
 
 configure_file(
