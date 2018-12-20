@@ -38,6 +38,15 @@ for layer in layers:
 
     all_structs += structs
 
-ju.write("layer_structures.json", all_structs)
+# Generate structure similar to the one returned by the http://api.brain-map.org/api/v2/data/Structure/query.json
+content = {
+  "msg": all_structs,
+  "num_rows": len(all_structs),
+  "start_row": 0,
+  "success": True,
+  "total_rows": len(all_structs)
+}
+
+ju.write("layer_structures.json", content)
 
 
