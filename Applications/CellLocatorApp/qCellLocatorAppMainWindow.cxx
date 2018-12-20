@@ -101,7 +101,7 @@ void qCellLocatorAppMainWindowPrivate::setupUi(QMainWindow * mainWindow)
   // Hide the modules panel
   //this->PanelDockWidget->setVisible(false);
   //this->DataProbeCollapsibleWidget->setCollapsed(true);
-  //this->DataProbeCollapsibleWidget->setVisible(false);
+  this->DataProbeCollapsibleWidget->setVisible(false);
   this->StatusBar->setVisible(false);
 }
 

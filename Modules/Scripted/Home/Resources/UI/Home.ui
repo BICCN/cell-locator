@@ -6,14 +6,17 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1059</width>
-    <height>613</height>
+    <width>1176</width>
+    <height>622</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,0">
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -27,129 +30,164 @@
     <number>0</number>
    </property>
    <item>
-    <layout class="QGridLayout" name="gridLayout" rowstretch="0,1,0,0">
-     <item row="3" column="0">
-      <layout class="QFormLayout" name="formLayout">
-       <item row="0" column="0">
-        <widget class="QLabel" name="SampleIDLabel">
-         <property name="text">
-          <string>Sample ID</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="SampleIDLineEdit"/>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="UserIDLabel">
-         <property name="text">
-          <string>User ID:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLineEdit" name="UserIDLineEdit"/>
-       </item>
-      </layout>
-     </item>
-     <item row="0" column="0" rowspan="3">
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <item>
-          <widget class="QPushButton" name="NewAnnotationButton">
-           <property name="text">
-            <string>New</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="SaveAnnotationButton">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="text">
-            <string>Save</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="SaveAsAnnotationButton">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="text">
-            <string>Save As</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="LoadAnnotationButton">
-           <property name="text">
-            <string>Load</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <widget class="ctkPathLineEdit" name="AnnotationPathLineEdit">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="showBrowseButton">
-          <bool>false</bool>
-         </property>
-         <property name="showHistoryButton">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item row="2" column="1" rowspan="2">
-      <widget class="QGroupBox" name="groupBox">
-       <property name="title">
-        <string>Annotations Properties</string>
+    <layout class="QHBoxLayout" name="horizontalLayout_6">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <property name="spacing">
+        <number>6</number>
        </property>
-       <layout class="QFormLayout" name="formLayout_2">
-        <item row="0" column="0">
-         <widget class="QLabel" name="ThicknessLabel">
-          <property name="text">
-           <string>Thickness</string>
+       <property name="leftMargin">
+        <number>9</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="AllenInstituteLogo">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="pixmap">
+          <pixmap resource="../../HomeLib/Home.qrc">:/Icons/allen_institute_brain_science_logo.png</pixmap>
+         </property>
+         <property name="scaledContents">
+          <bool>true</bool>
+         </property>
+         <property name="textInteractionFlags">
+          <set>Qt::NoTextInteraction</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="NewSaveLoadPathLayout">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Sunken</enum>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <property name="leftMargin">
+           <number>9</number>
           </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <property name="topMargin">
+           <number>9</number>
+          </property>
+          <property name="rightMargin">
+           <number>9</number>
+          </property>
+          <property name="bottomMargin">
+           <number>9</number>
+          </property>
           <item>
-           <widget class="ctkSliderWidget" name="ThicknessSliderWidget">
-            <property name="minimum">
-             <double>0.010000000000000</double>
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
+             <widget class="QPushButton" name="NewAnnotationButton">
+              <property name="text">
+               <string>New</string>
+              </property>
+              <property name="icon">
+               <iconset resource="../../HomeLib/Home.qrc">
+                <normaloff>:/Icons/new_icon.svg.png</normaloff>:/Icons/new_icon.svg.png</iconset>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>16</width>
+                <height>16</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="SaveAnnotationButton">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Save</string>
+              </property>
+              <property name="icon">
+               <iconset resource="../../HomeLib/Home.qrc">
+                <normaloff>:/Icons/save_icon.svg.png</normaloff>:/Icons/save_icon.svg.png</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="SaveAsAnnotationButton">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Save As</string>
+              </property>
+              <property name="icon">
+               <iconset resource="../../HomeLib/Home.qrc">
+                <normaloff>:/Icons/saveas_icon.svg.png</normaloff>:/Icons/saveas_icon.svg.png</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="LoadAnnotationButton">
+              <property name="text">
+               <string>Load</string>
+              </property>
+              <property name="icon">
+               <iconset resource="../../HomeLib/Home.qrc">
+                <normaloff>:/Icons/load_icon.svg.png</normaloff>:/Icons/load_icon.svg.png</iconset>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="ctkPathLineEdit" name="AnnotationPathLineEdit">
+            <property name="enabled">
+             <bool>false</bool>
             </property>
-            <property name="maximum">
-             <double>10000.000000000000000</double>
+            <property name="showBrowseButton">
+             <bool>false</bool>
             </property>
-            <property name="value">
-             <double>50.000000000000000</double>
+            <property name="showHistoryButton">
+             <bool>false</bool>
             </property>
            </widget>
           </item>
          </layout>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>Interaction</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <layout class="QHBoxLayout" name="horizontalLayout_5">
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QFrame" name="frame_3">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Sunken</enum>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
           <item>
-           <widget class="QRadioButton" name="ScrollingRadioButton">
+           <widget class="QRadioButton" name="ExploreRadioButton">
             <property name="text">
-             <string>Scrolling</string>
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="../../HomeLib/Home.qrc">
+              <normaloff>:/Icons/explore_icon.svg.png</normaloff>:/Icons/explore_icon.svg.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>48</width>
+              <height>48</height>
+             </size>
             </property>
             <property name="checked">
              <bool>true</bool>
@@ -157,187 +195,78 @@
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="PlacingRadioButton">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
+           <widget class="QRadioButton" name="AnnotateRadioButton">
             <property name="text">
-             <string>Placing</string>
+             <string/>
             </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="InteractingRadioButton">
-            <property name="enabled">
-             <bool>false</bool>
+            <property name="icon">
+             <iconset resource="../../HomeLib/Home.qrc">
+              <normaloff>:/Icons/annotate_icon.svg.png</normaloff>:/Icons/annotate_icon.svg.png</iconset>
             </property>
-            <property name="text">
-             <string>Interacting</string>
+            <property name="iconSize">
+             <size>
+              <width>48</width>
+              <height>48</height>
+             </size>
             </property>
            </widget>
           </item>
          </layout>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QGroupBox" name="groupBox_2">
-       <property name="title">
-        <string>View Properties</string>
-       </property>
-       <layout class="QFormLayout" name="formLayout_3">
-        <item row="0" column="0">
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>Reference View:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <layout class="QHBoxLayout" name="horizontalLayout_4">
-          <item>
-           <widget class="QRadioButton" name="AxialRadioButton">
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="frame_2">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Sunken</enum>
+         </property>
+         <layout class="QFormLayout" name="formLayout_3">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_7">
             <property name="text">
-             <string>Axial</string>
+             <string>Slice Step Size</string>
             </property>
            </widget>
           </item>
-          <item>
-           <widget class="QRadioButton" name="CoronalRadioButton">
-            <property name="text">
-             <string>Coronal</string>
+          <item row="0" column="1">
+           <widget class="qMRMLSliderWidget" name="StepSizeSliderWidget">
+            <property name="value">
+             <double>50.000000000000000</double>
             </property>
-            <property name="checked">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="SagittalRadioButton">
-            <property name="text">
-             <string>Sagittal</string>
+            <property name="quantity">
+             <string>length</string>
             </property>
            </widget>
           </item>
-          <item>
-           <widget class="QPushButton" name="ResetToReferenceViewPushButton">
+          <item row="1" column="0">
+           <widget class="QLabel" name="ThicknessLabel">
             <property name="text">
-             <string>Reset</string>
+             <string>Annotation Thickness</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="ctkSliderWidget" name="ThicknessSliderWidget">
+            <property name="decimals">
+             <number>0</number>
+            </property>
+            <property name="minimum">
+             <double>0.010000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>1000.000000000000000</double>
+            </property>
+            <property name="value">
+             <double>50.000000000000000</double>
             </property>
            </widget>
           </item>
          </layout>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_3">
-          <property name="text">
-           <string>Adjust view</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <layout class="QHBoxLayout" name="horizontalLayout_6">
-          <item>
-           <widget class="QLabel" name="YawLabel">
-            <property name="text">
-             <string>Yaw:</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="ctkSliderWidget" name="YawSliderWidget">
-            <property name="minimum">
-             <double>-180.000000000000000</double>
-            </property>
-            <property name="maximum">
-             <double>180.000000000000000</double>
-            </property>
-            <property name="tracking">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="PitchLabel">
-            <property name="text">
-             <string>Pitch:</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="ctkSliderWidget" name="PitchSliderWidget">
-            <property name="minimum">
-             <double>-180.000000000000000</double>
-            </property>
-            <property name="maximum">
-             <double>180.000000000000000</double>
-            </property>
-            <property name="tracking">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="RollLabel">
-            <property name="text">
-             <string>Roll:</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="ctkSliderWidget" name="RollSliderWidget">
-            <property name="minimum">
-             <double>-180.000000000000000</double>
-            </property>
-            <property name="maximum">
-             <double>180.000000000000000</double>
-            </property>
-            <property name="tracking">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="AdjustViewPushButton">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="text">
-             <string>Apply</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="label_7">
-          <property name="text">
-           <string>Slice step size</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="qMRMLSliderWidget" name="StepSizeSliderWidget">
-          <property name="value">
-           <double>50.000000000000000</double>
-          </property>
-          <property name="quantity">
-           <string>length</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>
@@ -353,7 +282,41 @@
    </item>
    <item>
     <widget class="QWidget" name="DataProbe" native="true">
-     <layout class="QVBoxLayout" name="verticalLayout_3"/>
+     <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0,1">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QComboBox" name="OntologyComboBox">
+        <item>
+         <property name="text">
+          <string>Structure</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Layer</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="DataProbeLabel">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
   </layout>
@@ -375,6 +338,8 @@
    <header>ctkSliderWidget.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../../HomeLib/Home.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -1,9 +1,13 @@
 import os
-import unittest
+import json
+import logging
+import textwrap
+
 import vtk, qt, ctk, slicer
+
 from slicer.util import VTKObservationMixin
 from slicer.ScriptedLoadableModule import *
-import logging
+from HomeLib import HomeResources as Resources
 from HomeLib import CellLocatorConfig as Config
 
 #
@@ -27,7 +31,7 @@ class Home(ScriptedLoadableModule):
     self.parent.title = "Home" # TODO make this more human readable by adding spaces
     self.parent.categories = [""]
     self.parent.dependencies = []
-    self.parent.contributors = ["Johan Andruejol (Kitware Inc.)"] # replace with "Firstname Lastname (Organization)"
+    self.parent.contributors = ["Johan Andruejol (Kitware)", "Jean-Christophe Fillion-Robin (Kitware)"] # replace with "Firstname Lastname (Organization)"
     self.parent.helpText = """"""
     self.parent.helpText += self.getDefaultModuleDocumentationLink()
     self.parent.acknowledgementText = """""" # replace with organization, grant and thanks.
@@ -45,15 +49,38 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.MarkupsAnnotationNode = None
     self.ThreeDWithReformatCustomLayoutId = None
     self.Widget = None
-    self.InteractionState = 'scrolling'
+    self.InteractionState = 'explore'
     self.ModifyingInteractionState = False
     self.ReferenceView = 'Coronal'
-    self._widget_lookup_cache = {}
+    self._widget_cache = {}
 
-  def get(self, name):
-    if name not in self._widget_lookup_cache:
-      self._widget_lookup_cache[name] = slicer.util.findChildren(self.Widget, name)[0]
-    return self._widget_lookup_cache[name]
+  def get(self, name, parent=None):
+    """Lookup widget by ``name``.
+
+    By default, widget is searched among the children of ``self.Widget``. Setting
+    ``parent`` allows to search in a different widget.
+
+    Once a widget is found, an entry into a local cache is added. This allows
+    faster subsequent lookup.
+    """
+    if parent is None:
+      parent = self.Widget
+    key = "%s-%s" % (parent, name)
+    try:
+      widget = self._widget_cache[key]
+    except KeyError:
+      widget = slicer.util.findChildren(parent, name)[0]
+      self._widget_cache[key] = widget
+    return widget
+
+  def set(self, widget):
+    """Explicitly update local widget cache.
+    """
+    if not widget.objectName:
+      raise RuntimeError("widget is not associated with an objectName")
+    parent = self.Widget
+    key = "%s-%s" % (parent, widget.objectName)
+    self._widget_cache[key] = widget
 
   def registerCustomLayouts(self):
     layoutLogic = self.LayoutManager.layoutLogic()
@@ -87,7 +114,24 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def colorTableFilePath(self):
     return os.path.join(self.dataPath(), 'annotation_color_table.txt')
 
+  def layerColorTableFilePath(self):
+    return os.path.join(self.dataPath(), 'annotation_layer_color_table.txt')
+
+  def ontologyFilePath(self):
+    return os.path.join(self.dataPath(), 'ontology-formatted.json')
+
+  def layerOntologyFilePath(self):
+    return os.path.join(self.dataPath(), 'layer-ontology-formatted.json')
+
+  def slicerToAllenMappingFilePath(self):
+    return os.path.join(self.dataPath(), 'annotation_color_slicer2allen_mapping.json')
+
+  def allenToSlicerMappingFilePath(self):
+    return os.path.join(self.dataPath(), 'annotation_color_allen2slicer_mapping.json')
+
   def loadData(self):
+    """Load average template, annotation and associated color table.
+    """
 
     # Load template
     loaded, averageTemplate = slicer.util.loadVolume(
@@ -117,6 +161,49 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     else:
       logging.error("Color table [%s] does not exist" % self.colorTableFilePath())
 
+    # Load Allen "layer" color table
+    if os.path.exists(self.layerColorTableFilePath()):
+      colorLogic.LoadColorFile(self.layerColorTableFilePath(), "allen_layer")
+    else:
+      logging.error("Color table [%s] does not exist" % self.layerColorTableFilePath())
+
+    # Load slicer2allen mapping
+    with open(self.slicerToAllenMappingFilePath()) as content:
+      mapping = json.load(content)
+      self.SlicerToAllenMapping = {int(key): int(value) for (key, value) in mapping.items()}
+
+    # Load allen2slicer mapping
+    with open(self.allenToSlicerMappingFilePath()) as content:
+      mapping = json.load(content)
+      self.AllenToSlicerMapping = {int(key): int(value) for (key, value) in mapping.items()}
+
+    # Load ontology
+    with open(self.ontologyFilePath()) as content:
+      msg = json.load(content)["msg"]
+
+    allenStructureNames = {}
+    for structure in msg:
+      allenStructureNames[structure["id"]] = structure["safe_name"]
+
+    self.AllenStructurePaths = {}
+    for structure in msg:
+      self.AllenStructurePaths[structure["id"]] = " > ".join([allenStructureNames[int(structure_id)] for structure_id in structure["structure_id_path"][1:-1].split("/")])
+
+    # Load "layer" ontology
+    with open(self.layerOntologyFilePath()) as content:
+      msg = json.load(content)["msg"]
+
+    allenStructureNames = {997: "root"}
+    for structure in msg:
+      try:
+        allenStructureNames[structure["id"]] = structure["safe_name"]
+      except KeyError:
+        allenStructureNames[structure["id"]] = structure["name"]
+
+    self.AllenLayerStructurePaths = {}
+    for structure in msg:
+      self.AllenLayerStructurePaths[structure["id"]] = " > ".join([allenStructureNames[int(structure_id)] for structure_id in structure["structure_id_path"][1:-1].split("/")])
+
     # Load annotation
     if os.path.exists(self.annotationFilePath()):
       loaded, annotation = slicer.util.loadVolume(
@@ -129,23 +216,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         )
     else:
       logging.error("Annotation file [%s] does not exist" % self.annotationFilePath())
-
-    # Slice view
-    sliceWidget = self.LayoutManager.sliceWidget("Slice")
-    sliceController = sliceWidget.sliceController()
-    sliceController.setSliceVisible(True)
-    sliceController.showReformatWidget(True)
-    sliceWidget.mrmlSliceNode().SetWidgetOutlineVisible(False)
-    sliceWidget.sliceView().interactorStyle().SetActionEnabled(slicer.vtkSliceViewInteractorStyle.Zoom, False)
-
-    compositeNode = sliceWidget.mrmlSliceCompositeNode()
-    compositeNode.SetBackgroundVolumeID(averageTemplate.GetID())
-    compositeNode.SetLabelVolumeID(annotation.GetID())
-    compositeNode.SetLabelOpacity(0.4)
-
-    # 3D view
-    threeDWidget = self.LayoutManager.threeDWidget(0)
-    threeDWidget.mrmlViewNode().SetBoxVisible(False)
 
     return averageTemplate, annotation
 
@@ -185,7 +255,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.resetViews()
     self.updateGUIFromMRML()
     self.onSliceNodeModified() # Init values
-    self.setInteractionState('placing')
+    self.setInteractionState('annotate')
 
   def onSaveAnnotationButtonClicked(self):
     if not self.MarkupsAnnotationNode or \
@@ -217,7 +287,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self.resetViews()
     self.jumpSliceToAnnotation()
-    self.setInteractionState('scrolling')
+    self.setInteractionState('explore')
 
   def updateGUIFromMRML(self):
     self.updateGUIFromAnnotation()
@@ -242,7 +312,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     spacingRange = bounds[5] - bounds[4]
     if spacingRange > 0:
       self.get('StepSizeSliderWidget').minimum = 0
-      self.get('StepSizeSliderWidget').maximum = spacingRange
+      self.get('StepSizeSliderWidget').maximum = spacingRange / 10
     else:
       self.get('StepSizeSliderWidget').minimum = 0
       self.get('StepSizeSliderWidget').maximum = 100
@@ -283,10 +353,13 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     with SignalBlocker(self.get('YawSliderWidget')):
       self.get('YawSliderWidget').value = angles[2]
 
+    sliceWidget = self.LayoutManager.sliceWidget("Slice")
+    self.get("SliceOffsetSlider", sliceWidget).prefix = "" # Hide orientation prefix
+
   def onViewOrientationChanged(self):
     roll = self.get('RollSliderWidget').value
-    yaw =  self.get('YawSliderWidget').value
-    pitch =  self.get('PitchSliderWidget').value
+    yaw = self.get('YawSliderWidget').value
+    pitch = self.get('PitchSliderWidget').value
 
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
     referenceOrientation = sliceNode.GetSliceOrientationPreset(self.ReferenceView)
@@ -322,7 +395,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def onMarkupsAnnotationStorageNodeModified(self):
     if not self.MarkupsAnnotationNode or not self.MarkupsAnnotationNode.GetStorageNode():
       return
-    self.Widget.AnnotationPathLineEdit.currentPath = self.MarkupsAnnotationNode.GetStorageNode().GetFileName()
+    self.get('AnnotationPathLineEdit').currentPath = self.MarkupsAnnotationNode.GetStorageNode().GetFileName()
 
   def resetToReferenceView(self):
     referenceView = self.ReferenceView
@@ -382,7 +455,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self.MarkupsAnnotationNode.SetNthSplineOrientation(i,
           sliceNode.GetSliceToRAS())
 
-    if self.InteractionState == 'scrolling':
+    if self.InteractionState == 'explore':
       self.MarkupsAnnotationNode.EndModify(wasModifying)
       return
 
@@ -414,6 +487,67 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     interactionNode = slicer.app.applicationLogic().GetInteractionNode()
     self.removeObserver(interactionNode, vtk.vtkCommand.ModifiedEvent, self.onInteractionNodeModified)
 
+  def setupViewers(self):
+    # Configure slice view
+    sliceWidget = self.LayoutManager.sliceWidget("Slice")
+    sliceWidget.sliceView().interactorStyle().SetActionEnabled(slicer.vtkSliceViewInteractorStyle.AdjustLightbox, False)
+    sliceWidget.sliceView().interactorStyle().SetActionEnabled(slicer.vtkSliceViewInteractorStyle.AdjustWindowLevelBackground, False)
+    sliceWidget.sliceView().interactorStyle().SetActionEnabled(slicer.vtkSliceViewInteractorStyle.AdjustWindowLevelForeground, False)
+    sliceWidget.sliceView().interactorStyle().SetActionEnabled(slicer.vtkSliceViewInteractorStyle.Blend, False)
+    sliceWidget.sliceView().interactorStyle().SetActionEnabled(slicer.vtkSliceViewInteractorStyle.SelectVolume, False)
+    sliceWidget.sliceView().interactorStyle().SetActionEnabled(slicer.vtkSliceViewInteractorStyle.Zoom, False)
+    self.get("PinButton", sliceWidget).visible = False
+    self.get("ViewLabel", sliceWidget).visible = False
+    self.get("FitToWindowToolButton", sliceWidget).visible = False
+    # ReferenceView
+    referenceViewComboBox = qt.QComboBox()
+    referenceViewComboBox.objectName = "ReferenceViewComboBox"
+    referenceViewComboBox.addItems(["Axial", "Coronal", "Sagittal"])
+    referenceViewComboBox.setCurrentText(self.ReferenceView) # Update the reference default button
+    self.set(referenceViewComboBox)
+    self.get("BarWidget", sliceWidget).layout().addWidget(referenceViewComboBox)
+    # Reset
+    resetToReferenceViewPushButton = qt.QPushButton("Reset")
+    resetToReferenceViewPushButton.objectName = "ResetToReferenceViewPushButton"
+    self.set(resetToReferenceViewPushButton)
+    self.get("BarWidget", sliceWidget).layout().addWidget(resetToReferenceViewPushButton)
+    # BarWidget layout
+    self.get("BarWidget", sliceWidget).layout().setContentsMargins(6, 6, 6, 6)
+
+    # Configure 3D view
+    threeDWidget = self.LayoutManager.threeDWidget(0)
+    threeDWidget.mrmlViewNode().SetBoxVisible(False)
+    threeDWidget.threeDController().visible = False
+    horizontalSpacer = qt.QSpacerItem(0, 0, qt.QSizePolicy.Expanding, qt.QSizePolicy.Minimum)
+    threeDWidget.layout().insertSpacerItem(0, horizontalSpacer)
+    layout = qt.QHBoxLayout()
+    layout.setSpacing(6)
+    layout.setContentsMargins(6, 6, 6, 6)
+    threeDWidget.layout().insertLayout(0, layout)
+
+    def _add_slider(axeName):
+      label = qt.QLabel("%s:" % axeName)
+      layout.addWidget(label)
+      slider = ctk.ctkSliderWidget()
+      slider.objectName = "%sSliderWidget" % axeName
+      slider.decimals = 0
+      slider.singleStep = 5
+      slider.pageStep = 25
+      slider.minimum = -180
+      slider.maximum = 180
+      slider.tracking = False
+      layout.addWidget(slider)
+      self.set(slider)
+
+    _add_slider("Yaw")
+    _add_slider("Pitch")
+    _add_slider("Roll")
+
+    adjustViewPushButton = qt.QPushButton("Apply")
+    adjustViewPushButton.objectName = "AdjustViewPushButton"
+    layout.addWidget(adjustViewPushButton)
+    self.set(adjustViewPushButton)
+
   def onSceneEndClose(self, caller=None, event=None):
     scene = caller
     if not scene or not scene.IsA('vtkMRMLScene'):
@@ -422,12 +556,30 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     averageTemplate, annotation = self.loadData()
 
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
-    self.addObserver(sliceNode, vtk.vtkCommand.ModifiedEvent, self.onSliceNodeModified)
 
-    interactionNode = slicer.app.applicationLogic().GetInteractionNode()
-    self.addObserver(interactionNode, vtk.vtkCommand.ModifiedEvent, self.onInteractionNodeModified)
+    # Configure slice view
+    sliceNode.SetSliceVisible(True)
+    sliceNode.SetWidgetVisible(True) # Show reformat widget
+    sliceNode.SetWidgetOutlineVisible(False) # Hide reformat widget box
+    sliceWidget = self.LayoutManager.sliceWidget("Slice")
+    self.get("BarWidget", sliceWidget).setPalette(slicer.app.palette())
+    self.get("SpinBox", self.get("BarWidget", sliceWidget)).setPalette(slicer.app.palette())
 
+    compositeNode = sliceWidget.mrmlSliceCompositeNode()
+    compositeNode.SetBackgroundVolumeID(averageTemplate.GetID())
+    compositeNode.SetLabelVolumeID(annotation.GetID())
+    compositeNode.SetLabelOpacity(0.4)
+
+    # Configure 3D view
+    threeDWidget = self.LayoutManager.threeDWidget(0)
+    threeDWidget.mrmlViewNode().SetBoxVisible(False)
+
+    # Configure step size slider
     self.get('StepSizeSliderWidget').setMRMLScene(slicer.mrmlScene)
+
+    # Connections
+    self.addObserver(sliceNode, vtk.vtkCommand.ModifiedEvent, self.onSliceNodeModified)
+    self.addObserver(sliceNode.GetInteractionNode(), vtk.vtkCommand.ModifiedEvent, self.onInteractionNodeModified)
 
     # Create RAStoPIR transform - See https://github.com/BICCN/cell-locator/issues/48#issuecomment-443412860
     # 0 0 1 -1
@@ -479,7 +631,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sliceNode.AddSliceOrientationPreset("Coronal", orientationMatrix)
     sliceNode.DisableModifiedEventOff()
 
-    self.setInteractionState('scrolling')
+    self.setInteractionState('explore')
 
     self.resetViews()
 
@@ -488,11 +640,23 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def setup(self):
     ScriptedLoadableModuleWidget.setup(self)
 
-    self.registerCustomLayouts()
-    self.LayoutManager.setLayout(self.ThreeDWithReformatCustomLayoutId)
+    # Style
+    slicer.app.styleSheet = textwrap.dedent("""
+    QPushButton {
+        border: 1px solid #60A7E5;
+        border-radius: 3px;
+        background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                          stop: 0 #6cb9fc, stop: 1 #60a7e5);
+        min-width: 80px;
+        min-height: 24px;
+        color: white;
+    }
 
-    self.addObserver(slicer.mrmlScene, slicer.mrmlScene.StartCloseEvent, self.onSceneStartClose)
-    self.addObserver(slicer.mrmlScene, slicer.mrmlScene.EndCloseEvent, self.onStartupCompleted)
+    QPushButton:hover {
+        background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 0,
+                                          stop: 0 #6cb9fc, stop: 1 #60a7e5);
+    }
+    """)
 
     # Load UI file
     moduleName = 'Home'
@@ -502,9 +666,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.Widget = slicer.util.loadUI(path)
     self.layout.addWidget(self.Widget)
 
-    # Update the reference default button
-    self.get('%sRadioButton' %self.ReferenceView).setChecked(True)
-
     # Disable undocking/docking of the module panel
     panelDockWidget = slicer.util.findChildren(name="PanelDockWidget")[0]
     panelDockWidget.setFeatures(qt.QDockWidget.NoDockWidgetFeatures)
@@ -512,6 +673,14 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     # Update layout manager viewport
     slicer.util.findChildren(name="CentralWidget")[0].visible = False
     self.LayoutManager.setViewport(self.Widget.LayoutWidget)
+
+    # Configure layout
+    self.registerCustomLayouts()
+    #slicer.modules.celllocator.registerCustomViewFactories(self.LayoutManager)
+    self.LayoutManager.setLayout(self.ThreeDWithReformatCustomLayoutId)
+
+    self.addObserver(slicer.mrmlScene, slicer.mrmlScene.StartCloseEvent, self.onSceneStartClose)
+    self.addObserver(slicer.mrmlScene, slicer.mrmlScene.EndCloseEvent, self.onStartupCompleted)
 
     # Prevent accidental placement of polyline point by associating the 3D view
     # with its own interaction node.
@@ -521,6 +690,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.LayoutManager.threeDWidget(0).threeDView().mrmlViewNode().SetInteractionNode(interactionNode)
     self.InteractionNode = interactionNode
 
+    self.setupViewers()
     self.setupConnections()
 
   def removeAnnotationObservations(self):
@@ -557,15 +727,11 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get('SaveAsAnnotationButton').setEnabled(self.MarkupsAnnotationNode != None)
 
   def updateInteractingButtonsState(self):
-    self.get('PlacingRadioButton').setEnabled(self.MarkupsAnnotationNode != None)
-    self.get('InteractingRadioButton').setEnabled(self.MarkupsAnnotationNode != None)
+    self.get('AnnotateRadioButton').setEnabled(self.MarkupsAnnotationNode != None)
 
   def updateReferenceViewButtonsState(self):
     hasMarkups = self.MarkupsAnnotationNode is not None and self.MarkupsAnnotationNode.GetNumberOfMarkups() > 0
-    self.get('ResetToReferenceViewPushButton').setDisabled(hasMarkups)
-    self.get('AxialRadioButton').setDisabled(hasMarkups)
-    self.get('SagittalRadioButton').setDisabled(hasMarkups)
-    self.get('CoronalRadioButton').setDisabled(hasMarkups)
+    self.get('ReferenceViewComboBox').setDisabled(hasMarkups)
 
   def onInteractionNodeModified(self, caller=None, event=None):
     interactionNode = caller
@@ -574,7 +740,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     if (interactionNode.GetCurrentInteractionMode() == interactionNode.ViewTransform
         and not self.ModifyingInteractionState):
-      self.setInteractionState('scrolling')
+      self.setInteractionState('explore')
 
   def setInteractionState(self, newState):
     if self.InteractionState == newState:
@@ -595,19 +761,19 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     # 2: update interaction mode:
     interactionNode = slicer.app.applicationLogic().GetInteractionNode()
     interactionMode = interactionNode.ViewTransform
-    if newState == 'placing':
+    if newState == 'annotate':
       interactionMode = interactionNode.Place
     interactionNode.SetCurrentInteractionMode(interactionMode)
     interactionNode.SetPlaceModePersistence(1)
 
     # 3: update markup as locked
-    locked = (newState == 'scrolling')
+    locked = (newState == 'explore')
     for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
       self.MarkupsAnnotationNode.SetNthMarkupLocked(i, locked)
 
-    # If we're going from scrolling to another state -> snap the slice to the
+    # If we're going from 'explore' to another state -> snap the slice to the
     # spline
-    if self.InteractionState == 'scrolling':
+    if self.InteractionState == 'explore':
       self.jumpSliceToAnnotation()
 
     self.InteractionState = newState
@@ -621,24 +787,98 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get('SaveAsAnnotationButton').connect("clicked()", self.onSaveAsAnnotationButtonClicked)
     self.get('LoadAnnotationButton').connect("clicked()", self.onLoadAnnotationButtonClicked)
 
+    self.get('ReferenceViewComboBox').connect("currentTextChanged(QString)", self.onReferenceViewChanged)
     self.get('ResetToReferenceViewPushButton').connect("clicked()", self.resetToReferenceView)
-
-    self.get('AxialRadioButton').connect("toggled(bool)", lambda: self.onReferenceViewChanged('Axial'))
-    self.get('CoronalRadioButton').connect("toggled(bool)", lambda: self.onReferenceViewChanged('Coronal'))
-    self.get('SagittalRadioButton').connect("toggled(bool)", lambda: self.onReferenceViewChanged('Sagittal'))
 
     for axe in ['Roll', 'Yaw', 'Pitch']:
       self.get('%sSliderWidget' % axe).connect("valueChanged(double)", lambda: self.get('AdjustViewPushButton').setEnabled(True))
-
     self.get('AdjustViewPushButton').connect("clicked()", self.onViewOrientationChanged)
 
     self.get('StepSizeSliderWidget').connect("valueChanged(double)", self.onStepSizeChanged)
-
     self.get('ThicknessSliderWidget').connect("valueChanged(double)", self.onThicknessChanged)
 
-    self.get('ScrollingRadioButton').connect('toggled(bool)', lambda: self.setInteractionState('scrolling'))
-    self.get('PlacingRadioButton').connect('toggled(bool)', lambda: self.setInteractionState('placing'))
-    self.get('InteractingRadioButton').connect('toggled(bool)', lambda: self.setInteractionState('interacting'))
+    self.get('AnnotateRadioButton').connect('toggled(bool)', lambda: self.setInteractionState('annotate'))
+    self.get('ExploreRadioButton').connect('toggled(bool)', lambda: self.setInteractionState('explore'))
+
+    self.get('OntologyComboBox').connect("currentTextChanged(QString)", self.onOntologyChanged)
+
+    # Observe the crosshair node to get the current cursor position
+    crosshairNode = slicer.mrmlScene.GetFirstNodeByClass('vtkMRMLCrosshairNode')
+    self.addObserver(crosshairNode, slicer.vtkMRMLCrosshairNode.CursorPositionModifiedEvent, self.onCursorPositionModifiedEvent)
+
+  def onOntologyChanged(self, ontology):
+    annotation = slicer.mrmlScene.GetFirstNodeByName("annotation_%s_contiguous" % Config.ANNOTATION_RESOLUTION)
+    if ontology == "Structure":
+      colorNodeID = slicer.mrmlScene.GetFirstNodeByName("allen").GetID()
+    elif ontology == "Layer":
+      colorNodeID = slicer.mrmlScene.GetFirstNodeByName("allen_layer").GetID()
+    else:
+      raise RuntimeError("Unknown ontology: %s" % ontology)
+    annotation.GetDisplayNode().SetAndObserveColorNodeID(colorNodeID)
+
+  def onCursorPositionModifiedEvent(self, caller=None, event=None):
+    crosshairNode = caller
+    if not crosshairNode or not crosshairNode.IsA('vtkMRMLCrosshairNode'):
+      return
+
+    ras = [0.0,0.0,0.0]
+    xyz = [0.0,0.0,0.0]
+    insideView = crosshairNode.GetCursorPositionRAS(ras)
+    sliceNode = crosshairNode.GetCursorPositionXYZ(xyz)
+    appLogic = slicer.app.applicationLogic()
+    sliceLogic = appLogic.GetSliceLogic(sliceNode)
+    if not insideView or not sliceNode or not sliceLogic:
+      return
+
+    def _roundInt(value):
+      try:
+        return int(round(value))
+      except ValueError:
+        return 0
+
+    layerLogic = sliceLogic.GetLabelLayer()
+    volumeNode = layerLogic.GetVolumeNode()
+    ijk = [0, 0, 0]
+    if volumeNode:
+      hasVolume = True
+      xyToIJK = layerLogic.GetXYToIJKTransform()
+      ijkFloat = xyToIJK.TransformDoublePoint(xyz)
+      ijk = [_roundInt(value) for value in ijkFloat]
+
+    self.get("DataProbeLabel").text = self.getPixelString(volumeNode, ijk)
+
+  def getPixelString(self,volumeNode,ijk):
+    """Given a volume node, create a human readable
+    string describing the contents"""
+    if not volumeNode:
+      return ""
+    imageData = volumeNode.GetImageData()
+    if not imageData:
+      return ""
+    dims = imageData.GetDimensions()
+    for ele in xrange(3):
+      if ijk[ele] < 0 or ijk[ele] >= dims[ele]:
+        return ""  # Out of frame
+    pixel = ""
+    if volumeNode.IsA("vtkMRMLLabelMapVolumeNode"):
+      labelIndex = int(imageData.GetScalarComponentAsDouble(ijk[0], ijk[1], ijk[2], 0))
+      labelValue = "Unknown"
+      displayNode = volumeNode.GetDisplayNode()
+      if displayNode:
+        colorNode = displayNode.GetColorNode()
+        if colorNode and labelIndex > 0:
+          allenLabelIndex = self.SlicerToAllenMapping[labelIndex]
+          try:
+            if colorNode.GetName() == "allen":
+              labelValue = self.AllenStructurePaths[allenLabelIndex]
+            elif colorNode.GetName() == "allen_layer":
+              labelValue = self.AllenLayerStructurePaths[allenLabelIndex]
+            return "%s (%d)" % (labelValue, allenLabelIndex)
+          except KeyError:
+            #print(allenLabelIndex)
+            return ""
+
+    return ""
 
   def cleanup(self):
     self.Widget = None

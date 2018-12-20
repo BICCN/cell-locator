@@ -46,7 +46,10 @@ def read_convert_write(_input, output, a2s_mapping):
       continue
 
     _hex = json_data['msg'][i]['color_hex_triplet']
-    name = json_data['msg'][i]['safe_name']
+    try:
+      name = json_data['msg'][i]['safe_name']
+    except KeyError:
+      name = json_data['msg'][i]['name']
     # Slicer does not support spaces in names, replace them by underscores
     name = name.replace(" ", "_")
 
@@ -55,6 +58,12 @@ def read_convert_write(_input, output, a2s_mapping):
     
     if not _hex or not pixel_value or not name:
       print("Error for %s - %s " %(i, ctb_data[i]))
+
+  # Add missing entries
+  missing = set(a2s_mapping.keys()) - set(ctb_data.keys())
+  for pixel_value in missing:
+    rgb = hex_to_rgb("000000")
+    ctb_data[pixel_value] = ["unknown", rgb]
 
   pixel_values = sorted(ctb_data.keys())
 

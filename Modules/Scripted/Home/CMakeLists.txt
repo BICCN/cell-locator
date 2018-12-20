@@ -21,10 +21,14 @@ set(MODULE_PYTHON_RESOURCES
   Resources/UI/${MODULE_NAME}.ui
   )
 
+slicerFunctionAddPythonQtResources(MODULE_PYTHON_QRC_RESOURCES
+  ${MODULE_NAME}Lib/${MODULE_NAME}.qrc
+  )
+
 #-----------------------------------------------------------------------------
 slicerMacroBuildScriptedModule(
   NAME ${MODULE_NAME}
-  SCRIPTS ${MODULE_PYTHON_SCRIPTS}
+  SCRIPTS ${MODULE_PYTHON_SCRIPTS} ${MODULE_PYTHON_QRC_RESOURCES}
   RESOURCES ${MODULE_PYTHON_RESOURCES}
   WITH_GENERIC_TESTS
   )
@@ -116,7 +120,7 @@ add_custom_command(
   )
 
 #-----------------------------------------------------------------------------
-# Format ontology file
+# Format ontology file (filename hardcoded in Home.py)
 set(ontology_file "${CellLocator_DOWNLOAD_DIR}/ontology-formatted.json")
 
 add_custom_command(
@@ -136,6 +140,8 @@ set(script ${CellLocator_SOURCE_DIR}/Scripts/GenerateContiguousAnnotation.py)
 # Outputs: These filenames are hardcoded in Home.py
 set(annotation_contiguous_file "${CellLocator_DOWNLOAD_DIR}/annotation_${annotation_resolution}_contiguous.nrrd")
 set(color_table "${CellLocator_DOWNLOAD_DIR}/annotation_color_table.txt")
+set(annotation_color_allen2slicer_mapping_file "${CellLocator_DOWNLOAD_DIR}/annotation_color_allen2slicer_mapping.json")
+set(annotation_color_slicer2allen_mapping_file "${CellLocator_DOWNLOAD_DIR}/annotation_color_slicer2allen_mapping.json")
 
 get_property(module_targets GLOBAL PROPERTY SLICER_MODULE_TARGETS)
 
@@ -149,6 +155,8 @@ add_custom_command(
   OUTPUT
     ${annotation_contiguous_file}
     ${color_table}
+    ${annotation_color_allen2slicer_mapping_file}
+    ${annotation_color_slicer2allen_mapping_file}
   COMMAND ${Slicer_LAUNCH_COMMAND} $<TARGET_FILE:CellLocatorApp>
     --python-script ${script}
     --annotation-input ${annotation_file}
@@ -167,12 +175,67 @@ add_custom_target(CellLocatorGenerateContiguousAnnotation ALL
   DEPENDS
     ${annotation_contiguous_file}
     ${color_table}
+    ${annotation_color_allen2slicer_mapping_file}
+    ${annotation_color_slicer2allen_mapping_file}
   )
 
 CellLocator_install_datafiles(
   ${average_template_file}
   ${annotation_contiguous_file}
   ${color_table}
+  ${annotation_color_allen2slicer_mapping_file}
+  ${annotation_color_slicer2allen_mapping_file}
+  ${ontology_file}
+  )
+
+#-----------------------------------------------------------------------------
+# Prepare layer ontology file
+
+set(layer_ontology_file "${CellLocator_DOWNLOAD_DIR}/layer-ontology-formatted.json")
+
+configure_file(
+  ${CellLocator_SOURCE_DIR}/Scripts/data/layer-ontology-formatted.json
+  ${layer_ontology_file}
+  COPYONLY
+  )
+
+#-----------------------------------------------------------------------------
+# Generate layer color table
+set(script ${CellLocator_SOURCE_DIR}/Scripts/CreateColorTable.py)
+
+# Outputs: These filenames are hardcoded in Home.py
+set(layer_color_table "${CellLocator_DOWNLOAD_DIR}/annotation_layer_color_table.txt")
+
+add_custom_command(
+  DEPENDS
+    ${layer_ontology_file}
+    ${script}
+    CellLocatorConfigureLauncher
+    ${module_targets}
+  OUTPUT
+    ${layer_color_table}
+  COMMAND ${Slicer_LAUNCH_COMMAND} $<TARGET_FILE:CellLocatorApp>
+    --python-script ${script}
+    --input ${layer_ontology_file}
+    --allen2slicer ${annotation_color_allen2slicer_mapping_file}
+    --output ${layer_color_table}
+    --exit-after-startup
+    --modules-to-ignore Home
+    --no-main-window
+    --no-splash
+  WORKING_DIRECTORY ${CellLocator_DOWNLOAD_DIR}
+  COMMENT "Generate layer color table"
+  )
+
+add_custom_target(CellLocatorGenerateLayerColorTable ALL
+  DEPENDS
+    ${layer_color_table}
+    ${layer_ontology_file}
+  )
+
+CellLocator_install_datafiles(
+  ${layer_color_table}
+  ${layer_ontology_file}
   )
 
 #-----------------------------------------------------------------------------

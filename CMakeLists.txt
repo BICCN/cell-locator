@@ -13,7 +13,7 @@ if(NOT DEFINED slicersources_SOURCE_DIR)
   # Download Slicer sources and set variables slicersources_SOURCE_DIR and slicersources_BINARY_DIR
   FetchContent_Populate(slicersources
     GIT_REPOSITORY git://github.com/KitwareMedical/Slicer
-    GIT_TAG        de49a9a04e64ce3b55bef19cc4155846a6c5e79b # cell-locator-v4.11.0-2018-12-06-8b9ea7588
+    GIT_TAG        4957dcc7c161d3b30b6fe82c36b3a17b8b776ae3 # cell-locator-v4.11.0-2018-12-19-0dc589ee5
     GIT_PROGRESS   1
     )
 else()
@@ -87,6 +87,7 @@ set(Slicer_QTLOADABLEMODULES_DISABLED
   ViewControllers
   )
 set(Slicer_QTSCRIPTEDMODULES_DISABLED
+  DataProbe
   DMRIInstall
   Endoscopy
   LabelStatistics
