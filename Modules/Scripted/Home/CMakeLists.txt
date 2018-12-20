@@ -18,8 +18,6 @@ set(MODULE_PYTHON_SCRIPTS
 
 set(MODULE_PYTHON_RESOURCES
   Resources/Icons/${MODULE_NAME}.png
-  Resources/Icons/annotation_25.png
-  Resources/Icons/annotation_50.png
   Resources/UI/${MODULE_NAME}.ui
   )
 
