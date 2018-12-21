@@ -506,13 +506,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     referenceViewComboBox.setCurrentText(self.ReferenceView) # Update the reference default button
     self.set(referenceViewComboBox)
     self.get("BarWidget", sliceWidget).layout().addWidget(referenceViewComboBox)
-    # Reset
-    resetToReferenceViewPushButton = qt.QPushButton("Reset")
-    resetToReferenceViewPushButton.objectName = "ResetToReferenceViewPushButton"
-    self.set(resetToReferenceViewPushButton)
-    self.get("BarWidget", sliceWidget).layout().addWidget(resetToReferenceViewPushButton)
     # BarWidget layout
-    self.get("BarWidget", sliceWidget).layout().setContentsMargins(6, 6, 6, 6)
+    self.get("BarWidget", sliceWidget).layout().setContentsMargins(6, 4, 6, 4)
 
     # Configure 3D view
     threeDWidget = self.LayoutManager.threeDWidget(0)
@@ -547,6 +542,11 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     adjustViewPushButton.objectName = "AdjustViewPushButton"
     layout.addWidget(adjustViewPushButton)
     self.set(adjustViewPushButton)
+    # Reset
+    resetToReferenceViewPushButton = qt.QPushButton("Reset")
+    resetToReferenceViewPushButton.objectName = "ResetToReferenceViewPushButton"
+    self.set(resetToReferenceViewPushButton)
+    layout.addWidget(resetToReferenceViewPushButton)
 
   def onSceneEndClose(self, caller=None, event=None):
     scene = caller
@@ -655,6 +655,10 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     QPushButton:hover {
         background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 0,
                                           stop: 0 #6cb9fc, stop: 1 #60a7e5);
+    }
+
+    QComboBox {
+        min-height: 24px;
     }
     """)
 
