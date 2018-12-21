@@ -90,7 +90,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       "  <view class=\"vtkMRMLSliceNode\" singletontag=\"Slice\">"
       "   <property name=\"orientation\" action=\"default\">%s</property>"
       "   <property name=\"viewlabel\" action=\"default\">R</property>"
-      "   <property name=\"viewcolor\" action=\"default\">#4A50C8</property>"
+      "   <property name=\"viewcolor\" action=\"default\">#EFEFEF</property>"
       "  </view>"
       " </item>"
       " <item>"
