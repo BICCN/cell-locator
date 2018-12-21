@@ -37,7 +37,7 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <property name="spacing">
-        <number>6</number>
+        <number>12</number>
        </property>
        <property name="leftMargin">
         <number>9</number>
@@ -185,8 +185,8 @@
             </property>
             <property name="iconSize">
              <size>
-              <width>48</width>
-              <height>48</height>
+              <width>40</width>
+              <height>40</height>
              </size>
             </property>
             <property name="checked">
@@ -205,8 +205,8 @@
             </property>
             <property name="iconSize">
              <size>
-              <width>48</width>
-              <height>48</height>
+              <width>40</width>
+              <height>40</height>
              </size>
             </property>
            </widget>

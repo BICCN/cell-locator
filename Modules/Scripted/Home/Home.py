@@ -639,16 +639,27 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     QPushButton {
         border: 1px solid #60A7E5;
         border-radius: 3px;
-        background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                          stop: 0 #6cb9fc, stop: 1 #60a7e5);
+        background-color: qlineargradient(x1: 0, y1: 1, x2: 0, y2: 0,
+                                          stop: 0 rgba(108,185,252,1), stop: 1 rgba(96,167,229,1));
         min-width: 80px;
         min-height: 24px;
         color: white;
     }
 
     QPushButton:hover {
-        background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 0,
-                                          stop: 0 #6cb9fc, stop: 1 #60a7e5);
+        background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                          stop: 0 rgba(118,180,244,1), stop: 1 rgba(144,203,255,1));
+    }
+
+    QPushButton:pressed {
+        background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                          stop: 0 rgba(108,185,252,1), stop: 1 rgba(96,167,229,1));
+    }
+
+    QPushButton:disabled {
+        background-color: #CDCDCD;
+        border: 1px solid #999999;
+        color: #777777;
     }
 
     QComboBox {
