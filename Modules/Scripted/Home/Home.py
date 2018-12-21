@@ -574,8 +574,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     threeDWidget = self.LayoutManager.threeDWidget(0)
     threeDWidget.mrmlViewNode().SetBoxVisible(False)
 
-    # Configure step size slider
+    # Configure sliders
     self.get('StepSizeSliderWidget').setMRMLScene(slicer.mrmlScene)
+    self.get('ThicknessSliderWidget').setMRMLScene(slicer.mrmlScene)
 
     # Connections
     self.addObserver(sliceNode, vtk.vtkCommand.ModifiedEvent, self.onSliceNodeModified)

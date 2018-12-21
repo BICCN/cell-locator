@@ -248,7 +248,7 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="ctkSliderWidget" name="ThicknessSliderWidget">
+           <widget class="qMRMLSliderWidget" name="ThicknessSliderWidget">
             <property name="decimals">
              <number>0</number>
             </property>
@@ -260,6 +260,12 @@
             </property>
             <property name="value">
              <double>50.000000000000000</double>
+            </property>
+            <property name="quantity">
+             <string>length</string>
+            </property>
+            <property name="unitAwareProperties">
+             <set>qMRMLSliderWidget::Prefix|qMRMLSliderWidget::Scaling|qMRMLSliderWidget::Suffix</set>
             </property>
            </widget>
           </item>
