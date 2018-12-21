@@ -183,7 +183,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     allenStructureNames = {}
     for structure in msg:
-      allenStructureNames[structure["id"]] = structure["safe_name"]
+      allenStructureNames[structure["id"]] = structure["acronym"]
 
     self.AllenStructurePaths = {}
     for structure in msg:
@@ -195,10 +195,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     allenStructureNames = {997: "root"}
     for structure in msg:
-      try:
-        allenStructureNames[structure["id"]] = structure["safe_name"]
-      except KeyError:
-        allenStructureNames[structure["id"]] = structure["name"]
+      allenStructureNames[structure["id"]] = structure["acronym"]
 
     self.AllenLayerStructurePaths = {}
     for structure in msg:
