@@ -574,10 +574,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     threeDWidget = self.LayoutManager.threeDWidget(0)
     threeDWidget.mrmlViewNode().SetBoxVisible(False)
 
-    # Configure sliders
-    self.get('StepSizeSliderWidget').setMRMLScene(slicer.mrmlScene)
-    self.get('ThicknessSliderWidget').setMRMLScene(slicer.mrmlScene)
-
     # Connections
     self.addObserver(sliceNode, vtk.vtkCommand.ModifiedEvent, self.onSliceNodeModified)
     self.addObserver(sliceNode.GetInteractionNode(), vtk.vtkCommand.ModifiedEvent, self.onInteractionNodeModified)
@@ -694,6 +690,10 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     slicer.mrmlScene.AddNode(interactionNode)
     self.LayoutManager.threeDWidget(0).threeDView().mrmlViewNode().SetInteractionNode(interactionNode)
     self.InteractionNode = interactionNode
+
+    # Configure sliders
+    self.get('StepSizeSliderWidget').setMRMLScene(slicer.mrmlScene)
+    self.get('ThicknessSliderWidget').setMRMLScene(slicer.mrmlScene)
 
     self.setupViewers()
     self.setupConnections()
