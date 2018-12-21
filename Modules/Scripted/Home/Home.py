@@ -847,9 +847,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       ijkFloat = xyToIJK.TransformDoublePoint(xyz)
       ijk = [_roundInt(value) for value in ijkFloat]
 
-    self.get("DataProbeLabel").text = self.getPixelString(volumeNode, ijk)
+    self.get("DataProbeLabel").text = self.getPixelString(volumeNode, ijk, ras)
 
-  def getPixelString(self,volumeNode,ijk):
+  def getPixelString(self,volumeNode,ijk,ras):
     """Given a volume node, create a human readable
     string describing the contents"""
     if not volumeNode:
@@ -861,7 +861,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     for ele in xrange(3):
       if ijk[ele] < 0 or ijk[ele] >= dims[ele]:
         return ""  # Out of frame
-    pixel = ""
+    rasStr = "{ras_x:3.1f} {ras_y:3.1f} {ras_z:3.1f}".format(ras_x=abs(ras[0]), ras_y=abs(ras[1]), ras_z=abs(ras[2]))
     if volumeNode.IsA("vtkMRMLLabelMapVolumeNode"):
       labelIndex = int(imageData.GetScalarComponentAsDouble(ijk[0], ijk[1], ijk[2], 0))
       labelValue = "Unknown"
@@ -875,10 +875,10 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
               labelValue = self.AllenStructurePaths[allenLabelIndex]
             elif colorNode.GetName() == "allen_layer":
               labelValue = self.AllenLayerStructurePaths[allenLabelIndex]
-            return "%s (%d)" % (labelValue, allenLabelIndex)
+            return "%s | %s (%d)" % (rasStr, labelValue, allenLabelIndex)
           except KeyError:
             #print(allenLabelIndex)
-            return ""
+            return rasStr
 
     return ""
 
