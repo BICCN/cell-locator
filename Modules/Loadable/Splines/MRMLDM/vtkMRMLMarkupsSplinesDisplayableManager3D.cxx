@@ -34,6 +34,7 @@ and was partially funded by Allen Institute
 #include <vtkMRMLScene.h>
 #include <vtkMRMLSelectionNode.h>
 #include <vtkMRMLViewNode.h>
+#include <vtkThreeDViewInteractorStyle.h>
 
 // VTK includes
 #include <vtkAbstractWidget.h>
@@ -265,6 +266,11 @@ vtkMRMLMarkupsSplinesDisplayableManager3D::vtkInternal::CreateSplineWidget() con
   widget->SetInteractor(this->External->GetInteractor());
   widget->SetCurrentRenderer(this->External->GetRenderer());
 
+  // Link widget event to the WidgetsCallbackCommand. This ensures
+  // that UpdateNodeFromWidget() is called when a handle is selected.
+  widget->AddObserver(vtkCommand::EndInteractionEvent,
+                      this->External->GetWidgetsCallbackCommand());
+
   return widget;
 }
 
@@ -447,6 +453,7 @@ void vtkMRMLMarkupsSplinesDisplayableManager3D::vtkInternal
         rep->SetHandlePosition(i, world);
       }
       rep->SetClosed(splinesNode->GetNthSplineClosed(n) ? 1 : 0);
+      rep->SetCurrentHandleIndex(splinesNode->GetNthSplineSelectedPointIndex(n));
 
       rep->BuildRepresentation();
 
@@ -528,6 +535,9 @@ void vtkMRMLMarkupsSplinesDisplayableManager3D::vtkInternal
       splinesNode->SetMarkupPoint(index, i, pos[0], pos[1], pos[2]);
     }
   }
+
+  splinesNode->SetNthMarkupSelected(index, true);
+  splinesNode->SetNthSplineSelectedPointIndex(index, rep->GetCurrentHandleIndex());
 
   splinesNode->EndModify(wasModifying);
 }
@@ -808,6 +818,9 @@ void vtkMRMLMarkupsSplinesDisplayableManager3D
     return;
   }
 
+  vtkMRMLMarkupsSplinesNode* splinesNode =
+      vtkMRMLMarkupsSplinesNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(selectionNode->GetActivePlaceNodeID()));
+
   if (eventid == vtkCommand::LeftButtonReleaseEvent)
   {
     vtkMRMLInteractionNode* interactionNode = this->GetInteractionNode();
@@ -825,6 +838,16 @@ void vtkMRMLMarkupsSplinesDisplayableManager3D
   else if (eventid == vtkCommand::RightButtonReleaseEvent)
   {
     this->Internal->StopInteraction();
+  }
+  else if (eventid == vtkCommand::CharEvent)
+  {
+    if (this->GetInteractor()->GetKeySym() && !strcmp(this->GetInteractor()->GetKeySym(), "Delete"))
+    {
+      for (int markupIndex = 0; markupIndex < splinesNode->GetNumberOfMarkups(); ++markupIndex)
+      {
+        splinesNode->RemovePointFromNthMarkup(splinesNode->GetNthSplineSelectedPointIndex(markupIndex), markupIndex);
+      }
+    }
   }
 }
 

@@ -79,6 +79,9 @@ public:
   void SetNthSplineOrientation(int n, vtkMatrix4x4* matrix);
   vtkMatrix4x4* GetNthSplineOrientation(int n);
 
+  int GetNthSplineSelectedPointIndex(int n);
+  void SetNthSplineSelectedPointIndex(int n, int pointIndex);
+
 protected:
   vtkMRMLMarkupsSplinesNode();
   ~vtkMRMLMarkupsSplinesNode();
@@ -92,6 +95,7 @@ protected:
   std::vector<double> Thickness;
   vtkSmartPointer<vtkMatrix4x4> DefaultSplineOrientation;
   std::vector< vtkSmartPointer<vtkMatrix4x4> > SplineOrientation;
+  std::vector<int> SelectedPointIndex;
 };
 
 #endif

@@ -79,6 +79,7 @@ int vtkMRMLMarkupsSplinesNode::AddSpline(vtkVector3d point)
   vtkNew<vtkMatrix4x4> orientation;
   orientation->DeepCopy(this->DefaultSplineOrientation);
   this->SplineOrientation.push_back(orientation);
+  this->SelectedPointIndex.push_back(-1);
   return this->CurrentSpline;
 }
 
@@ -97,6 +98,7 @@ bool vtkMRMLMarkupsSplinesNode::InitSpline(int n)
     vtkNew<vtkMatrix4x4> orientation;
     orientation->DeepCopy(this->DefaultSplineOrientation);
     this->SplineOrientation.push_back(orientation);
+    this->SelectedPointIndex.push_back(-1);
   }
   return true;
 }
@@ -207,4 +209,31 @@ vtkMatrix4x4* vtkMRMLMarkupsSplinesNode::GetNthSplineOrientation(int n)
     return this->DefaultSplineOrientation;
   }
   return this->SplineOrientation[i];
+}
+
+//----------------------------------------------------------------------------
+int vtkMRMLMarkupsSplinesNode::GetNthSplineSelectedPointIndex(int n)
+{
+  size_t i = static_cast<size_t>(n);
+  if (i >= this->SelectedPointIndex.size())
+  {
+    vtkErrorMacro("The " << n << "th spline doesn't exist");
+    return -1;
+  }
+  return this->SelectedPointIndex[i];
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLMarkupsSplinesNode::SetNthSplineSelectedPointIndex(int n, int pointIndex)
+{
+  if (static_cast<size_t>(n) >= this->SelectedPointIndex.size()
+    || this->SelectedPointIndex[static_cast<size_t>(n)] == pointIndex)
+  {
+    return;
+  }
+
+  this->SelectedPointIndex[static_cast<size_t>(n)] = pointIndex;
+  this->Modified();
+  this->InvokeCustomModifiedEvent(
+    vtkMRMLMarkupsNode::NthMarkupModifiedEvent, (void*)&n);
 }
