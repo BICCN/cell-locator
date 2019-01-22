@@ -68,7 +68,7 @@ public:
   vtkInternal(vtkMRMLMarkupsSplinesDisplayableManager3D* external);
   ~vtkInternal();
 
-  typedef std::vector<vtkSplineWidget2*> WidgetListType;
+  typedef std::vector<vtkAbstractWidget*> WidgetListType;
   struct Pipeline
   {
     WidgetListType Widgets;
@@ -81,7 +81,7 @@ public:
     MarkupToDisplayCacheType;
   MarkupToDisplayCacheType MarkupToDisplayNodes;
 
-  typedef std::map <vtkSplineWidget2*, vtkMRMLMarkupsDisplayNode* > WidgetToPipelineMapType;
+  typedef std::map <vtkAbstractWidget*, vtkMRMLMarkupsDisplayNode* > WidgetToPipelineMapType;
   WidgetToPipelineMapType WidgetMap;
 
   // Node
@@ -98,7 +98,7 @@ public:
 
   // Widget
   void UpdateWidgetFromNode(vtkMRMLMarkupsDisplayNode*, vtkMRMLMarkupsSplinesNode*, Pipeline*);
-  void UpdateNodeFromWidget(vtkSplineWidget2*);
+  void UpdateNodeFromWidget(vtkAbstractWidget*);
   void UpdateActiveNode();
 
   // Observations
@@ -112,7 +112,7 @@ public:
   bool UseDisplayNode(vtkMRMLMarkupsDisplayNode* displayNode);
   void ClearDisplayableNodes();
   void ClearPipeline(Pipeline* pipeline);
-  vtkSplineWidget2* CreateSplineWidget() const;
+  vtkAbstractWidget* CreateWidget() const;
   std::vector<unsigned long> EventsToObserve() const;
   void StopInteraction();
 
@@ -228,7 +228,7 @@ void vtkMRMLMarkupsSplinesDisplayableManager3D::vtkInternal
 {
   for (size_t i = 0; i < pipeline->Widgets.size(); ++i)
   {
-    vtkSplineWidget2* widget = pipeline->Widgets[i];
+    vtkAbstractWidget* widget = pipeline->Widgets[i];
     this->WidgetMap.erase(widget);
     widget->Delete();
   }
@@ -251,8 +251,8 @@ void vtkMRMLMarkupsSplinesDisplayableManager3D::vtkInternal
 }
 
 //---------------------------------------------------------------------------
-vtkSplineWidget2*
-vtkMRMLMarkupsSplinesDisplayableManager3D::vtkInternal::CreateSplineWidget() const
+vtkAbstractWidget*
+vtkMRMLMarkupsSplinesDisplayableManager3D::vtkInternal::CreateWidget() const
 {
   vtkSplineWidget2* widget = vtkSplineWidget2::New();
   widget->CreateDefaultRepresentation();
@@ -419,7 +419,7 @@ void vtkMRMLMarkupsSplinesDisplayableManager3D::vtkInternal
   {
     for (int i = numberOfWidgets; i < splinesNode->GetNumberOfMarkups(); ++i)
     {
-      vtkSplineWidget2* widget = this->CreateSplineWidget();
+      vtkAbstractWidget* widget = this->CreateWidget();
       pipeline->Widgets.push_back(widget);
       this->WidgetMap[widget] = displayNode;
     }
@@ -427,7 +427,7 @@ void vtkMRMLMarkupsSplinesDisplayableManager3D::vtkInternal
 
   for (int n = 0; n < static_cast<int>(pipeline->Widgets.size()); ++n)
   {
-    vtkSplineWidget2* widget = pipeline->Widgets[static_cast<size_t>(n)];
+    vtkAbstractWidget* widget = pipeline->Widgets[static_cast<size_t>(n)];
     bool visible = displayNode->GetVisibility();
     if (visible)
     {
@@ -494,7 +494,7 @@ void vtkMRMLMarkupsSplinesDisplayableManager3D::vtkInternal
 
 //---------------------------------------------------------------------------
 void vtkMRMLMarkupsSplinesDisplayableManager3D::vtkInternal
-::UpdateNodeFromWidget(vtkSplineWidget2* widget)
+::UpdateNodeFromWidget(vtkAbstractWidget* widget)
 {
   assert(widget);
   vtkMRMLMarkupsDisplayNode* displayNode = this->WidgetMap.at(widget);
@@ -890,7 +890,7 @@ void vtkMRMLMarkupsSplinesDisplayableManager3D
 {
   Superclass::ProcessWidgetsEvents(caller, event, callData);
 
-  vtkSplineWidget2* widget = vtkSplineWidget2::SafeDownCast(caller);
+  vtkAbstractWidget* widget = vtkAbstractWidget::SafeDownCast(caller);
   if (widget)
   {
     this->Internal->UpdateNodeFromWidget(widget);
