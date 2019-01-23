@@ -49,7 +49,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.MarkupsAnnotationNode = None
     self.ThreeDWithReformatCustomLayoutId = None
     self.Widget = None
-    self.InteractionState = 'explore'
     self.ModifyingInteractionState = False
     self.ReferenceView = 'Coronal'
     self._widget_cache = {}
@@ -467,7 +466,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self.MarkupsAnnotationNode.SetNthSplineOrientation(i,
           sliceNode.GetSliceToRAS())
 
-    if self.InteractionState == 'explore':
+    if self.getInteractionState() == 'explore':
       self.MarkupsAnnotationNode.EndModify(wasModifying)
       return
 
@@ -786,8 +785,15 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         and not self.ModifyingInteractionState):
       self.setInteractionState('explore')
 
+  def getInteractionState(self):
+    interactionNode = slicer.app.applicationLogic().GetInteractionNode()
+    if interactionNode.GetCurrentInteractionMode() == interactionNode.Place:
+      return 'annotate'
+    else:
+      return 'explore'
+
   def setInteractionState(self, newState):
-    if self.InteractionState == newState:
+    if self.getInteractionState() == newState:
       return
 
     # Update the GUI if we need to
@@ -815,12 +821,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
       self.MarkupsAnnotationNode.SetNthMarkupLocked(i, locked)
 
-    # If we're going from 'explore' to another state -> snap the slice to the
-    # spline
-    if self.InteractionState == 'explore':
+    # Snap the slice to the spline
+    if newState == 'annotate':
       self.jumpSliceToAnnotation()
-
-    self.InteractionState = newState
 
     self.ModifyingInteractionState = False
 
