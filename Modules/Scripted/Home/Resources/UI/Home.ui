@@ -93,12 +93,6 @@
                <iconset resource="../../HomeLib/Home.qrc">
                 <normaloff>:/Icons/new_icon.svg.png</normaloff>:/Icons/new_icon.svg.png</iconset>
               </property>
-              <property name="iconSize">
-               <size>
-                <width>16</width>
-                <height>16</height>
-               </size>
-              </property>
              </widget>
             </item>
             <item>
