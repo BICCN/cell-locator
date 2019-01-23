@@ -69,6 +69,7 @@ int vtkMRMLMarkupsSplinesStorageNode::ReadNthMarkupFromTranslationMap(
   }
 
   splinesNode->InitSpline(n);
+  splinesNode->SetNthSplineRepresentationType(n, markupsMap[key + "RepresentationType"].ToString());
   splinesNode->SetNthSplineClosed(n, markupsMap[key + "Closed"].ToInt());
   splinesNode->SetNthSplineThickness(n, markupsMap[key + "Thickness"].ToDouble());
 
@@ -101,6 +102,7 @@ int vtkMRMLMarkupsSplinesStorageNode::WriteNthMarkupToTranslationMap(
     return 0;
   }
 
+  markupsMap[key + "RepresentationType"] = vtkStdString(splinesNode->GetNthSplineRepresentationType(n));
   markupsMap[key + "Closed"] = splinesNode->GetNthSplineClosed(n) ? 1 : 0;
   markupsMap[key + "Thickness"] = splinesNode->GetNthSplineThickness(n);
 

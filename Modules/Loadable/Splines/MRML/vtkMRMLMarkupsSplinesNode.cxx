@@ -46,6 +46,7 @@ vtkMRMLMarkupsSplinesNode::vtkMRMLMarkupsSplinesNode()
   this->DefaultClosed = true;
   this->DefaultThickness = 1000.0;
   this->DefaultSplineOrientation = vtkSmartPointer<vtkMatrix4x4>::New();
+  this->DefaultRepresentationType = "spline";
 }
 
 //----------------------------------------------------------------------------
@@ -80,6 +81,7 @@ int vtkMRMLMarkupsSplinesNode::AddSpline(vtkVector3d point)
   orientation->DeepCopy(this->DefaultSplineOrientation);
   this->SplineOrientation.push_back(orientation);
   this->SelectedPointIndex.push_back(-1);
+  this->RepresentationType.push_back(this->DefaultRepresentationType);
   return this->CurrentSpline;
 }
 
@@ -99,6 +101,7 @@ bool vtkMRMLMarkupsSplinesNode::InitSpline(int n)
     orientation->DeepCopy(this->DefaultSplineOrientation);
     this->SplineOrientation.push_back(orientation);
     this->SelectedPointIndex.push_back(-1);
+    this->RepresentationType.push_back(this->DefaultRepresentationType);
   }
   return true;
 }
@@ -233,6 +236,33 @@ void vtkMRMLMarkupsSplinesNode::SetNthSplineSelectedPointIndex(int n, int pointI
   }
 
   this->SelectedPointIndex[static_cast<size_t>(n)] = pointIndex;
+  this->Modified();
+  this->InvokeCustomModifiedEvent(
+    vtkMRMLMarkupsNode::NthMarkupModifiedEvent, (void*)&n);
+}
+
+//----------------------------------------------------------------------------
+std::string vtkMRMLMarkupsSplinesNode::GetNthSplineRepresentationType(int n)
+{
+  size_t i = static_cast<size_t>(n);
+  if (i >= this->RepresentationType.size())
+  {
+    vtkErrorMacro("The " << n << "th spline doesn't exist");
+    return this->DefaultRepresentationType;
+  }
+  return this->RepresentationType[i];
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLMarkupsSplinesNode::SetNthSplineRepresentationType(int n, const std::string& representationType)
+{
+  if (static_cast<size_t>(n) >= this->RepresentationType.size()
+    || this->RepresentationType[static_cast<size_t>(n)] == representationType)
+  {
+    return;
+  }
+
+  this->RepresentationType[static_cast<size_t>(n)] = representationType;
   this->Modified();
   this->InvokeCustomModifiedEvent(
     vtkMRMLMarkupsNode::NthMarkupModifiedEvent, (void*)&n);

@@ -82,6 +82,14 @@ public:
   int GetNthSplineSelectedPointIndex(int n);
   void SetNthSplineSelectedPointIndex(int n, int pointIndex);
 
+  /// Set/Get default representation type
+  vtkGetMacro(DefaultRepresentationType, std::string);
+  vtkSetMacro(DefaultRepresentationType, std::string);
+
+  /// The representation type of the Nth spline (polyline or spline)
+  std::string GetNthSplineRepresentationType(int n);
+  void SetNthSplineRepresentationType(int n, const std::string& representationType);
+
 protected:
   vtkMRMLMarkupsSplinesNode();
   ~vtkMRMLMarkupsSplinesNode();
@@ -96,6 +104,8 @@ protected:
   vtkSmartPointer<vtkMatrix4x4> DefaultSplineOrientation;
   std::vector< vtkSmartPointer<vtkMatrix4x4> > SplineOrientation;
   std::vector<int> SelectedPointIndex;
+  std::string DefaultRepresentationType;
+  std::vector<std::string> RepresentationType;
 };
 
 #endif

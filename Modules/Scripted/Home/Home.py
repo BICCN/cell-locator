@@ -253,6 +253,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.updateGUIFromMRML()
     self.onSliceNodeModified() # Init values
     self.setInteractionState('annotate')
+    self.onAnnotationTypeChanged()
 
   def onSaveAnnotationButtonClicked(self):
     if not self.MarkupsAnnotationNode or \
@@ -419,6 +420,20 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
       self.MarkupsAnnotationNode.SetNthSplineThickness(i, value)
+
+  def onAnnotationTypeChanged(self):
+    if not self.MarkupsAnnotationNode:
+      return
+
+    if self.get('SplineRadioButton').checked:
+      representationType = 'spline'
+    else:
+      representationType = 'polyline'
+
+    self.MarkupsAnnotationNode.SetDefaultRepresentationType(representationType)
+
+    for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
+      self.MarkupsAnnotationNode.SetNthSplineRepresentationType(i, representationType)
 
   def jumpSliceToAnnotation(self):
     if not self.MarkupsAnnotationNode:
@@ -709,10 +724,14 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def removeAnnotationObservations(self):
     self.removeObserver(
       self.MarkupsAnnotationNode, slicer.vtkMRMLMarkupsNode.MarkupAddedEvent, self.OnMarkupAddedEvent)
+    self.removeObserver(
+      self.MarkupsAnnotationNode, slicer.vtkMRMLMarkupsNode.NthMarkupModifiedEvent, self.onNthMarkupModified)
 
   def addAnnotationObservations(self):
     self.addObserver(
       self.MarkupsAnnotationNode, slicer.vtkMRMLMarkupsNode.MarkupAddedEvent, self.OnMarkupAddedEvent)
+    self.addObserver(
+      self.MarkupsAnnotationNode, slicer.vtkMRMLMarkupsNode.NthMarkupModifiedEvent, self.onNthMarkupModified)
 
   def removeAnnotation(self):
     self.removeAnnotationObservations()
@@ -734,6 +753,18 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def OnMarkupAddedEvent(self, caller=None, event=None):
     self.onThicknessChanged(self.get('ThicknessSliderWidget').value)
     self.onSliceNodeModified()
+
+  @vtk.calldata_type(vtk.VTK_INT)
+  def onNthMarkupModified(self, caller, event, callData=None):
+    annotationNode = caller
+    if not annotationNode or not annotationNode.IsA('vtkMRMLMarkupsSplinesNode'):
+      return
+    markupIndex = 0
+    if callData is not None:
+      markupIndex = callData
+
+    representationType = annotationNode.GetNthSplineRepresentationType(markupIndex)
+    self.get('%sRadioButton' % representationType.title()).setChecked(True)
 
   def updateSaveButtonsState(self):
     self.get('SaveAnnotationButton').setEnabled(self.MarkupsAnnotationNode != None)
@@ -809,6 +840,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self.get('StepSizeSliderWidget').connect("valueChanged(double)", self.onStepSizeChanged)
     self.get('ThicknessSliderWidget').connect("valueChanged(double)", self.onThicknessChanged)
+    self.get('PolylineRadioButton').connect("toggled(bool)", self.onAnnotationTypeChanged)
+    self.get('SplineRadioButton').connect("toggled(bool)", self.onAnnotationTypeChanged)
 
     self.get('AnnotateRadioButton').connect('toggled(bool)', lambda: self.setInteractionState('annotate'))
     self.get('ExploreRadioButton').connect('toggled(bool)', lambda: self.setInteractionState('explore'))

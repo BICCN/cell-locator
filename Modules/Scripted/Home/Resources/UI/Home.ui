@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,0">
    <property name="spacing">
     <number>0</number>
    </property>
@@ -268,6 +268,34 @@
              <set>qMRMLSliderWidget::Prefix|qMRMLSliderWidget::Scaling|qMRMLSliderWidget::Suffix</set>
             </property>
            </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="AnnotationTypeLabel">
+            <property name="text">
+             <string>Annotation Type</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_7">
+            <item>
+             <widget class="QRadioButton" name="SplineRadioButton">
+              <property name="text">
+               <string>Spline</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="PolylineRadioButton">
+              <property name="text">
+               <string>PolyLine</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </widget>

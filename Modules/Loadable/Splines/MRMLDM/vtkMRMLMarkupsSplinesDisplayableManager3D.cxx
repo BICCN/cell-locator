@@ -49,6 +49,7 @@ and was partially funded by Allen Institute
 #include <vtkPlaneSource.h>
 #include <vtkPointPlacer.h>
 #include <vtkPolyDataMapper.h>
+#include <vtkPolyLineWidget.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindowInteractor.h>
 #include <vtkSmartPointer.h>
@@ -112,7 +113,7 @@ public:
   bool UseDisplayNode(vtkMRMLMarkupsDisplayNode* displayNode);
   void ClearDisplayableNodes();
   void ClearPipeline(Pipeline* pipeline);
-  vtkAbstractWidget* CreateWidget() const;
+  vtkAbstractWidget* CreateWidget(const std::string& representationType) const;
   std::vector<unsigned long> EventsToObserve() const;
   void StopInteraction();
 
@@ -252,9 +253,17 @@ void vtkMRMLMarkupsSplinesDisplayableManager3D::vtkInternal
 
 //---------------------------------------------------------------------------
 vtkAbstractWidget*
-vtkMRMLMarkupsSplinesDisplayableManager3D::vtkInternal::CreateWidget() const
+vtkMRMLMarkupsSplinesDisplayableManager3D::vtkInternal::CreateWidget(const std::string& representationType) const
 {
-  vtkSplineWidget2* widget = vtkSplineWidget2::New();
+  vtkAbstractWidget* widget = NULL;
+  if (representationType == "spline")
+  {
+    widget = vtkSplineWidget2::New();
+  }
+  else
+  {
+    widget = vtkPolyLineWidget::New();
+  }
   widget->CreateDefaultRepresentation();
   widget->AddObserver(
     vtkCommand::InteractionEvent, this->External->GetWidgetsCallbackCommand());
@@ -413,13 +422,30 @@ void vtkMRMLMarkupsSplinesDisplayableManager3D::vtkInternal
   if (splinesNode && splinesNode->GetNumberOfMarkups() < numberOfWidgets)
   {
     this->ClearPipeline(pipeline);
+    numberOfWidgets = 0;
+  }
+  // If representation type associated with at least one spline node was updated,
+  // remove them all.
+  if (splinesNode)
+  {
+    for (int i = 0; i < numberOfWidgets; ++i)
+    {
+      vtkAbstractWidget * widget = pipeline->Widgets.at(i);
+      std::string widgetRepresentationType = vtkSplineWidget2::SafeDownCast(widget) ? "spline" : "polyline";
+      if (splinesNode->GetNthSplineRepresentationType(i) != widgetRepresentationType)
+      {
+        this->ClearPipeline(pipeline);
+        numberOfWidgets = 0;
+        break;
+      }
+    }
   }
   // Add any missing plane widget.
   if (splinesNode && splinesNode->GetNumberOfMarkups() > numberOfWidgets)
   {
     for (int i = numberOfWidgets; i < splinesNode->GetNumberOfMarkups(); ++i)
     {
-      vtkAbstractWidget* widget = this->CreateWidget();
+      vtkAbstractWidget* widget = this->CreateWidget(splinesNode->GetNthSplineRepresentationType(i));
       pipeline->Widgets.push_back(widget);
       this->WidgetMap[widget] = displayNode;
     }
