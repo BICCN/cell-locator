@@ -41,6 +41,7 @@ and was partially funded by Allen Institute
 #include <vtkAbstractWidget.h>
 #include <vtkCallbackCommand.h>
 #include <vtkCoordinate.h>
+#include <vtkCurveRepresentation.h>
 #include <vtkEventBroker.h>
 #include <vtkInteractorStyle.h>
 #include <vtkMatrix4x4.h>
@@ -52,7 +53,6 @@ and was partially funded by Allen Institute
 #include <vtkRenderer.h>
 #include <vtkRenderWindowInteractor.h>
 #include <vtkSmartPointer.h>
-#include <vtkSplineRepresentation.h>
 #include <vtkSplineWidget2.h>
 
 // STD includes
@@ -260,11 +260,11 @@ vtkMRMLMarkupsSplinesDisplayableManager2D::vtkInternal::CreateWidget() const
 {
   vtkSplineWidget2* widget = vtkSplineWidget2::New();
   widget->CreateDefaultRepresentation();
-  vtkSplineRepresentation* rep =
-    vtkSplineRepresentation::SafeDownCast(widget->GetRepresentation());
   widget->AddObserver(
     vtkCommand::InteractionEvent, this->External->GetWidgetsCallbackCommand());
 
+  vtkCurveRepresentation* rep =
+    vtkCurveRepresentation::SafeDownCast(widget->GetRepresentation());
   rep->ProjectToPlaneOff();
 
   widget->SetInteractor(this->External->GetInteractor());
@@ -498,8 +498,8 @@ void vtkMRMLMarkupsSplinesDisplayableManager2D::vtkInternal
 
     if (visible)
     {
-      vtkSplineRepresentation* rep =
-        vtkSplineRepresentation::SafeDownCast(widget->GetRepresentation());
+      vtkCurveRepresentation* rep =
+        vtkCurveRepresentation::SafeDownCast(widget->GetRepresentation());
       int numberOfPoints = splinesNode->GetNumberOfPointsInNthMarkup(static_cast<int>(n));
       rep->SetNumberOfHandles(numberOfPoints);
 
@@ -534,8 +534,8 @@ void vtkMRMLMarkupsSplinesDisplayableManager2D::vtkInternal
   vtkMRMLMarkupsSplinesNode* splinesNode =
     vtkMRMLMarkupsSplinesNode::SafeDownCast(displayNode->GetDisplayableNode());
 
-  vtkSplineRepresentation* rep =
-    vtkSplineRepresentation::SafeDownCast(widget->GetRepresentation());
+  vtkCurveRepresentation* rep =
+    vtkCurveRepresentation::SafeDownCast(widget->GetRepresentation());
 
   Pipeline* pipeline = this->DisplayPipelines[displayNode];
   int index = static_cast<int>(
