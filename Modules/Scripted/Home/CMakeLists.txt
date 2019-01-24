@@ -140,6 +140,8 @@ set(script ${CellLocator_SOURCE_DIR}/Scripts/GenerateContiguousAnnotation.py)
 # Outputs: These filenames are hardcoded in Home.py
 set(annotation_contiguous_file "${CellLocator_DOWNLOAD_DIR}/annotation_${annotation_resolution}_contiguous.nrrd")
 set(color_table "${CellLocator_DOWNLOAD_DIR}/annotation_color_table.txt")
+
+# Outputs: These filenames are hardcoded in Home.py and GenerateContiguousAnnotation.py
 set(annotation_color_allen2slicer_mapping_file "${CellLocator_DOWNLOAD_DIR}/annotation_color_allen2slicer_mapping.json")
 set(annotation_color_slicer2allen_mapping_file "${CellLocator_DOWNLOAD_DIR}/annotation_color_slicer2allen_mapping.json")
 
@@ -215,6 +217,7 @@ set(layer_color_table "${CellLocator_DOWNLOAD_DIR}/annotation_layer_color_table.
 add_custom_command(
   DEPENDS
     ${layer_ontology_file}
+    ${annotation_color_allen2slicer_mapping_file}
     ${script}
     CellLocatorConfigureLauncher
     ${module_targets}
