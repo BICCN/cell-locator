@@ -861,9 +861,20 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       colorNodeID = slicer.mrmlScene.GetFirstNodeByName("allen").GetID()
     elif ontology == "Layer":
       colorNodeID = slicer.mrmlScene.GetFirstNodeByName("allen_layer").GetID()
+    elif ontology == "None":
+      colorNodeID = None
     else:
       raise RuntimeError("Unknown ontology: %s" % ontology)
-    annotation.GetDisplayNode().SetAndObserveColorNodeID(colorNodeID)
+
+    visible = 0
+    if colorNodeID is not None:
+      annotation.GetDisplayNode().SetAndObserveColorNodeID(colorNodeID)
+      visible = 1
+
+    # Hide or show label map
+    shPluginHandler = slicer.qSlicerSubjectHierarchyPluginHandler.instance()
+    shItemID = shPluginHandler.subjectHierarchyNode().GetItemByDataNode(annotation)
+    shPluginHandler.getOwnerPluginForSubjectHierarchyItem(shItemID).setDisplayVisibility(shItemID, visible);
 
   def onCursorPositionModifiedEvent(self, caller=None, event=None):
     crosshairNode = caller
