@@ -45,6 +45,7 @@ vtkMRMLMarkupsSplinesNode::vtkMRMLMarkupsSplinesNode()
   this->CurrentSpline = -1;
   this->DefaultClosed = true;
   this->DefaultThickness = 1000.0;
+  this->DefaultReferenceView = "Coronal";
   this->DefaultSplineOrientation = vtkSmartPointer<vtkMatrix4x4>::New();
   this->DefaultRepresentationType = "spline";
 }
@@ -77,6 +78,7 @@ int vtkMRMLMarkupsSplinesNode::AddSpline(vtkVector3d point)
   this->CurrentSpline = this->AddPointToNewMarkup(point);
   this->Closed.push_back(this->DefaultClosed);
   this->Thickness.push_back(this->DefaultThickness);
+  this->ReferenceView.push_back(this->DefaultReferenceView);
   vtkNew<vtkMatrix4x4> orientation;
   orientation->DeepCopy(this->DefaultSplineOrientation);
   this->SplineOrientation.push_back(orientation);
@@ -97,6 +99,7 @@ bool vtkMRMLMarkupsSplinesNode::InitSpline(int n)
   {
     this->Closed.push_back(this->DefaultClosed);
     this->Thickness.push_back(this->DefaultThickness);
+    this->ReferenceView.push_back(this->DefaultReferenceView);
     vtkNew<vtkMatrix4x4> orientation;
     orientation->DeepCopy(this->DefaultSplineOrientation);
     this->SplineOrientation.push_back(orientation);
@@ -181,6 +184,32 @@ double vtkMRMLMarkupsSplinesNode::GetNthSplineThickness(int n)
     return this->DefaultThickness;
   }
   return this->Thickness[static_cast<size_t>(n)];
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLMarkupsSplinesNode::SetNthSplineReferenceView(int n, const std::string& orientationReference)
+{
+  if (static_cast<size_t>(n) >= this->ReferenceView.size()
+    || this->ReferenceView[static_cast<size_t>(n)] == orientationReference)
+  {
+    return;
+  }
+
+  this->ReferenceView[static_cast<size_t>(n)] = orientationReference;
+  this->Modified();
+  this->InvokeCustomModifiedEvent(
+    vtkMRMLMarkupsNode::NthMarkupModifiedEvent, (void*)&n);
+}
+
+//----------------------------------------------------------------------------
+std::string vtkMRMLMarkupsSplinesNode::GetNthSplineReferenceView(int n)
+{
+  if (static_cast<size_t>(n) >= this->ReferenceView.size())
+  {
+    vtkErrorMacro("The " << n << "th spline doesn't exist");
+    return this->DefaultReferenceView;
+  }
+  return this->ReferenceView[static_cast<size_t>(n)];
 }
 
 //----------------------------------------------------------------------------

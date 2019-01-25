@@ -775,6 +775,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     else:
       self.MarkupsAnnotationNode = slicer.mrmlScene.AddNode(slicer.vtkMRMLMarkupsSplinesNode())
       self.MarkupsAnnotationNode.AddDefaultStorageNode()
+      self.MarkupsAnnotationNode.SetDefaultReferenceView(self.get("ReferenceViewComboBox").currentText)
 
     self.MarkupsAnnotationNode.SetName("Annotation")
     self.addAnnotationObservations()
@@ -795,6 +796,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     if self.MarkupsAnnotationNode.GetNumberOfPointsInNthMarkup(markupIndex) > 0:
       self.get('ThicknessSliderWidget').enabled = True
       self.get('ThicknessSliderWidget').value = self.MarkupsAnnotationNode.GetNthSplineThickness(markupIndex)
+
+    # ReferenceView
+    self.get('ReferenceViewComboBox').currentText = self.MarkupsAnnotationNode.GetNthSplineReferenceView(markupIndex)
 
     # Type
     representationType = self.MarkupsAnnotationNode.GetNthSplineRepresentationType(markupIndex)

@@ -76,6 +76,18 @@ public:
   void SetNthSplineThickness(int n, double thickness);
   double GetNthSplineThickness(int n);
 
+  /// Set/Get default reference view
+  ///
+  /// \note This property is specific to CellLocator
+  vtkGetMacro(DefaultReferenceView, std::string);
+  vtkSetMacro(DefaultReferenceView, std::string);
+
+  /// Set/Get the reference view of the Nth spline (Axial, Sagittal or Coronal)
+  ///
+  /// \note This property is specific to CellLocator
+  void SetNthSplineReferenceView(int n, const std::string& orientationReference);
+  std::string GetNthSplineReferenceView(int n);
+
   void SetNthSplineOrientation(int n, vtkMatrix4x4* matrix);
   vtkMatrix4x4* GetNthSplineOrientation(int n);
 
@@ -86,7 +98,7 @@ public:
   vtkGetMacro(DefaultRepresentationType, std::string);
   vtkSetMacro(DefaultRepresentationType, std::string);
 
-  /// The representation type of the Nth spline (polyline or spline)
+  /// Set/Get the representation type of the Nth spline (polyline or spline)
   std::string GetNthSplineRepresentationType(int n);
   void SetNthSplineRepresentationType(int n, const std::string& representationType);
 
@@ -106,6 +118,8 @@ protected:
   std::vector<int> SelectedPointIndex;
   std::string DefaultRepresentationType;
   std::vector<std::string> RepresentationType;
+  std::string DefaultReferenceView;
+  std::vector<std::string> ReferenceView;
 };
 
 #endif
