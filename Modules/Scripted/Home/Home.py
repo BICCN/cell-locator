@@ -587,6 +587,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     if not scene or not scene.IsA('vtkMRMLScene'):
       return
 
+    self.MarkupsAnnotationNode = None
+
     # Configure UI
     self.get('ThicknessSliderWidget').enabled = False
     self.get('AdjustViewPushButton').enabled = False
