@@ -299,6 +299,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.updateSaveButtonsState()
     self.updateInteractingButtonsState()
     self.updateReferenceViewButtonsState()
+    self.updateGUIFromAnnotationMarkup()
 
   def updateGUIFromSliceNode(self):
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
@@ -549,6 +550,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     layout.setContentsMargins(6, 6, 6, 6)
     threeDWidget.layout().insertLayout(0, layout)
 
+    # Yaw/Pitch/Roll
     def _add_slider(axeName):
       label = qt.QLabel("%s:" % axeName)
       layout.addWidget(label)
@@ -567,6 +569,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     _add_slider("Pitch")
     _add_slider("Roll")
 
+    # Apply
     adjustViewPushButton = qt.QPushButton("Apply")
     adjustViewPushButton.objectName = "AdjustViewPushButton"
     adjustViewPushButton.enabled = False
@@ -585,6 +588,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       return
 
     # Configure UI
+    self.get('ThicknessSliderWidget').enabled = False
     self.get('AdjustViewPushButton').enabled = False
     self.get('ResetToReferenceViewPushButton').enabled = False
 
@@ -777,17 +781,29 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.onThicknessChanged(self.get('ThicknessSliderWidget').value)
     self.onSliceNodeModified()
 
+  def updateGUIFromAnnotationMarkup(self):
+    self.get('ThicknessSliderWidget').enabled = False
+
+    if self.MarkupsAnnotationNode is None or self.MarkupsAnnotationNode.GetNumberOfMarkups() == 0:
+      return
+
+    markupIndex = 0
+
+    # Thickness
+    if self.MarkupsAnnotationNode.GetNumberOfPointsInNthMarkup(markupIndex) > 0:
+      self.get('ThicknessSliderWidget').enabled = True
+      self.get('ThicknessSliderWidget').value = self.MarkupsAnnotationNode.GetNthSplineThickness(markupIndex)
+
+    # Type
+    representationType = self.MarkupsAnnotationNode.GetNthSplineRepresentationType(markupIndex)
+    self.get('%sRadioButton' % representationType.title()).setChecked(True)
+
   @vtk.calldata_type(vtk.VTK_INT)
   def onNthMarkupModified(self, caller, event, callData=None):
     annotationNode = caller
     if not annotationNode or not annotationNode.IsA('vtkMRMLMarkupsSplinesNode'):
       return
-    markupIndex = 0
-    if callData is not None:
-      markupIndex = callData
-
-    representationType = annotationNode.GetNthSplineRepresentationType(markupIndex)
-    self.get('%sRadioButton' % representationType.title()).setChecked(True)
+    self.updateGUIFromAnnotationMarkup()
 
   def updateSaveButtonsState(self):
     self.get('SaveAnnotationButton').setEnabled(self.MarkupsAnnotationNode != None)
