@@ -226,14 +226,17 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     if slicer.util.confirmYesNoDisplay(question, parent=slicer.util.mainWindow()):
        self.onSaveAnnotationButtonClicked()
 
-  def resetViews(self):
-    self.resetToReferenceView()
+  def resetFieldOfView(self):
     # Reset 2D
     sliceWidget = self.LayoutManager.sliceWidget("Slice")
     sliceWidget.sliceController().fitSliceToBackground()
     # Reset 3D
     threeDWidget = self.LayoutManager.threeDWidget(0)
     threeDWidget.threeDView().resetFocalPoint()
+
+  def resetViews(self):
+    self.resetToReferenceView()
+    self.resetFieldOfView()
 
   def onNewAnnotationButtonClicked(self):
     self.saveAnnotationIfModified()
@@ -510,6 +513,13 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get("PinButton", sliceWidget).visible = False
     self.get("ViewLabel", sliceWidget).visible = False
     self.get("FitToWindowToolButton", sliceWidget).visible = False
+    # ResetFieldOfView
+    resetFieldOfViewButton = qt.QToolButton()
+    resetFieldOfViewButton.objectName = "ResetFieldOfViewButton"
+    resetFieldOfViewButton.setIcon(qt.QIcon(":/Icons/reset_field_of_view.svg.png"))
+    resetFieldOfViewButton.setToolTip("Adjust the Slice Viewer's field of view to match the extent of the atlas.")
+    self.set(resetFieldOfViewButton)
+    self.get("BarWidget", sliceWidget).layout().addWidget(resetFieldOfViewButton)
     # ReferenceView
     referenceViewComboBox = qt.QComboBox()
     referenceViewComboBox.objectName = "ReferenceViewComboBox"
@@ -834,6 +844,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get('SaveAsAnnotationButton').connect("clicked()", self.onSaveAsAnnotationButtonClicked)
     self.get('LoadAnnotationButton').connect("clicked()", self.onLoadAnnotationButtonClicked)
 
+    self.get('ResetFieldOfViewButton').connect("clicked()", self.resetFieldOfView)
     self.get('ReferenceViewComboBox').connect("currentTextChanged(QString)", self.onReferenceViewChanged)
     self.get('ResetToReferenceViewPushButton').connect("clicked()", self.resetToReferenceView)
 

@@ -12,6 +12,7 @@
     <file alias="explore_icon.svg.png">./Icons/explore_icon.svg.png</file>
     <file alias="saveas_icon.svg.png">./Icons/saveas_icon.svg.png</file>
     <file alias="load_icon.svg.png">./Icons/load_icon.svg.png</file>
+    <file alias="reset_field_of_view.svg.png">./Icons/reset_field_of_view.svg.png</file>
     <file alias="save_icon.svg.png">./Icons/save_icon.svg.png</file>
     <file alias="new_icon.svg.png">./Icons/new_icon.svg.png</file>
   </qresource>
