@@ -216,7 +216,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     return averageTemplate, annotation
 
   def onStartupCompleted(self, *unused):
-    qt.QTimer.singleShot(0, lambda: self.onSceneEndClose(slicer.mrmlScene))
+    qt.QTimer.singleShot(0, lambda: self.onSceneEndCloseEvent(slicer.mrmlScene))
 
   def saveAnnotationIfModified(self):
     if not self.MarkupsAnnotationNode:
@@ -253,7 +253,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self.resetViews()
     self.updateGUIFromMRML()
-    self.onSliceNodeModified() # Init values
+    self.onSliceNodeModifiedEvent() # Init values
     self.setInteractionState('annotate')
     self.onAnnotationTypeChanged()
 
@@ -294,7 +294,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.updateGUIFromSliceNode()
 
   def updateGUIFromAnnotation(self):
-    self.onMarkupsAnnotationStorageNodeModified()
+    self.onMarkupsAnnotationStorageNodeModifiedEvent()
 
     self.updateSaveButtonsState()
     self.updateInteractingButtonsState()
@@ -395,7 +395,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sliceSpacing = sliceNode.GetPrescribedSliceSpacing()
     sliceNode.SetPrescribedSliceSpacing(sliceSpacing[0], sliceSpacing[1], spacing)
 
-  def onMarkupsAnnotationStorageNodeModified(self):
+  def onMarkupsAnnotationStorageNodeModifiedEvent(self):
     if not self.MarkupsAnnotationNode or not self.MarkupsAnnotationNode.GetStorageNode():
       return
     self.get('AnnotationPathLineEdit').currentPath = self.MarkupsAnnotationNode.GetStorageNode().GetFileName()
@@ -458,7 +458,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       self.MarkupsAnnotationNode.GetNthSplineOrientation(0))
     sliceNode.UpdateMatrices()
 
-  def onSliceNodeModified(self, caller=None, event=None):
+  def onSliceNodeModifiedEvent(self, caller=None, event=None):
     sliceNode = caller
     if not sliceNode:
       sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
@@ -499,16 +499,16 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self.MarkupsAnnotationNode.EndModify(wasModifying)
 
-  def onSceneStartClose(self, caller=None, event=None):
+  def onSceneStartCloseEvent(self, caller=None, event=None):
     scene = caller
     if not scene or not scene.IsA('vtkMRMLScene'):
       return
 
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
-    self.removeObserver(sliceNode, vtk.vtkCommand.ModifiedEvent, self.onSliceNodeModified)
+    self.removeObserver(sliceNode, vtk.vtkCommand.ModifiedEvent, self.onSliceNodeModifiedEvent)
 
     interactionNode = slicer.app.applicationLogic().GetInteractionNode()
-    self.removeObserver(interactionNode, vtk.vtkCommand.ModifiedEvent, self.onInteractionNodeModified)
+    self.removeObserver(interactionNode, vtk.vtkCommand.ModifiedEvent, self.onInteractionNodeModifiedEvent)
 
   def setupViewers(self):
     # Configure slice view
@@ -582,7 +582,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.set(resetToReferenceViewPushButton)
     layout.addWidget(resetToReferenceViewPushButton)
 
-  def onSceneEndClose(self, caller=None, event=None):
+  def onSceneEndCloseEvent(self, caller=None, event=None):
     scene = caller
     if not scene or not scene.IsA('vtkMRMLScene'):
       return
@@ -614,8 +614,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     threeDWidget.mrmlViewNode().SetBoxVisible(False)
 
     # Connections
-    self.addObserver(sliceNode, vtk.vtkCommand.ModifiedEvent, self.onSliceNodeModified)
-    self.addObserver(sliceNode.GetInteractionNode(), vtk.vtkCommand.ModifiedEvent, self.onInteractionNodeModified)
+    self.addObserver(sliceNode, vtk.vtkCommand.ModifiedEvent, self.onSliceNodeModifiedEvent)
+    self.addObserver(sliceNode.GetInteractionNode(), vtk.vtkCommand.ModifiedEvent, self.onInteractionNodeModifiedEvent)
 
     # Create RAStoPIR transform - See https://github.com/BICCN/cell-locator/issues/48#issuecomment-443412860
     # 0 0 1 -1
@@ -730,7 +730,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     #slicer.modules.celllocator.registerCustomViewFactories(self.LayoutManager)
     self.LayoutManager.setLayout(self.ThreeDWithReformatCustomLayoutId)
 
-    self.addObserver(slicer.mrmlScene, slicer.mrmlScene.StartCloseEvent, self.onSceneStartClose)
+    self.addObserver(slicer.mrmlScene, slicer.mrmlScene.StartCloseEvent, self.onSceneStartCloseEvent)
     self.addObserver(slicer.mrmlScene, slicer.mrmlScene.EndCloseEvent, self.onStartupCompleted)
 
     # Prevent accidental placement of polyline point by associating the 3D view
@@ -750,15 +750,15 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
   def removeAnnotationObservations(self):
     self.removeObserver(
-      self.MarkupsAnnotationNode, slicer.vtkMRMLMarkupsNode.MarkupAddedEvent, self.OnMarkupAddedEvent)
+      self.MarkupsAnnotationNode, slicer.vtkMRMLMarkupsNode.MarkupAddedEvent, self.onMarkupAddedEvent)
     self.removeObserver(
-      self.MarkupsAnnotationNode, slicer.vtkMRMLMarkupsNode.NthMarkupModifiedEvent, self.onNthMarkupModified)
+      self.MarkupsAnnotationNode, slicer.vtkMRMLMarkupsNode.NthMarkupModifiedEvent, self.onNthMarkupModifiedEvent)
 
   def addAnnotationObservations(self):
     self.addObserver(
-      self.MarkupsAnnotationNode, slicer.vtkMRMLMarkupsNode.MarkupAddedEvent, self.OnMarkupAddedEvent)
+      self.MarkupsAnnotationNode, slicer.vtkMRMLMarkupsNode.MarkupAddedEvent, self.onMarkupAddedEvent)
     self.addObserver(
-      self.MarkupsAnnotationNode, slicer.vtkMRMLMarkupsNode.NthMarkupModifiedEvent, self.onNthMarkupModified)
+      self.MarkupsAnnotationNode, slicer.vtkMRMLMarkupsNode.NthMarkupModifiedEvent, self.onNthMarkupModifiedEvent)
 
   def removeAnnotation(self):
     self.removeAnnotationObservations()
@@ -777,9 +777,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.MarkupsAnnotationNode.SetName("Annotation")
     self.addAnnotationObservations()
 
-  def OnMarkupAddedEvent(self, caller=None, event=None):
+  def onMarkupAddedEvent(self, caller=None, event=None):
     self.onThicknessChanged(self.get('ThicknessSliderWidget').value)
-    self.onSliceNodeModified()
+    self.onSliceNodeModifiedEvent()
 
   def updateGUIFromAnnotationMarkup(self):
     self.get('ThicknessSliderWidget').enabled = False
@@ -799,7 +799,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get('%sRadioButton' % representationType.title()).setChecked(True)
 
   @vtk.calldata_type(vtk.VTK_INT)
-  def onNthMarkupModified(self, caller, event, callData=None):
+  def onNthMarkupModifiedEvent(self, caller, event, callData=None):
     annotationNode = caller
     if not annotationNode or not annotationNode.IsA('vtkMRMLMarkupsSplinesNode'):
       return
@@ -816,7 +816,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     hasMarkups = self.MarkupsAnnotationNode is not None and self.MarkupsAnnotationNode.GetNumberOfMarkups() > 0
     self.get('ReferenceViewComboBox').setDisabled(hasMarkups)
 
-  def onInteractionNodeModified(self, caller=None, event=None):
+  def onInteractionNodeModifiedEvent(self, caller=None, event=None):
     interactionNode = caller
     if not interactionNode or not interactionNode.IsA('vtkMRMLInteractionNode'):
       return
