@@ -356,6 +356,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sliceWidget = self.LayoutManager.sliceWidget("Slice")
     self.get("SliceOffsetSlider", sliceWidget).prefix = "" # Hide orientation prefix
 
+    self.get('ResetToReferenceViewPushButton').enabled = (angles != [0., 0., 0.])
+
   def onViewOrientationChanged(self):
     roll = self.get('RollSliderWidget').value
     yaw = self.get('YawSliderWidget').value
@@ -401,6 +403,12 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     referenceView = self.ReferenceView
     self.ReferenceView = ''
     self.onReferenceViewChanged(referenceView)
+
+    self.get('AdjustViewPushButton').enabled = False
+
+    # Explicitly reset in case slider were updated but "Apply" was not used
+    for axe in ['Roll', 'Yaw', 'Pitch']:
+      self.get('%sSliderWidget' % axe).value = 0
 
   def onReferenceViewChanged(self, orientation):
     if orientation == self.ReferenceView:
@@ -561,11 +569,13 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     adjustViewPushButton = qt.QPushButton("Apply")
     adjustViewPushButton.objectName = "AdjustViewPushButton"
+    adjustViewPushButton.enabled = False
     layout.addWidget(adjustViewPushButton)
     self.set(adjustViewPushButton)
     # Reset
     resetToReferenceViewPushButton = qt.QPushButton("Reset")
     resetToReferenceViewPushButton.objectName = "ResetToReferenceViewPushButton"
+    resetToReferenceViewPushButton.enabled = False
     self.set(resetToReferenceViewPushButton)
     layout.addWidget(resetToReferenceViewPushButton)
 
@@ -573,6 +583,10 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     scene = caller
     if not scene or not scene.IsA('vtkMRMLScene'):
       return
+
+    # Configure UI
+    self.get('AdjustViewPushButton').enabled = False
+    self.get('ResetToReferenceViewPushButton').enabled = False
 
     averageTemplate, annotation = self.loadData()
 
@@ -848,8 +862,12 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get('ReferenceViewComboBox').connect("currentTextChanged(QString)", self.onReferenceViewChanged)
     self.get('ResetToReferenceViewPushButton').connect("clicked()", self.resetToReferenceView)
 
+    def setAdjustAndResetButtonsEnabled():
+      self.get('AdjustViewPushButton').setEnabled(True)
+      self.get('ResetToReferenceViewPushButton').setEnabled(True)
+
     for axe in ['Roll', 'Yaw', 'Pitch']:
-      self.get('%sSliderWidget' % axe).connect("valueChanged(double)", lambda: self.get('AdjustViewPushButton').setEnabled(True))
+      self.get('%sSliderWidget' % axe).connect("valueChanged(double)", setAdjustAndResetButtonsEnabled)
     self.get('AdjustViewPushButton').connect("clicked()", self.onViewOrientationChanged)
 
     self.get('StepSizeSliderWidget').connect("valueChanged(double)", self.onStepSizeChanged)
