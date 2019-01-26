@@ -539,9 +539,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
     self.removeObserver(sliceNode, vtk.vtkCommand.ModifiedEvent, self.onSliceNodeModifiedEvent)
 
-    interactionNode = slicer.app.applicationLogic().GetInteractionNode()
-    self.removeObserver(interactionNode, vtk.vtkCommand.ModifiedEvent, self.onInteractionNodeModifiedEvent)
-
   def setupViewers(self):
     # Configure slice view
     sliceWidget = self.LayoutManager.sliceWidget("Slice")
@@ -651,7 +648,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     # Connections
     self.addObserver(sliceNode, vtk.vtkCommand.ModifiedEvent, self.onSliceNodeModifiedEvent)
-    self.addObserver(sliceNode.GetInteractionNode(), vtk.vtkCommand.ModifiedEvent, self.onInteractionNodeModifiedEvent)
 
     # Create RAStoPIR transform - See https://github.com/BICCN/cell-locator/issues/48#issuecomment-443412860
     # 0 0 1 -1
@@ -867,12 +863,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     hasMarkups = self.MarkupsAnnotationNode is not None and self.MarkupsAnnotationNode.GetNumberOfMarkups() > 0
     self.get('ReferenceViewComboBox').setDisabled(hasMarkups)
 
-  def onInteractionNodeModifiedEvent(self, caller=None, event=None):
-    interactionNode = caller
-    if not interactionNode or not interactionNode.IsA('vtkMRMLInteractionNode'):
-      return
-
-
   def getInteractionState(self):
     interactionNode = slicer.app.applicationLogic().GetInteractionNode()
     if interactionNode.GetCurrentInteractionMode() == interactionNode.Place:
@@ -888,9 +878,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     if self.getInteractionState() == newState:
       return
-
-      return
-
 
     # 1: update selection node
     selectionNode = slicer.app.applicationLogic().GetSelectionNode()
