@@ -238,78 +238,62 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.resetFieldOfView()
 
   def onNewAnnotationButtonClicked(self):
+    # Save current
     self.saveAnnotationIfModified()
 
-    self.removeAnnotation()
-
-    if not self.MarkupsAnnotationNode:
-      self.initializeAnnotation()
-
+    # Create
+    self.initializeAnnotation()
     if not self.onSaveAsAnnotationButtonClicked():
-      self.removeAnnotation()
       return
 
-    self.resetViews()
     self.updateGUIFromMRML()
     self.onSliceNodeModifiedEvent() # Init values
-    self.setInteractionState('annotate')
-    self.onAnnotationTypeChanged()
+
+    self.setDefaultSettings()
 
   def onSaveAnnotationButtonClicked(self):
     if not self.MarkupsAnnotationNode or \
        not self.MarkupsAnnotationNode.GetStorageNode():
       return
-
-    # Camera
-    if self.MarkupsAnnotationNode.GetNumberOfMarkups() > 0:
-      markupIndex = 0
-      viewNode = slicer.app.layoutManager().threeDWidget(0).threeDView().mrmlViewNode()
-      cameraNode = slicer.modules.cameras.logic().GetViewActiveCameraNode(viewNode)
-      position = [0., 0., 0.]
-      cameraNode.GetPosition(position)
-      self.MarkupsAnnotationNode.SetNthSplineCameraPosition(markupIndex, position)
-      viewUp = [0., 0., 0.]
-      cameraNode.GetViewUp(viewUp)
-      self.MarkupsAnnotationNode.SetNthSplineCameraViewUp(markupIndex, viewUp)
-
-    self.MarkupsAnnotationNode.GetStorageNode().WriteData(self.MarkupsAnnotationNode)
+    if not self.MarkupsAnnotationNode.GetStorageNode().GetFileName():
+      self.onSaveAsAnnotationButtonClicked()
+    else:
+      self.MarkupsAnnotationNode.GetStorageNode().WriteData(self.MarkupsAnnotationNode)
 
   def onSaveAsAnnotationButtonClicked(self):
-    valid = slicer.app.ioManager().openDialog(
+    return slicer.app.ioManager().openDialog(
       "MarkupsSplines", slicer.qSlicerFileDialog.Write, {"nodeID": self.MarkupsAnnotationNode.GetID()})
-    if valid:
-      self.updateGUIFromMRML()
-    return valid
 
   def onLoadAnnotationButtonClicked(self):
     from slicer import app, qSlicerFileDialog
 
-    self.removeAnnotation()
-    self.saveAnnotationIfModified()
-    if not app.coreIOManager().openDialog('MarkupsSplines', qSlicerFileDialog.Read):
-      return
-
-    nodes = slicer.mrmlScene.GetNodesByClass('vtkMRMLMarkupsSplinesNode')
-    nodes.UnRegister(slicer.mrmlScene)
-    newNode = nodes.GetItemAsObject(nodes.GetNumberOfItems() - 1)
-
-    self.initializeAnnotation(newNode)
-    self.updateGUIFromMRML()
-
-    self.resetViews()
-    self.jumpSliceToAnnotation()
-    self.setInteractionState('explore')
-
-    # Camera
     viewNode = slicer.app.layoutManager().threeDWidget(0).threeDView().mrmlViewNode()
     cameraNode = slicer.modules.cameras.logic().GetViewActiveCameraNode(viewNode)
-    position = [0., 0., 0.]
-    self.MarkupsAnnotationNode.GetNthSplineCameraPosition(0, position)
-    cameraNode.SetPosition(position)
-    viewUp = [0., 0., 0.]
-    self.MarkupsAnnotationNode.GetNthSplineCameraViewUp(0, viewUp)
-    cameraNode.SetViewUp(viewUp)
-    cameraNode.ResetClippingRange()
+    with NodeModify(cameraNode):
+
+      self.removeAnnotation()
+      self.saveAnnotationIfModified()
+      if not app.coreIOManager().openDialog('MarkupsSplines', qSlicerFileDialog.Read):
+        return
+
+      nodes = slicer.mrmlScene.GetNodesByClass('vtkMRMLMarkupsSplinesNode')
+      nodes.UnRegister(slicer.mrmlScene)
+      newNode = nodes.GetItemAsObject(nodes.GetNumberOfItems() - 1)
+
+      self.initializeAnnotation(newNode)
+      self.updateGUIFromMRML()
+
+      self.resetViews()
+      self.setInteractionState('explore')
+
+      # Camera
+      position = [0., 0., 0.]
+      self.MarkupsAnnotationNode.GetNthSplineCameraPosition(0, position)
+      cameraNode.SetPosition(position)
+      viewUp = [0., 0., 0.]
+      self.MarkupsAnnotationNode.GetNthSplineCameraViewUp(0, viewUp)
+      cameraNode.SetViewUp(viewUp)
+      cameraNode.ResetClippingRange()
 
   def updateGUIFromMRML(self):
     self.updateGUIFromAnnotation()
@@ -318,8 +302,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def updateGUIFromAnnotation(self):
     self.onMarkupsAnnotationStorageNodeModifiedEvent()
 
-    self.updateSaveButtonsState()
-    self.updateInteractingButtonsState()
     self.updateReferenceViewButtonsState()
     self.updateGUIFromAnnotationMarkup()
 
@@ -339,11 +321,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     else:
       self.get('StepSizeSliderWidget').minimum = 0
       self.get('StepSizeSliderWidget').maximum = 100
-
-    if sliceNode.GetSliceSpacingMode != sliceNode.PrescribedSliceSpacingMode:
-      initialSpacing = sliceLogic.GetLowestVolumeSliceSpacing()
-      sliceNode.SetPrescribedSliceSpacing(initialSpacing)
-      sliceNode.SetSliceSpacingModeToPrescribed()
 
     if self.MarkupsAnnotationNode is None or self.MarkupsAnnotationNode.GetNumberOfMarkups() == 0:
       sliceSpacing = sliceNode.GetPrescribedSliceSpacing()
@@ -531,6 +508,18 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
           vtk.vtkPlane.ProjectPoint(point, origin, normal, proj)
           self.MarkupsAnnotationNode.SetMarkupPointFromArray(i, n, proj)
 
+  def onCameraNodeModifiedEvent(self, caller, event):
+    cameraNode = caller
+    if self.MarkupsAnnotationNode is None or self.MarkupsAnnotationNode.GetNumberOfMarkups() == 0:
+      return
+    markupIndex = 0
+    position = [0., 0., 0.]
+    cameraNode.GetPosition(position)
+    self.MarkupsAnnotationNode.SetNthSplineCameraPosition(markupIndex, position)
+    viewUp = [0., 0., 0.]
+    cameraNode.GetViewUp(viewUp)
+    self.MarkupsAnnotationNode.SetNthSplineCameraViewUp(markupIndex, viewUp)
+
   def onSceneStartCloseEvent(self, caller=None, event=None):
     scene = caller
     if not scene or not scene.IsA('vtkMRMLScene'):
@@ -538,6 +527,10 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
     self.removeObserver(sliceNode, vtk.vtkCommand.ModifiedEvent, self.onSliceNodeModifiedEvent)
+
+    viewNode = slicer.app.layoutManager().threeDWidget(0).threeDView().mrmlViewNode()
+    cameraNode = slicer.modules.cameras.logic().GetViewActiveCameraNode(viewNode)
+    self.removeObserver(cameraNode, vtk.vtkCommand.ModifiedEvent, self.onCameraNodeModifiedEvent)
 
   def setupViewers(self):
     # Configure slice view
@@ -611,6 +604,20 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.set(resetToReferenceViewPushButton)
     layout.addWidget(resetToReferenceViewPushButton)
 
+  def setDefaultSettings(self):
+
+    # StepSize
+    self.get('StepSizeSliderWidget').value = self.DefaultStepSize
+
+    # Thickness
+    self.get('ThicknessSliderWidget').value = 50
+
+    # AnnotationType
+    self.get('SplineRadioButton').checked = True
+
+    self.setInteractionState('explore')
+    self.resetViews()
+
   def onSceneEndCloseEvent(self, caller=None, event=None):
     scene = caller
     if not scene or not scene.IsA('vtkMRMLScene'):
@@ -627,7 +634,14 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
 
+    # Default StepSize
+    sliceLogic = slicer.app.applicationLogic().GetSliceLogic(sliceNode)
+    initialSpacing = sliceLogic.GetLowestVolumeSliceSpacing()
+    sliceNode.SetPrescribedSliceSpacing(initialSpacing)
+    self.DefaultStepSize = initialSpacing[2]
+
     # Configure slice view
+    sliceNode.SetSliceSpacingModeToPrescribed()
     sliceNode.SetSliceVisible(True)
     sliceNode.SetWidgetVisible(True) # Show reformat widget
     sliceNode.SetWidgetOutlineVisible(False) # Hide reformat widget box
@@ -648,6 +662,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     # Connections
     self.addObserver(sliceNode, vtk.vtkCommand.ModifiedEvent, self.onSliceNodeModifiedEvent)
+    cameraNode = slicer.modules.cameras.logic().GetViewActiveCameraNode(threeDWidget.threeDView().mrmlViewNode())
+    self.addObserver(cameraNode, vtk.vtkCommand.ModifiedEvent, self.onCameraNodeModifiedEvent)
 
     # Create RAStoPIR transform - See https://github.com/BICCN/cell-locator/issues/48#issuecomment-443412860
     # 0 0 1 -1
@@ -699,16 +715,11 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sliceNode.AddSliceOrientationPreset("Coronal", orientationMatrix)
     sliceNode.DisableModifiedEventOff()
 
-    # StepSize
-    sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
-    sliceSpacing = sliceNode.GetPrescribedSliceSpacing()
-    self.get('StepSizeSliderWidget').value = sliceSpacing[2]
-
-    self.setInteractionState('explore')
-
-    self.resetViews()
-
+    self.initializeAnnotation()
+    self.onSliceNodeModifiedEvent() # Init values
     self.updateGUIFromMRML()
+
+    self.setDefaultSettings()
 
   def setup(self):
     ScriptedLoadableModuleWidget.setup(self)
@@ -808,6 +819,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     if newNode:
       self.MarkupsAnnotationNode = newNode
     else:
+      self.removeAnnotation()
       self.MarkupsAnnotationNode = slicer.mrmlScene.AddNode(slicer.vtkMRMLMarkupsSplinesNode())
       self.MarkupsAnnotationNode.AddDefaultStorageNode()
       self.MarkupsAnnotationNode.SetDefaultReferenceView(self.get("ReferenceViewComboBox").currentText)
@@ -851,13 +863,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     if not annotationNode or not annotationNode.IsA('vtkMRMLMarkupsSplinesNode'):
       return
     self.updateGUIFromAnnotationMarkup()
-
-  def updateSaveButtonsState(self):
-    self.get('SaveAnnotationButton').setEnabled(self.MarkupsAnnotationNode != None)
-    self.get('SaveAsAnnotationButton').setEnabled(self.MarkupsAnnotationNode != None)
-
-  def updateInteractingButtonsState(self):
-    self.get('AnnotateRadioButton').setEnabled(self.MarkupsAnnotationNode != None)
 
   def updateReferenceViewButtonsState(self):
     hasMarkups = self.MarkupsAnnotationNode is not None and self.MarkupsAnnotationNode.GetNumberOfMarkups() > 0

@@ -100,9 +100,6 @@
             </item>
             <item>
              <widget class="QPushButton" name="SaveAnnotationButton">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
               <property name="text">
                <string>Save</string>
               </property>
@@ -117,9 +114,6 @@
             </item>
             <item>
              <widget class="QPushButton" name="SaveAsAnnotationButton">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
               <property name="text">
                <string>Save As</string>
               </property>
