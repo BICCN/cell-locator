@@ -430,9 +430,10 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self.get('AdjustViewPushButton').enabled = False
 
-    # Explicitly reset in case slider were updated but "Apply" was not used
+    # Explicitly reset in if "Apply" was not used
     for axe in ['Roll', 'Yaw', 'Pitch']:
-      self.get('%sSliderWidget' % axe).value = 0
+      with SignalBlocker(self.get('%sSliderWidget' % axe)):
+        self.get('%sSliderWidget' % axe).value = 0
 
   def onReferenceViewChanged(self, orientation):
     if orientation == self.ReferenceView:
