@@ -90,12 +90,26 @@ public:
   std::string GetNthSplineReferenceView(int n);
 
   /// Set/Get camera position
+  ///
+  /// \note This property is specific to CellLocator
   void SetNthSplineCameraPosition(int n, double position[3]);
   void GetNthSplineCameraPosition(int n, double position[3]);
 
   /// Set/Get camera view up
+  ///
+  /// \note This property is specific to CellLocator
   void SetNthSplineCameraViewUp(int n, double viewUp[3]);
   void GetNthSplineCameraViewUp(int n, double viewUp[3]);
+
+  /// Set/Get default step size
+  vtkGetMacro(DefaultStepSize, double);
+  vtkSetMacro(DefaultStepSize, double);
+
+  /// Set/Get slice viewer step size
+  ///
+  /// \note This property is specific to CellLocator
+  void SetNthSplineStepSize(int n, double stepSize);
+  double GetNthSplineStepSize(int n);
 
   void SetNthSplineOrientation(int n, vtkMatrix4x4* matrix);
   vtkMatrix4x4* GetNthSplineOrientation(int n);
@@ -131,6 +145,8 @@ protected:
   std::vector<std::string> ReferenceView;
   std::vector< std::array<double, 3> > CameraPosition;
   std::vector< std::array<double, 3> > CameraViewUp;
+  double DefaultStepSize;
+  std::vector<double> StepSize;
 };
 
 #endif

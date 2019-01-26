@@ -74,6 +74,7 @@ int vtkMRMLMarkupsSplinesStorageNode::ReadNthMarkupFromTranslationMap(
   splinesNode->SetNthSplineClosed(n, markupsMap[key + "Closed"].ToInt());
   splinesNode->SetNthSplineThickness(n, markupsMap[key + "Thickness"].ToDouble());
   splinesNode->SetNthSplineReferenceView(n, markupsMap[key + "ReferenceView"].ToString());
+  splinesNode->SetNthSplineStepSize(n, markupsMap[key + "StepSize"].ToDouble());
 
   vtkNew<vtkMatrix4x4> matrix;
   for (int i = 0; i < 4; ++i)
@@ -127,6 +128,7 @@ int vtkMRMLMarkupsSplinesStorageNode::WriteNthMarkupToTranslationMap(
   markupsMap[key + "Closed"] = splinesNode->GetNthSplineClosed(n) ? 1 : 0;
   markupsMap[key + "Thickness"] = splinesNode->GetNthSplineThickness(n);
   markupsMap[key + "ReferenceView"] = vtkStdString(splinesNode->GetNthSplineReferenceView(n));
+  markupsMap[key + "StepSize"] = splinesNode->GetNthSplineStepSize(n);
 
   vtkMatrix4x4* matrix = splinesNode->GetNthSplineOrientation(n);
   for (int i = 0; i < 4; ++i)

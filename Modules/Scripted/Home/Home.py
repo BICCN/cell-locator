@@ -346,8 +346,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       sliceNode.SetPrescribedSliceSpacing(initialSpacing)
       sliceNode.SetSliceSpacingModeToPrescribed()
 
-    sliceSpacing = sliceNode.GetPrescribedSliceSpacing()
-    self.get('StepSizeSliderWidget').value = sliceSpacing[2]
+    if self.MarkupsAnnotationNode is None or self.MarkupsAnnotationNode.GetNumberOfMarkups() == 0:
+      sliceSpacing = sliceNode.GetPrescribedSliceSpacing()
+      self.get('StepSizeSliderWidget').value = sliceSpacing[2]
 
     # Update Roll/Pitch/Yaw
     referenceOrientation = sliceNode.GetSliceOrientationPreset(self.ReferenceView)
@@ -417,6 +418,14 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
     sliceSpacing = sliceNode.GetPrescribedSliceSpacing()
     sliceNode.SetPrescribedSliceSpacing(sliceSpacing[0], sliceSpacing[1], spacing)
+
+    if self.MarkupsAnnotationNode is None:
+      return
+
+    self.MarkupsAnnotationNode.SetDefaultStepSize(spacing)
+
+    for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
+      self.MarkupsAnnotationNode.SetNthSplineStepSize(i, spacing)
 
   def onMarkupsAnnotationStorageNodeModifiedEvent(self):
     if not self.MarkupsAnnotationNode or not self.MarkupsAnnotationNode.GetStorageNode():
@@ -693,6 +702,11 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sliceNode.AddSliceOrientationPreset("Coronal", orientationMatrix)
     sliceNode.DisableModifiedEventOff()
 
+    # StepSize
+    sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
+    sliceSpacing = sliceNode.GetPrescribedSliceSpacing()
+    self.get('StepSizeSliderWidget').value = sliceSpacing[2]
+
     self.setInteractionState('explore')
 
     self.resetViews()
@@ -827,6 +841,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     # Type
     representationType = self.MarkupsAnnotationNode.GetNthSplineRepresentationType(markupIndex)
     self.get('%sRadioButton' % representationType.title()).setChecked(True)
+
+    # StepSize
+    self.get('StepSizeSliderWidget').value = self.MarkupsAnnotationNode.GetNthSplineStepSize(markupIndex)
 
   @vtk.calldata_type(vtk.VTK_INT)
   def onNthMarkupModifiedEvent(self, caller, event, callData=None):

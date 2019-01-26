@@ -25,6 +25,7 @@ and was partially funded by Allen Institute
 
 // VTK includes
 #include <vtkBoundingBox.h>
+#include <vtkMathUtilities.h>
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
 #include <vtkMatrix4x4.h>
@@ -50,6 +51,7 @@ vtkMRMLMarkupsSplinesNode::vtkMRMLMarkupsSplinesNode()
   this->DefaultReferenceView = "Coronal";
   this->DefaultSplineOrientation = vtkSmartPointer<vtkMatrix4x4>::New();
   this->DefaultRepresentationType = "spline";
+  this->DefaultStepSize = 1.0;
 }
 
 //----------------------------------------------------------------------------
@@ -90,6 +92,7 @@ int vtkMRMLMarkupsSplinesNode::AddSpline(vtkVector3d point)
   this->CameraPosition.push_back(cameraPosition);
   std::array<double, 3> cameraViewUp = {0., 0., 0.};
   this->CameraViewUp.push_back(cameraViewUp);
+  this->StepSize.push_back(this->DefaultStepSize);
   return this->CurrentSpline;
 }
 
@@ -115,6 +118,7 @@ bool vtkMRMLMarkupsSplinesNode::InitSpline(int n)
     this->CameraPosition.push_back(cameraPosition);
     std::array<double, 3> cameraViewUp = {0., 0., 0.};
     this->CameraViewUp.push_back(cameraViewUp);
+    this->StepSize.push_back(this->DefaultStepSize);
   }
   return true;
 }
@@ -232,7 +236,7 @@ bool ArrayAreEqual(const std::array<double, 3>& a1,
 {
   for (size_t i = 0; i < a1.size(); i++)
     {
-    if ( fabs(a1[i] - a2[i]) >= tolerance )
+    if (!vtkMathUtilities::FuzzyCompare<double>(a1[i], a2[i], tolerance))
       {
       return false;
       }
@@ -304,6 +308,33 @@ void vtkMRMLMarkupsSplinesNode::GetNthSplineCameraViewUp(int n, double viewUp[3]
   viewUp[0] = this->CameraViewUp[i][0];
   viewUp[1] = this->CameraViewUp[i][1];
   viewUp[2] = this->CameraViewUp[i][2];
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLMarkupsSplinesNode::SetNthSplineStepSize(int n, double stepSize)
+{
+  size_t i = static_cast<size_t>(n);
+  if (i >= this->StepSize.size()
+    || vtkMathUtilities::FuzzyCompare<double>(this->StepSize[i], stepSize, 1e-3))
+  {
+    return;
+  }
+  this->StepSize[i] = stepSize;
+  this->Modified();
+  this->InvokeCustomModifiedEvent(
+    vtkMRMLMarkupsNode::NthMarkupModifiedEvent, (void*)&n);
+}
+
+//----------------------------------------------------------------------------
+double vtkMRMLMarkupsSplinesNode::GetNthSplineStepSize(int n)
+{
+  size_t i = static_cast<size_t>(n);
+  if (i >= this->StepSize.size())
+  {
+    vtkErrorMacro("The " << n << "th spline doesn't exist");
+    return 0.0;
+  }
+  return this->StepSize[i];
 }
 
 //----------------------------------------------------------------------------
