@@ -31,6 +31,8 @@ int SlicerAppMain(int argc, char* argv[])
 {
   typedef qCellLocatorAppMainWindow SlicerMainWindowType;
 
+  QCoreApplication::setAttribute(Qt::AA_DontUseNativeMenuBar);
+
   qSlicerApplicationHelper::preInitializeApplication(argv[0], new qAppStyle);
 
   qSlicerApplication app(argc, argv);

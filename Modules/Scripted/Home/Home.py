@@ -948,6 +948,11 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self.get('OntologyComboBox').connect("currentTextChanged(QString)", self.onOntologyChanged)
 
+    self.ClearAction = qt.QAction(slicer.util.mainWindow())
+    self.ClearAction.shortcut = qt.QKeySequence("Ctrl+W")
+    self.ClearAction.connect("triggered()", lambda: slicer.mrmlScene.Clear(False))
+    slicer.util.mainWindow().addAction(self.ClearAction)
+
     # Observe the crosshair node to get the current cursor position
     crosshairNode = slicer.mrmlScene.GetFirstNodeByClass('vtkMRMLCrosshairNode')
     self.addObserver(crosshairNode, slicer.vtkMRMLCrosshairNode.CursorPositionModifiedEvent, self.onCursorPositionModifiedEvent)
