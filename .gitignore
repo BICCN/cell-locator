@@ -1,0 +1,10 @@
+### Python ###
+# Byte-compiled / optimized
+__pycache__/
+*.py[co]
+
+### PyCharm ###
+.idea/
+
+### QtCreator ###
+CMakeLists.txt.user
