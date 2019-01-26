@@ -241,8 +241,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def onNewAnnotationButtonClicked(self):
     self.saveAnnotationIfModified()
 
-    if self.MarkupsAnnotationNode:
-      self.removeAnnotation()
+    self.removeAnnotation()
 
     if not self.MarkupsAnnotationNode:
       self.initializeAnnotation()
@@ -803,14 +802,14 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       self.MarkupsAnnotationNode, slicer.vtkMRMLMarkupsNode.NthMarkupModifiedEvent, self.onNthMarkupModifiedEvent)
 
   def removeAnnotation(self):
+    if self.MarkupsAnnotationNode is None:
+      return
     self.removeAnnotationObservations()
     slicer.mrmlScene.RemoveNode(self.MarkupsAnnotationNode)
     self.MarkupsAnnotationNode = None
 
   def initializeAnnotation(self, newNode=None):
     if newNode:
-      if self.MarkupsAnnotationNode:
-        self.removeAnnotation()
       self.MarkupsAnnotationNode = newNode
     else:
       self.MarkupsAnnotationNode = slicer.mrmlScene.AddNode(slicer.vtkMRMLMarkupsSplinesNode())
