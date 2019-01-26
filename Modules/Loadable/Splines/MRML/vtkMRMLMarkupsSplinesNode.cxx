@@ -19,6 +19,7 @@ and was partially funded by Allen Institute
 ==============================================================================*/
 
 // MRML includes
+#include <vtkMRMLCameraNode.h>
 #include <vtkMRMLMarkupsDisplayNode.h>
 #include <vtkMRMLScene.h>
 
@@ -34,6 +35,7 @@ and was partially funded by Allen Institute
 #include "vtkMRMLMarkupsSplinesStorageNode.h"
 
 // STD includes
+#include <array>
 #include <sstream>
 
 //----------------------------------------------------------------------------
@@ -84,6 +86,10 @@ int vtkMRMLMarkupsSplinesNode::AddSpline(vtkVector3d point)
   this->SplineOrientation.push_back(orientation);
   this->SelectedPointIndex.push_back(-1);
   this->RepresentationType.push_back(this->DefaultRepresentationType);
+  std::array<double, 3> cameraPosition = {0., 0., 0.};
+  this->CameraPosition.push_back(cameraPosition);
+  std::array<double, 3> cameraViewUp = {0., 0., 0.};
+  this->CameraViewUp.push_back(cameraViewUp);
   return this->CurrentSpline;
 }
 
@@ -105,6 +111,10 @@ bool vtkMRMLMarkupsSplinesNode::InitSpline(int n)
     this->SplineOrientation.push_back(orientation);
     this->SelectedPointIndex.push_back(-1);
     this->RepresentationType.push_back(this->DefaultRepresentationType);
+    std::array<double, 3> cameraPosition = {0., 0., 0.};
+    this->CameraPosition.push_back(cameraPosition);
+    std::array<double, 3> cameraViewUp = {0., 0., 0.};
+    this->CameraViewUp.push_back(cameraViewUp);
   }
   return true;
 }
@@ -210,6 +220,90 @@ std::string vtkMRMLMarkupsSplinesNode::GetNthSplineReferenceView(int n)
     return this->DefaultReferenceView;
   }
   return this->ReferenceView[static_cast<size_t>(n)];
+}
+
+namespace
+{
+
+//----------------------------------------------------------------------------
+bool ArrayAreEqual(const std::array<double, 3>& a1,
+                   double a2[3],
+                   double tolerance = 1e-3)
+{
+  for (size_t i = 0; i < a1.size(); i++)
+    {
+    if ( fabs(a1[i] - a2[i]) >= tolerance )
+      {
+      return false;
+      }
+    }
+  return true;
+}
+
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLMarkupsSplinesNode::SetNthSplineCameraPosition(int n, double position[3])
+{
+  size_t i = static_cast<size_t>(n);
+  if (i >= this->CameraPosition.size()
+    || ArrayAreEqual(this->CameraPosition[i], position))
+  {
+    return;
+  }
+  this->CameraPosition[i][0] = position[0];
+  this->CameraPosition[i][1] = position[1];
+  this->CameraPosition[i][2] = position[2];
+  this->Modified();
+  this->InvokeCustomModifiedEvent(
+    vtkMRMLMarkupsNode::NthMarkupModifiedEvent, (void*)&n);
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLMarkupsSplinesNode::GetNthSplineCameraPosition(int n, double position[3])
+{
+  size_t i = static_cast<size_t>(n);
+  if (i >= this->CameraPosition.size())
+  {
+    vtkErrorMacro("The " << n << "th spline doesn't exist");
+    position[0] = position[1] = position[2] = 0.;
+    return;
+  }
+  position[0] = this->CameraPosition[i][0];
+  position[1] = this->CameraPosition[i][1];
+  position[2] = this->CameraPosition[i][2];
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLMarkupsSplinesNode::SetNthSplineCameraViewUp(int n, double viewUp[3])
+{
+  size_t i = static_cast<size_t>(n);
+  if (i >= this->CameraViewUp.size()
+    || ArrayAreEqual(this->CameraViewUp[i], viewUp))
+  {
+    return;
+  }
+  this->CameraViewUp[i][0] = viewUp[0];
+  this->CameraViewUp[i][1] = viewUp[1];
+  this->CameraViewUp[i][2] = viewUp[2];
+  this->Modified();
+  this->InvokeCustomModifiedEvent(
+    vtkMRMLMarkupsNode::NthMarkupModifiedEvent, (void*)&n);
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLMarkupsSplinesNode::GetNthSplineCameraViewUp(int n, double viewUp[3])
+{
+  size_t i = static_cast<size_t>(n);
+  if (i >= this->CameraViewUp.size())
+  {
+    vtkErrorMacro("The " << n << "th spline doesn't exist");
+    viewUp[0] = viewUp[1] = viewUp[2] = 0.;
+    return;
+  }
+  viewUp[0] = this->CameraViewUp[i][0];
+  viewUp[1] = this->CameraViewUp[i][1];
+  viewUp[2] = this->CameraViewUp[i][2];
 }
 
 //----------------------------------------------------------------------------

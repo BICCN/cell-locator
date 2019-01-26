@@ -23,6 +23,7 @@
 #include "vtkMRMLMarkupsSplinesNode.h"
 #include "vtkMRMLMarkupsNode.h"
 
+#include "vtkMRMLCameraNode.h"
 #include "vtkMRMLScene.h"
 #include "vtkSlicerVersionConfigure.h"
 
@@ -86,6 +87,25 @@ int vtkMRMLMarkupsSplinesStorageNode::ReadNthMarkupFromTranslationMap(
   }
   splinesNode->SetNthSplineOrientation(n, matrix);
 
+
+  double position[3] = {0., 0., 0.};
+  for (int i = 0; i < 3; ++i)
+  {
+    std::stringstream cameraPositionKey;
+    cameraPositionKey << key << "CameraPosition/" << i;
+    position[i] = markupsMap[cameraPositionKey.str()].ToDouble();
+  }
+  splinesNode->SetNthSplineCameraPosition(n, position);
+
+  double viewUp[3] = {0., 0., 0.};
+  for (int i = 0; i < 3; ++i)
+  {
+    std::stringstream cameraViewUpKey;
+    cameraViewUpKey << key << "CameraViewUp/" << i;
+    viewUp[i] = markupsMap[cameraViewUpKey.str()].ToDouble();
+  }
+  splinesNode->SetNthSplineCameraViewUp(n, viewUp);
+
   return 1;
 }
 
@@ -118,5 +138,24 @@ int vtkMRMLMarkupsSplinesStorageNode::WriteNthMarkupToTranslationMap(
       markupsMap[orientationKey.str()] = matrix->GetElement(i, j);
     }
   }
+
+  double position[3] = {0., 0., 0.};
+  splinesNode->GetNthSplineCameraPosition(n, position);
+  for (int i = 0; i < 3; ++i)
+  {
+    std::stringstream cameraPositionKey;
+    cameraPositionKey << key << "CameraPosition/" << i;
+    markupsMap[cameraPositionKey.str()] = position[i];
+  }
+
+  double viewUp[3] = {0., 0., 0.};
+  splinesNode->GetNthSplineCameraViewUp(n, viewUp);
+  for (int i = 0; i < 3; ++i)
+  {
+    std::stringstream cameraViewUpKey;
+    cameraViewUpKey << key << "CameraViewUp/" << i;
+    markupsMap[cameraViewUpKey.str()] = viewUp[i];
+  }
+
   return 1;
 }

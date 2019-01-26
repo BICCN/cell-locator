@@ -262,6 +262,18 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
        not self.MarkupsAnnotationNode.GetStorageNode():
       return
 
+    # Camera
+    if self.MarkupsAnnotationNode.GetNumberOfMarkups() > 0:
+      markupIndex = 0
+      viewNode = slicer.app.layoutManager().threeDWidget(0).threeDView().mrmlViewNode()
+      cameraNode = slicer.modules.cameras.logic().GetViewActiveCameraNode(viewNode)
+      position = [0., 0., 0.]
+      cameraNode.GetPosition(position)
+      self.MarkupsAnnotationNode.SetNthSplineCameraPosition(markupIndex, position)
+      viewUp = [0., 0., 0.]
+      cameraNode.GetViewUp(viewUp)
+      self.MarkupsAnnotationNode.SetNthSplineCameraViewUp(markupIndex, viewUp)
+
     self.MarkupsAnnotationNode.GetStorageNode().WriteData(self.MarkupsAnnotationNode)
 
   def onSaveAsAnnotationButtonClicked(self):
@@ -288,6 +300,17 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.resetViews()
     self.jumpSliceToAnnotation()
     self.setInteractionState('explore')
+
+    # Camera
+    viewNode = slicer.app.layoutManager().threeDWidget(0).threeDView().mrmlViewNode()
+    cameraNode = slicer.modules.cameras.logic().GetViewActiveCameraNode(viewNode)
+    position = [0., 0., 0.]
+    self.MarkupsAnnotationNode.GetNthSplineCameraPosition(0, position)
+    cameraNode.SetPosition(position)
+    viewUp = [0., 0., 0.]
+    self.MarkupsAnnotationNode.GetNthSplineCameraViewUp(0, viewUp)
+    cameraNode.SetViewUp(viewUp)
+    cameraNode.ResetClippingRange()
 
   def updateGUIFromMRML(self):
     self.updateGUIFromAnnotation()

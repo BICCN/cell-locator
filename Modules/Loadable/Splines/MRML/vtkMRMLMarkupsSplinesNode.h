@@ -30,6 +30,7 @@ and was partially funded by Allen Institute
 // VTK includes
 #include <vtkSmartPointer.h>
 
+class vtkMRMLCameraNode;
 class vtkMRMLMarkupsDisplayNode;
 
 //
@@ -88,6 +89,14 @@ public:
   void SetNthSplineReferenceView(int n, const std::string& orientationReference);
   std::string GetNthSplineReferenceView(int n);
 
+  /// Set/Get camera position
+  void SetNthSplineCameraPosition(int n, double position[3]);
+  void GetNthSplineCameraPosition(int n, double position[3]);
+
+  /// Set/Get camera view up
+  void SetNthSplineCameraViewUp(int n, double viewUp[3]);
+  void GetNthSplineCameraViewUp(int n, double viewUp[3]);
+
   void SetNthSplineOrientation(int n, vtkMatrix4x4* matrix);
   vtkMatrix4x4* GetNthSplineOrientation(int n);
 
@@ -120,6 +129,8 @@ protected:
   std::vector<std::string> RepresentationType;
   std::string DefaultReferenceView;
   std::vector<std::string> ReferenceView;
+  std::vector< std::array<double, 3> > CameraPosition;
+  std::vector< std::array<double, 3> > CameraViewUp;
 };
 
 #endif
