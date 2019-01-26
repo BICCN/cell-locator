@@ -850,6 +850,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     # StepSize
     self.get('StepSizeSliderWidget').value = self.MarkupsAnnotationNode.GetNthSplineStepSize(markupIndex)
 
+    # Ontology
+    self.get('OntologyComboBox').currentText = self.MarkupsAnnotationNode.GetNthSplineOntology(markupIndex)
+
   @vtk.calldata_type(vtk.VTK_INT)
   def onNthMarkupModifiedEvent(self, caller, event, callData=None):
     annotationNode = caller
@@ -972,6 +975,12 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     shPluginHandler = slicer.qSlicerSubjectHierarchyPluginHandler.instance()
     shItemID = shPluginHandler.subjectHierarchyNode().GetItemByDataNode(annotation)
     shPluginHandler.getOwnerPluginForSubjectHierarchyItem(shItemID).setDisplayVisibility(shItemID, visible);
+
+    if self.MarkupsAnnotationNode is None:
+      return
+    self.MarkupsAnnotationNode.SetDefaultOntology(ontology)
+    for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
+      self.MarkupsAnnotationNode.SetNthSplineOntology(i, ontology)
 
   def onCursorPositionModifiedEvent(self, caller=None, event=None):
     crosshairNode = caller

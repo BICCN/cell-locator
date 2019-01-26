@@ -102,6 +102,8 @@ public:
   void GetNthSplineCameraViewUp(int n, double viewUp[3]);
 
   /// Set/Get default step size
+  ///
+  /// \note This property is specific to CellLocator
   vtkGetMacro(DefaultStepSize, double);
   vtkSetMacro(DefaultStepSize, double);
 
@@ -110,6 +112,18 @@ public:
   /// \note This property is specific to CellLocator
   void SetNthSplineStepSize(int n, double stepSize);
   double GetNthSplineStepSize(int n);
+
+  /// Set/Get default ontology
+  ///
+  /// \note This property is specific to CellLocator
+  vtkGetMacro(DefaultOntology, std::string);
+  vtkSetMacro(DefaultOntology, std::string);
+
+  /// Set/Get ontology
+  ///
+  /// \note This property is specific to CellLocator
+  void SetNthSplineOntology(int n, const std::string& ontology);
+  std::string GetNthSplineOntology(int n);
 
   void SetNthSplineOrientation(int n, vtkMatrix4x4* matrix);
   vtkMatrix4x4* GetNthSplineOrientation(int n);
@@ -147,6 +161,8 @@ protected:
   std::vector< std::array<double, 3> > CameraViewUp;
   double DefaultStepSize;
   std::vector<double> StepSize;
+  std::string DefaultOntology;
+  std::vector<std::string> Ontology;
 };
 
 #endif

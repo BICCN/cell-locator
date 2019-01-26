@@ -52,6 +52,7 @@ vtkMRMLMarkupsSplinesNode::vtkMRMLMarkupsSplinesNode()
   this->DefaultSplineOrientation = vtkSmartPointer<vtkMatrix4x4>::New();
   this->DefaultRepresentationType = "spline";
   this->DefaultStepSize = 1.0;
+  this->DefaultOntology = "Structure";
 }
 
 //----------------------------------------------------------------------------
@@ -93,6 +94,7 @@ int vtkMRMLMarkupsSplinesNode::AddSpline(vtkVector3d point)
   std::array<double, 3> cameraViewUp = {0., 0., 0.};
   this->CameraViewUp.push_back(cameraViewUp);
   this->StepSize.push_back(this->DefaultStepSize);
+  this->Ontology.push_back(this->DefaultOntology);
   return this->CurrentSpline;
 }
 
@@ -119,6 +121,7 @@ bool vtkMRMLMarkupsSplinesNode::InitSpline(int n)
     std::array<double, 3> cameraViewUp = {0., 0., 0.};
     this->CameraViewUp.push_back(cameraViewUp);
     this->StepSize.push_back(this->DefaultStepSize);
+    this->Ontology.push_back(this->DefaultOntology);
   }
   return true;
 }
@@ -335,6 +338,33 @@ double vtkMRMLMarkupsSplinesNode::GetNthSplineStepSize(int n)
     return 0.0;
   }
   return this->StepSize[i];
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLMarkupsSplinesNode::SetNthSplineOntology(int n, const std::string& ontology)
+{
+  if (static_cast<size_t>(n) >= this->Ontology.size()
+    || this->Ontology[static_cast<size_t>(n)] == ontology)
+  {
+    return;
+  }
+
+  this->Ontology[static_cast<size_t>(n)] = ontology;
+  this->Modified();
+  this->InvokeCustomModifiedEvent(
+    vtkMRMLMarkupsNode::NthMarkupModifiedEvent, (void*)&n);
+}
+
+//----------------------------------------------------------------------------
+std::string vtkMRMLMarkupsSplinesNode::GetNthSplineOntology(int n)
+{
+  size_t i = static_cast<size_t>(n);
+  if (i >= this->Ontology.size())
+  {
+    vtkErrorMacro("The " << n << "th spline doesn't exist");
+    return this->DefaultOntology;
+  }
+  return this->Ontology[i];
 }
 
 //----------------------------------------------------------------------------
