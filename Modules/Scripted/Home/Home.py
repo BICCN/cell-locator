@@ -419,6 +419,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sliceSpacing = sliceNode.GetPrescribedSliceSpacing()
     sliceNode.SetPrescribedSliceSpacing(sliceSpacing[0], sliceSpacing[1], spacing)
 
+    sliceWidget = self.LayoutManager.sliceWidget("Slice")
+    self.get("SliceOffsetSlider", sliceWidget).singleStep = spacing
+
     if self.MarkupsAnnotationNode is None:
       return
 
@@ -638,6 +641,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sliceWidget = self.LayoutManager.sliceWidget("Slice")
     self.get("BarWidget", sliceWidget).setPalette(slicer.app.palette())
     self.get("SpinBox", self.get("BarWidget", sliceWidget)).setPalette(slicer.app.palette())
+    # Disable Precision to allow customization of the singleStep property
+    self.get("SliceOffsetSlider", sliceWidget).unitAwareProperties ^= self.get("SliceOffsetSlider", sliceWidget).Precision
 
     compositeNode = sliceWidget.mrmlSliceCompositeNode()
     compositeNode.SetBackgroundVolumeID(averageTemplate.GetID())
