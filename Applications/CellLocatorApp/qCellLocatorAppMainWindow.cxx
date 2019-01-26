@@ -98,6 +98,9 @@ void qCellLocatorAppMainWindowPrivate::setupUi(QMainWindow * mainWindow)
   //this->LayoutMenu->setVisible(false);
   //this->HelpMenu->setVisible(false);
 
+  // Disable actions and associated shortcuts
+  this->FileSaveSceneAction->setEnabled(false);
+
   // Hide the modules panel
   //this->PanelDockWidget->setVisible(false);
   //this->DataProbeCollapsibleWidget->setCollapsed(true);
