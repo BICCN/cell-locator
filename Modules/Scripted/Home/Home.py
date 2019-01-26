@@ -5,7 +5,7 @@ import textwrap
 
 import vtk, qt, ctk, slicer
 
-from slicer.util import VTKObservationMixin
+from slicer.util import NodeModify, VTKObservationMixin
 from slicer.ScriptedLoadableModule import *
 from HomeLib import HomeResources as Resources
 from HomeLib import CellLocatorConfig as Config
@@ -425,10 +425,10 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     if self.MarkupsAnnotationNode is None:
       return
 
-    self.MarkupsAnnotationNode.SetDefaultStepSize(spacing)
-
-    for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
-      self.MarkupsAnnotationNode.SetNthSplineStepSize(i, spacing)
+    with NodeModify(self.MarkupsAnnotationNode):
+      self.MarkupsAnnotationNode.SetDefaultStepSize(spacing)
+      for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
+        self.MarkupsAnnotationNode.SetNthSplineStepSize(i, spacing)
 
   def onMarkupsAnnotationStorageNodeModifiedEvent(self):
     if not self.MarkupsAnnotationNode or not self.MarkupsAnnotationNode.GetStorageNode():
@@ -477,10 +477,10 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     else:
       representationType = 'polyline'
 
-    self.MarkupsAnnotationNode.SetDefaultRepresentationType(representationType)
-
-    for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
-      self.MarkupsAnnotationNode.SetNthSplineRepresentationType(i, representationType)
+    with NodeModify(self.MarkupsAnnotationNode):
+      self.MarkupsAnnotationNode.SetDefaultRepresentationType(representationType)
+      for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
+        self.MarkupsAnnotationNode.SetNthSplineRepresentationType(i, representationType)
 
   def jumpSliceToAnnotation(self):
     if not self.MarkupsAnnotationNode:
@@ -506,34 +506,31 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     if not self.MarkupsAnnotationNode:
       return
 
-    wasModifying = self.MarkupsAnnotationNode.StartModify()
+    with NodeModify(self.MarkupsAnnotationNode):
 
-    # Update the spline's normal and origin
-    for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
-      if not self.MarkupsAnnotationNode.GetNthMarkupLocked(i):
-        self.MarkupsAnnotationNode.SetNthSplineOrientation(i,
-          sliceNode.GetSliceToRAS())
+      # Update the spline's normal and origin
+      for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
+        if not self.MarkupsAnnotationNode.GetNthMarkupLocked(i):
+          self.MarkupsAnnotationNode.SetNthSplineOrientation(i,
+            sliceNode.GetSliceToRAS())
 
-    if self.getInteractionState() == 'explore':
-      self.MarkupsAnnotationNode.EndModify(wasModifying)
-      return
+      if self.getInteractionState() == 'explore':
+        return
 
-    normal = [0.0, 0.0, 0.0, 0.0]
-    sliceNode.GetSliceToRAS().MultiplyPoint([0.0, 0.0, 1.0, 0.0], normal)
-    normal = normal[:3]
-    vtk.vtkMath.Normalize(normal)
-    origin = [sliceNode.GetSliceToRAS().GetElement(i, 3) for i in range(3)]
+      normal = [0.0, 0.0, 0.0, 0.0]
+      sliceNode.GetSliceToRAS().MultiplyPoint([0.0, 0.0, 1.0, 0.0], normal)
+      normal = normal[:3]
+      vtk.vtkMath.Normalize(normal)
+      origin = [sliceNode.GetSliceToRAS().GetElement(i, 3) for i in range(3)]
 
-    # Project points onto the current slice if needed
-    for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
-      for n in range(self.MarkupsAnnotationNode.GetNumberOfPointsInNthMarkup(i)):
-        point = [0.0, 0.0, 0.0]
-        self.MarkupsAnnotationNode.GetMarkupPoint(i, n, point)
-        proj = [0.0, 0.0, 0.0]
-        vtk.vtkPlane.ProjectPoint(point, origin, normal, proj)
-        self.MarkupsAnnotationNode.SetMarkupPointFromArray(i, n, proj)
-
-    self.MarkupsAnnotationNode.EndModify(wasModifying)
+      # Project points onto the current slice if needed
+      for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
+        for n in range(self.MarkupsAnnotationNode.GetNumberOfPointsInNthMarkup(i)):
+          point = [0.0, 0.0, 0.0]
+          self.MarkupsAnnotationNode.GetMarkupPoint(i, n, point)
+          proj = [0.0, 0.0, 0.0]
+          vtk.vtkPlane.ProjectPoint(point, origin, normal, proj)
+          self.MarkupsAnnotationNode.SetMarkupPointFromArray(i, n, proj)
 
   def onSceneStartCloseEvent(self, caller=None, event=None):
     scene = caller
@@ -978,9 +975,10 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     if self.MarkupsAnnotationNode is None:
       return
-    self.MarkupsAnnotationNode.SetDefaultOntology(ontology)
-    for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
-      self.MarkupsAnnotationNode.SetNthSplineOntology(i, ontology)
+    with NodeModify(self.MarkupsAnnotationNode):
+      self.MarkupsAnnotationNode.SetDefaultOntology(ontology)
+      for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
+        self.MarkupsAnnotationNode.SetNthSplineOntology(i, ontology)
 
   def onCursorPositionModifiedEvent(self, caller=None, event=None):
     crosshairNode = caller
