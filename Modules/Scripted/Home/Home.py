@@ -789,6 +789,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.LayoutManager.threeDWidget(0).threeDView().mrmlViewNode().SetInteractionNode(interactionNode)
     self.InteractionNode = interactionNode
 
+    # Disable verbose IO
+    slicer.app.coreIOManager().verbose = False
+
     # Configure sliders
     self.get('StepSizeSliderWidget').setMRMLScene(slicer.mrmlScene)
     self.get('ThicknessSliderWidget').setMRMLScene(slicer.mrmlScene)
