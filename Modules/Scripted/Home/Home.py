@@ -583,7 +583,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       slider.pageStep = 25
       slider.minimum = -180
       slider.maximum = 180
-      slider.tracking = False
+      slider.tracking = True
       layout.addWidget(slider)
       self.set(slider)
 
