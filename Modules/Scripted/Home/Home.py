@@ -267,9 +267,10 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def onLoadAnnotationButtonClicked(self):
     from slicer import app, qSlicerFileDialog
 
+    sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
     viewNode = slicer.app.layoutManager().threeDWidget(0).threeDView().mrmlViewNode()
     cameraNode = slicer.modules.cameras.logic().GetViewActiveCameraNode(viewNode)
-    with NodeModify(cameraNode):
+    with NodeModify(cameraNode), NodeModify(sliceNode):
 
       self.removeAnnotation()
       self.saveAnnotationIfModified()
@@ -294,6 +295,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       self.MarkupsAnnotationNode.GetNthSplineCameraViewUp(0, viewUp)
       cameraNode.SetViewUp(viewUp)
       cameraNode.ResetClippingRange()
+
+      # SplineOrientation
+      self.jumpSliceToAnnotation()
 
   def updateGUIFromMRML(self):
     self.updateGUIFromAnnotation()
@@ -377,9 +381,11 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     # Careful here: Transform is PreMultiply
     #  -> We want T(X) = M_to_reference * R_z*R_y*R_x (X)
     transform = vtk.vtkTransform()
+    transform.Identity()
+    transform.PreMultiply()
+    transform.RotateZ(yaw)
     transform.RotateX(roll)
     transform.RotateY(pitch)
-    transform.RotateZ(yaw)
     transform.Concatenate(toReference)
 
     newOrientation = transform.GetMatrix()
