@@ -587,9 +587,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       layout.addWidget(slider)
       self.set(slider)
 
-    _add_slider("Yaw")
-    _add_slider("Pitch")
     _add_slider("Roll")
+    _add_slider("Pitch")
+    _add_slider("Yaw")
 
     # Apply
     adjustViewPushButton = qt.QPushButton("Apply")
