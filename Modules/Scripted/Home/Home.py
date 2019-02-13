@@ -458,7 +458,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
         self.MarkupsAnnotationNode.SetNthSplineRepresentationType(i, representationType)
 
-  def jumpSliceToAnnotation(self):
+  def jumpSliceToAnnotation(self, markupIndex=0):
     if not self.MarkupsAnnotationNode:
       return
 
@@ -467,7 +467,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
     sliceNode.GetSliceToRAS().DeepCopy(
-      self.MarkupsAnnotationNode.GetNthSplineOrientation(0))
+      self.MarkupsAnnotationNode.GetNthSplineOrientation(markupIndex))
     sliceNode.UpdateMatrices()
 
   def onSliceNodeModifiedEvent(self, caller=None, event=None):
