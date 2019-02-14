@@ -3,7 +3,7 @@ CellLocator by Allen Institute
 
 Manually align specimens to annotated 3D spaces
 
-![CellLocator by Allen Institute](Applications/App/Resources/Images/LogoFull.png?raw=true)
+![CellLocator by Allen Institute](Applications/CellLocatorApp/Resources/Images/SplashScreen.png?raw=true)
 
 Prerequisites
 -------------
