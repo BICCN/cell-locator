@@ -53,6 +53,7 @@ if(WIN32)
   option(Slicer_BUILD_WIN32_CONSOLE             "Build application executable as a console app"       OFF)
 endif()
 
+option(Slicer_BUILD_CLI                         "Build Slicer CLI Plugins"                            OFF)
 option(Slicer_BUILD_DICOM_SUPPORT               "Build application with DICOM support"                OFF)
 option(Slicer_BUILD_DIFFUSION_SUPPORT           "Build application with Diffusion support"            OFF)
 option(Slicer_BUILD_EXTENSIONMANAGER_SUPPORT    "Build application with ExtensionManager support"     OFF)
@@ -70,8 +71,6 @@ option(Slicer_BUILD_LandmarkRegistration        "Build application with Landmark
 
 # Enable Slicer built-in modules
 set(Slicer_CLIMODULES_ENABLED
-  ResampleDTIVolume             # Needed by ResampleScalarVectorDWIVolume
-  ResampleScalarVectorDWIVolume # Depends on DiffusionApplications, needed by CropVolume
   )
 set(Slicer_QTLOADABLEMODULES_ENABLED
   )
@@ -82,17 +81,28 @@ set(Slicer_QTSCRIPTEDMODULES_ENABLED
 set(Slicer_CLIMODULES_DISABLED
   )
 set(Slicer_QTLOADABLEMODULES_DISABLED
+  CropVolume
+  DoubleArrays
+  Plots
   SceneViews
+  Segmentations
   SlicerWelcome
+  Tables
   ViewControllers
+  VolumeRendering
   )
 set(Slicer_QTSCRIPTEDMODULES_DISABLED
   DataProbe
   DMRIInstall
+  Editor
+  EditorLib
   Endoscopy
   LabelStatistics
   PerformanceTests
   SampleData
+  ScreenCapture
+  SegmentEditor
+  SegmentStatistics
   SurfaceToolbox
   VectorToScalarVolume
   )
