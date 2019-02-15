@@ -31,7 +31,7 @@ class Home(ScriptedLoadableModule):
     self.parent.title = "Home" # TODO make this more human readable by adding spaces
     self.parent.categories = [""]
     self.parent.dependencies = []
-    self.parent.contributors = ["Johan Andruejol (Kitware)", "Jean-Christophe Fillion-Robin (Kitware)"] # replace with "Firstname Lastname (Organization)"
+    self.parent.contributors = ["Johan Andruejol (Kitware)", "Jean-Christophe Fillion-Robin (Kitware)"]
     self.parent.helpText = """"""
     self.parent.helpText += self.getDefaultModuleDocumentationLink()
     self.parent.acknowledgementText = """""" # replace with organization, grant and thanks.
@@ -1070,17 +1070,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
   def cleanup(self):
     self.Widget = None
-
-
-#
-# HomeLogic
-#
-
-class HomeLogic(ScriptedLoadableModuleLogic):
-  """
-  """
-  def __init__(self):
-    ScriptedLoadableModuleLogic.__init__(self)
 
 
 class HomeTest(ScriptedLoadableModuleTest):
