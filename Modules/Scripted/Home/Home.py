@@ -439,7 +439,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self.get('AdjustViewPushButton').enabled = False
 
-    # Explicitly reset in if "Apply" was not used
+    # Explicitly reset orientation sliders if "Apply" was not used
     for axe in ['Roll', 'Yaw', 'Pitch']:
       with SignalBlocker(self.get('%sSliderWidget' % axe)):
         self.get('%sSliderWidget' % axe).value = 0
