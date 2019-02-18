@@ -679,7 +679,10 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     # Configure 3D view
     threeDWidget = self.LayoutManager.threeDWidget(0)
-    threeDWidget.mrmlViewNode().SetBoxVisible(False)
+    threeDNode = threeDWidget.mrmlViewNode()
+    threeDNode.SetBoxVisible(False)
+    threeDNode.SetAxisLabel(4, "V") # I -> V
+    threeDNode.SetAxisLabel(5, "D") # S -> D
 
     # Connections
     self.addObserver(sliceNode, vtk.vtkCommand.ModifiedEvent, self.onSliceNodeModifiedEvent)
