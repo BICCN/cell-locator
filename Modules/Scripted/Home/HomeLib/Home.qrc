@@ -7,7 +7,7 @@
 <RCC version="1.0">
 
   <qresource prefix="Icons">
-    <file alias="allen_institute_brain_science_logo.png">./Icons/AI_Brain_Science_Logo_RGB_2CLR_70px.png</file>
+    <file alias="allen_institute_brain_science_logo.png">./Icons/BICCN_Cell_Locator_Logo_60px.png</file>
     <file alias="annotate_icon.svg.png">./Icons/annotate_icon.svg.png</file>
     <file alias="explore_icon.svg.png">./Icons/explore_icon.svg.png</file>
     <file alias="saveas_icon.svg.png">./Icons/saveas_icon.svg.png</file>
