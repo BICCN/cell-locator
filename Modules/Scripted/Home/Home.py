@@ -243,7 +243,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     # Create
     self.initializeAnnotation()
-    if not self.onSaveAsAnnotationButtonClicked():
+    title = "New Annotation File Name"
+    if not self.onSaveAsAnnotationButtonClicked(windowTitle=title):
       return
 
     self.updateGUIFromMRML()
@@ -260,18 +261,22 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     else:
       self.MarkupsAnnotationNode.GetStorageNode().WriteData(self.MarkupsAnnotationNode)
 
-  def onSaveAsAnnotationButtonClicked(self):
+  def onSaveAsAnnotationButtonClicked(self, windowTitle=None):
 
     defaultFileName = "annotation.json"
     directory = slicer.app.userSettings().value("LastAnnotationDirectory", qt.QStandardPaths.writableLocation(qt.QStandardPaths.DocumentsLocation))
     if os.path.exists(directory):
       defaultFileName = directory + "/" + defaultFileName
 
+    properties = {
+      "nodeID": self.MarkupsAnnotationNode.GetID(),
+      "defaultFileName": defaultFileName
+    }
+    if windowTitle is not None:
+      properties["windowTitle"] = windowTitle
+
     success = slicer.app.ioManager().openDialog(
-      "MarkupsSplines", slicer.qSlicerFileDialog.Write, {
-          "nodeID": self.MarkupsAnnotationNode.GetID(),
-          "defaultFileName": defaultFileName
-        })
+      "MarkupsSplines", slicer.qSlicerFileDialog.Write, properties)
 
     if success:
       directory = os.path.dirname(self.MarkupsAnnotationNode.GetStorageNode().GetFileName())
