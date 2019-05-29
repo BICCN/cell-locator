@@ -487,6 +487,12 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self.resetCamera()
 
+    if self.MarkupsAnnotationNode is not None:
+      self.MarkupsAnnotationNode.SetDefaultReferenceView(orientation)
+      with NodeModify(self.MarkupsAnnotationNode):
+        for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
+          self.MarkupsAnnotationNode.SetNthSplineReferenceView(i, orientation)
+
   def onThicknessChanged(self, value):
     if not self.MarkupsAnnotationNode:
       return
