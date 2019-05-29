@@ -281,8 +281,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.updateGUIFromMRML()
     self.onSliceNodeModifiedEvent() # Init values
 
-    self.setDefaultSettings()
-
   def onSaveAnnotationButtonClicked(self):
     if not self.MarkupsAnnotationNode or \
        not self.MarkupsAnnotationNode.GetStorageNode():
