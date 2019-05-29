@@ -236,6 +236,28 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def resetViews(self):
     self.resetToReferenceView()
     self.resetFieldOfView()
+    self.resetCamera()
+
+  def resetCamera(self):
+    threeDView = slicer.app.layoutManager().threeDWidget(0).threeDView()
+
+    cameraNode = threeDView.interactorStyle().GetCameraNode()
+    rotateTo ={
+      "Axial": slicer.vtkMRMLCameraNode.Inferior,
+      "Coronal": slicer.vtkMRMLCameraNode.Posterior,
+      "Sagittal": slicer.vtkMRMLCameraNode.Right,
+    }
+    cameraNode.RotateTo(rotateTo[self.ReferenceView])
+
+    # TODO: ctkVTKRenderView::renderer() should be accessible from python
+    rw = threeDView.renderWindow()
+    renderers = rw.GetRenderers()
+    renderer = renderers.GetFirstRenderer()
+
+    resetRotation = False
+    resetTranslation = True
+    resetDistance = True
+    cameraNode.Reset(resetRotation, resetTranslation, resetDistance, renderer)
 
   def onNewAnnotationButtonClicked(self):
     # Save current
@@ -381,8 +403,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sliceWidget = self.LayoutManager.sliceWidget("Slice")
     self.get("SliceOffsetSlider", sliceWidget).prefix = "" # Hide orientation prefix
 
-    self.get('ResetToReferenceViewPushButton').enabled = (angles != [0., 0., 0.])
-
   def onViewOrientationChanged(self):
     roll = self.get('RollSliderWidget').value
     yaw = self.get('YawSliderWidget').value
@@ -462,6 +482,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       for j in range(3):
         sliceNode.GetSliceToRAS().SetElement(i, j, matrix.GetElement(i, j))
     sliceNode.UpdateMatrices()
+
+    self.resetCamera()
 
   def onThicknessChanged(self, value):
     if not self.MarkupsAnnotationNode:
@@ -626,7 +648,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     # Reset
     resetToReferenceViewPushButton = qt.QPushButton("Reset")
     resetToReferenceViewPushButton.objectName = "ResetToReferenceViewPushButton"
-    resetToReferenceViewPushButton.enabled = False
     self.set(resetToReferenceViewPushButton)
     layout.addWidget(resetToReferenceViewPushButton)
 
@@ -654,7 +675,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     # Configure UI
     self.get('ThicknessSliderWidget').enabled = False
     self.get('AdjustViewPushButton').enabled = False
-    self.get('ResetToReferenceViewPushButton').enabled = False
 
     averageTemplate, annotation = self.loadData()
 
@@ -950,11 +970,10 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self.get('ResetFieldOfViewButton').connect("clicked()", self.resetFieldOfView)
     self.get('ReferenceViewComboBox').connect("currentTextChanged(QString)", self.onReferenceViewChanged)
-    self.get('ResetToReferenceViewPushButton').connect("clicked()", self.resetToReferenceView)
+    self.get('ResetToReferenceViewPushButton').connect("clicked()", self.resetViews)
 
     def setAdjustAndResetButtonsEnabled():
       self.get('AdjustViewPushButton').setEnabled(True)
-      self.get('ResetToReferenceViewPushButton').setEnabled(True)
 
     for axe in ['Roll', 'Yaw', 'Pitch']:
       self.get('%sSliderWidget' % axe).connect("valueChanged(double)", setAdjustAndResetButtonsEnabled)
