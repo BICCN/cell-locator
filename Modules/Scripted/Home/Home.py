@@ -52,6 +52,13 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.ReferenceView = 'Coronal'
     self._widget_cache = {}
 
+    self.InteractionNode = None
+    self.DefaultStepSize = 1
+    self.SlicerToAllenMapping = {}
+    self.AllenToSlicerMapping = {}
+    self.AllenStructurePaths = {}
+    self.AllenLayerStructurePaths = {}
+
   def get(self, name, parent=None):
     """Lookup widget by ``name``.
 
@@ -100,7 +107,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.ThreeDWithReformatCustomLayoutId = 503
     layoutLogic.GetLayoutNode().AddLayoutDescription(self.ThreeDWithReformatCustomLayoutId, customLayout)
 
-  def dataPath(self):
+  @staticmethod
+  def dataPath():
     return os.path.join(os.path.dirname(slicer.util.modulePath('Home')), 'CellLocatorData')
 
   def averageTemplateFilePath(self):
@@ -210,6 +218,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         returnNode=True
         )
     else:
+      annotation = None
       logging.error("Annotation file [%s] does not exist" % self.annotationFilePath())
 
     return averageTemplate, annotation
@@ -359,7 +368,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sliceLogic = slicer.app.applicationLogic().GetSliceLogic(sliceNode)
     bounds = [0, -1, 0, -1, 0, -1]
     sliceLogic.GetLowestVolumeSliceBounds(bounds)
-    sliceOffset = sliceLogic.GetSliceOffset()
     spacingRange = bounds[5] - bounds[4]
     if spacingRange > 0:
       self.get('StepSizeSliderWidget').minimum = 0
@@ -1022,7 +1030,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     # Hide or show label map
     shPluginHandler = slicer.qSlicerSubjectHierarchyPluginHandler.instance()
     shItemID = shPluginHandler.subjectHierarchyNode().GetItemByDataNode(annotation)
-    shPluginHandler.getOwnerPluginForSubjectHierarchyItem(shItemID).setDisplayVisibility(shItemID, visible);
+    shPluginHandler.getOwnerPluginForSubjectHierarchyItem(shItemID).setDisplayVisibility(shItemID, visible)
 
     if self.MarkupsAnnotationNode is None:
       return
@@ -1055,7 +1063,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     volumeNode = layerLogic.GetVolumeNode()
     ijk = [0, 0, 0]
     if volumeNode:
-      hasVolume = True
       xyToIJK = layerLogic.GetXYToIJKTransform()
       ijkFloat = xyToIJK.TransformDoublePoint(xyz)
       ijk = [_roundInt(value) for value in ijkFloat]
