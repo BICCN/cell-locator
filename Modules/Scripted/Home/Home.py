@@ -258,11 +258,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     }
     cameraNode.RotateTo(rotateTo[self.ReferenceView])
 
-    # TODO: ctkVTKRenderView::renderer() should be accessible from python
-    rw = threeDView.renderWindow()
-    renderers = rw.GetRenderers()
-    renderer = renderers.GetFirstRenderer()
-
+    renderer = threeDView.renderer()
     resetRotation = False
     resetTranslation = True
     resetDistance = True

@@ -112,5 +112,9 @@ set(Slicer_EXTENSION_SOURCE_DIRS
   ${CellLocator_SOURCE_DIR}/Modules
   )
 
+# Custom CTK
+set(Slicer_CTK_GIT_REPOSITORY "${EP_GIT_PROTOCOL}://github.com/KitwareMedical/CTK.git")
+set(Slicer_CTK_GIT_TAG "e6aabb5e4bfb0d86037263f7f1d39170716be933") # cell-locator-2018-11-20-6cd82aab
+
 # Add Slicer sources
 add_subdirectory(${slicersources_SOURCE_DIR} ${slicersources_BINARY_DIR})
