@@ -979,6 +979,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     for axe in ['Roll', 'Yaw', 'Pitch']:
       self.get('%sSliderWidget' % axe).connect("valueChanged(double)", setAdjustAndResetButtonsEnabled)
+      self.get('%sSliderWidget' % axe).spinBox().connect("editingFinished()", self.onViewOrientationChanged)
+      self.get('%sSliderWidget' % axe).slider().connect("returnPressed()", self.onViewOrientationChanged)
     self.get('AdjustViewPushButton').connect("clicked()", self.onViewOrientationChanged)
 
     self.get('StepSizeSliderWidget').connect("valueChanged(double)", self.onStepSizeChanged)
