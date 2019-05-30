@@ -254,7 +254,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     rotateTo ={
       "Axial": slicer.vtkMRMLCameraNode.Inferior,
       "Coronal": slicer.vtkMRMLCameraNode.Posterior,
-      "Sagittal": slicer.vtkMRMLCameraNode.Right,
+      "Sagittal": slicer.vtkMRMLCameraNode.Left,
     }
     cameraNode.RotateTo(rotateTo[self.ReferenceView])
 
