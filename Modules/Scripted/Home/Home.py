@@ -436,6 +436,14 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sliceWidget = self.LayoutManager.sliceWidget("Slice")
     self.get("SliceOffsetSlider", sliceWidget).prefix = "" # Hide orientation prefix
 
+    # Update window/level min/max
+    sliceCompositeNode = sliceWidget.mrmlSliceCompositeNode()
+    background = slicer.mrmlScene.GetNodeByID(sliceCompositeNode.GetBackgroundVolumeID())
+    backgroundDisplay = background.GetDisplayNode()
+
+    self.get('ContrastSlider').setRange(-600, 600)
+    self.get('ContrastSlider').setValues(backgroundDisplay.GetWindowLevelMin(), backgroundDisplay.GetWindowLevelMax())
+
   def onViewOrientationChanged(self):
     roll = self.get('RollSliderWidget').value
     yaw = self.get('YawSliderWidget').value
@@ -523,6 +531,15 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       with NodeModify(self.MarkupsAnnotationNode):
         for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
           self.MarkupsAnnotationNode.SetNthSplineReferenceView(i, orientation)
+
+  def onContrastValuesChanged(self, min, max):
+    sliceWidget = self.LayoutManager.sliceWidget("Slice")
+    sliceCompositeNode = sliceWidget.mrmlSliceCompositeNode()
+    background = slicer.mrmlScene.GetNodeByID(sliceCompositeNode.GetBackgroundVolumeID())
+    backgroundDisplay = background.GetDisplayNode()
+    window = max - min
+    level = 0.5*(min + max)
+    backgroundDisplay.SetWindowLevel(window, level)
 
   def onThicknessChanged(self, value):
     if not self.MarkupsAnnotationNode:
@@ -649,6 +666,17 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get("BarWidget", sliceWidget).layout().addWidget(referenceViewComboBox)
     # BarWidget layout
     self.get("BarWidget", sliceWidget).layout().setContentsMargins(6, 4, 6, 4)
+    # Grayscale contrast slider
+    contrastSlider = ctk.ctkRangeSlider()
+    contrastSlider.setOrientation(qt.Qt.Horizontal)
+    contrastSlider.symmetricMoves = True
+    contrastSlider.objectName = "ContrastSlider"
+    contrastSlider.setToolTip("Modify the window/level of the background image")
+    self.set(contrastSlider)
+    nextLineLayout = qt.QVBoxLayout()
+    nextLineLayout.setContentsMargins(6, 4, 6, 4)
+    nextLineLayout.addWidget(contrastSlider)
+    sliceWidget.layout().insertLayout(1, nextLineLayout)
 
     # Configure 3D view
     threeDWidget = self.LayoutManager.threeDWidget(0)
@@ -1012,6 +1040,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get('ResetFieldOfViewButton').connect("clicked()", self.resetFieldOfView)
     self.get('ReferenceViewComboBox').connect("currentTextChanged(QString)", self.onReferenceViewChanged)
     self.get('ResetToReferenceViewPushButton').connect("clicked()", self.resetViews)
+    self.get('ContrastSlider').connect("valuesChanged(int, int)", self.onContrastValuesChanged)
 
     def setAdjustAndResetButtonsEnabled():
       self.get('AdjustViewPushButton').setEnabled(True)
