@@ -16,14 +16,14 @@ labels: 'qa: kitware, C: tests'
   * [ ] Structure is selected by default
   * [ ] Ontology is expected to be visible in 2D and 3D views
   * [ ] Select Layer -> 2D and 3D views should be updated
-  * [ ] Select None  -> 2D and 3D views should be updated
+  * [ ] Select None  -> idem
 
 * ReferenceView combox box
   * [ ] Start application
   * [ ] Coronal is selected by default
   * [ ] Select Axial    -> 2D and 3D views are updated and have same orientation
-  * [ ] Select Sagittal -> 2D and 3D views are updated and have same orientation **Known issues**: [#73](https://github.com/BICCN/cell-locator/issues/74)
-  * [ ] Select Coronal  -> 2D and 3D views are updated and have same orientation
+  * [ ] Select Sagittal -> idem
+  * [ ] Select Coronal  -> idem
 
 * "Adjust Slice Viewer FOV" button  (located on the left of the Reference View combo box)
   * [ ] Start application
@@ -53,9 +53,9 @@ labels: 'qa: kitware, C: tests'
   * [ ] Start application
   * [ ] Reset button is enabled
   * [ ] Apply button is disabled
-  * [ ] Move Roll, Pitch and Yaw sliders -> Apply button is enabled -> wait few seconds, no update should happen -> click Apply -> 2D and 3D views should be updated - **Known issues:** [#75](https://github.com/BICCN/cell-locator/issues/75)
+  * [ ] Move Roll, Pitch and Yaw sliders -> Apply button is enabled -> wait few seconds, no update should happen -> click Apply -> 2D and 3D views should be updated
   * [ ] Click Reset -> Raw/Pitch/Yaw reset to 0 -> Apply button disabled, slice offset set to `6600`
-  * [ ] Update Roll, Pitch, Yaw spin boxes with 25, 35 and 50 -> wait few seconds, nothing should happen -> click Apply -> 2D and 3D views should be updated, slice offset is set to `9465.563` - **Known issues:** [#75](https://github.com/BICCN/cell-locator/issues/75)
+  * [ ] Update Roll, Pitch, Yaw spin boxes with 25, 35 and 50 -> wait few seconds, nothing should happen -> click Apply -> 2D and 3D views should be updated, slice offset is set to `9465.563`
   * [ ] Click Reset
   * [ ] Move Roll slider  -> wait few seconds, no update should happen -> press Enter or Return -> 2D and 3D views should be updated
   * [ ] Move Pitch slider -> idem
