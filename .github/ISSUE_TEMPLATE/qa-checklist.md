@@ -53,9 +53,9 @@ labels: 'qa: kitware, C: tests'
   * [ ] Start application
   * [ ] Reset button is enabled
   * [ ] Apply button is disabled
-  * [ ] Move Roll, Pitch and Yaw sliders -> Apply button is enabled -> wait few seconds, no update should happen -> click Apply -> 2D and 3D views should be updated
+  * [ ] Move Roll, Pitch and Yaw sliders -> Apply button is enabled -> wait few seconds, no update should happen -> click Apply -> 2D and 3D views should be updated - **Known issues:** [#75](https://github.com/BICCN/cell-locator/issues/75)
   * [ ] Click Reset -> Raw/Pitch/Yaw reset to 0 -> Apply button disabled, slice offset set to `6600`
-  * [ ] Update Roll, Pitch, Yaw spin boxes with 25, 35 and 50 -> wait few seconds, nothing should happen -> click Apply -> 2D and 3D views should be updated, slice offset is set to `9465.563`
+  * [ ] Update Roll, Pitch, Yaw spin boxes with 25, 35 and 50 -> wait few seconds, nothing should happen -> click Apply -> 2D and 3D views should be updated, slice offset is set to `9465.563` - **Known issues:** [#75](https://github.com/BICCN/cell-locator/issues/75)
   * [ ] Click Reset
   * [ ] Move Roll slider  -> wait few seconds, no update should happen -> press Enter or Return -> 2D and 3D views should be updated
   * [ ] Move Pitch slider -> idem
