@@ -226,13 +226,15 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def onStartupCompleted(self, *unused):
     qt.QTimer.singleShot(0, lambda: self.onSceneEndCloseEvent(slicer.mrmlScene))
 
-  def saveAnnotationIfModified(self):
-    if not self.MarkupsAnnotationNode:
-      return
-
-    question = "The annotation has been modified. Do you want to save before creating a new one ?"
-    if slicer.util.confirmYesNoDisplay(question, parent=slicer.util.mainWindow()):
-       self.onSaveAnnotationButtonClicked()
+  def isAnnotationSavingRequired(self):
+    shouldSave = (slicer.mrmlScene.GetStorableNodesModifiedSinceReadByClass("vtkMRMLMarkupsSplinesNode")
+                  or slicer.mrmlScene.GetModifiedSinceRead())
+    if self.MarkupsAnnotationNode is None:
+      return False
+    for markupIndex in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
+      if self.MarkupsAnnotationNode.GetNumberOfPointsInNthMarkup(markupIndex) > 0:
+        return shouldSave
+    return False
 
   def resetFieldOfView(self):
     # Reset 2D
@@ -266,13 +268,24 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
   def onNewAnnotationButtonClicked(self):
     # Save current
-    self.saveAnnotationIfModified()
+    if self.isAnnotationSavingRequired():
+      question = "The annotation has been modified. Do you want to save before creating a new one ?"
+      if slicer.util.confirmYesNoDisplay(question, parent=slicer.util.mainWindow()):
+         if not self.onSaveAnnotationButtonClicked():
+           return
 
-    # Create
-    self.initializeAnnotation()
+    # Create a new one
+    newAnnotationNode = self.createAnnotation()
     title = "New Annotation File Name"
-    if not self.onSaveAsAnnotationButtonClicked(windowTitle=title):
+    if not self.onSaveAsAnnotationButtonClicked(newAnnotationNode, windowTitle=title):
+      # If user cancel, remove the temporary one
+      slicer.mrmlScene.RemoveNode(newAnnotationNode)
       return
+
+    # Remove existing annotation, and observe the new one
+    self.removeAnnotation()
+    self.addAnnotationObservations(newAnnotationNode)
+    self.MarkupsAnnotationNode = newAnnotationNode
 
     self.updateGUIFromMRML()
     self.onSliceNodeModifiedEvent() # Init values
@@ -280,13 +293,19 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def onSaveAnnotationButtonClicked(self):
     if not self.MarkupsAnnotationNode or \
        not self.MarkupsAnnotationNode.GetStorageNode():
-      return
+      return False
+
     if not self.MarkupsAnnotationNode.GetStorageNode().GetFileName():
-      self.onSaveAsAnnotationButtonClicked()
+      return self.onSaveAsAnnotationButtonClicked(self.MarkupsAnnotationNode)
     else:
       self.MarkupsAnnotationNode.GetStorageNode().WriteData(self.MarkupsAnnotationNode)
+      self.annotationStored(self.MarkupsAnnotationNode)
+      return True
 
-  def onSaveAsAnnotationButtonClicked(self, windowTitle=None):
+  def onSaveAsAnnotationButtonClicked(self, annotationNode=None, windowTitle=None):
+
+    if annotationNode is None:
+      annotationNode = self.MarkupsAnnotationNode
 
     defaultFileName = "annotation.json"
     directory = slicer.app.userSettings().value("LastAnnotationDirectory", qt.QStandardPaths.writableLocation(qt.QStandardPaths.DocumentsLocation))
@@ -294,7 +313,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       defaultFileName = directory + "/" + defaultFileName
 
     properties = {
-      "nodeID": self.MarkupsAnnotationNode.GetID(),
+      "nodeID": annotationNode.GetID(),
       "defaultFileName": defaultFileName
     }
     if windowTitle is not None:
@@ -304,8 +323,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       "MarkupsSplines", slicer.qSlicerFileDialog.Write, properties)
 
     if success:
-      directory = os.path.dirname(self.MarkupsAnnotationNode.GetStorageNode().GetFileName())
+      directory = os.path.dirname(annotationNode.GetStorageNode().GetFileName())
       slicer.app.userSettings().setValue("LastAnnotationDirectory", directory)
+      self.annotationStored(annotationNode)
 
     return success
 
@@ -318,15 +338,26 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     with NodeModify(cameraNode), NodeModify(sliceNode):
 
       self.removeAnnotation()
-      self.saveAnnotationIfModified()
-      if not app.coreIOManager().openDialog('MarkupsSplines', qSlicerFileDialog.Read):
+
+      # Save current one
+      if self.isAnnotationSavingRequired():
+        question = "The annotation has been modified. Do you want to save before loading a new one ?"
+        if slicer.util.confirmYesNoDisplay(question, parent=slicer.util.mainWindow()):
+          if not self.onSaveAnnotationButtonClicked():
+            return
+
+      # Load a new one
+      properties = {}
+      loadedNodes = vtk.vtkCollection()
+      if not app.ioManager().openDialog('MarkupsSplines', qSlicerFileDialog.Read, properties, loadedNodes):
         return
 
-      nodes = slicer.mrmlScene.GetNodesByClass('vtkMRMLMarkupsSplinesNode')
-      nodes.UnRegister(slicer.mrmlScene)
-      newNode = nodes.GetItemAsObject(nodes.GetNumberOfItems() - 1)
+      # Get reference to loaded node
+      assert loadedNodes.GetNumberOfItems() == 1
+      newNode = loadedNodes.GetItemAsObject(0)
+      newNode.SetName("Annotation")
+      self.MarkupsAnnotationNode = newNode
 
-      self.initializeAnnotation(newNode)
       self.updateGUIFromMRML()
 
       self.resetViews()
@@ -588,6 +619,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     cameraNode = slicer.modules.cameras.logic().GetViewActiveCameraNode(viewNode)
     self.removeObserver(cameraNode, vtk.vtkCommand.ModifiedEvent, self.onCameraNodeModifiedEvent)
 
+    self.removeAnnotation()
+
   def setupViewers(self):
     # Configure slice view
     sliceWidget = self.LayoutManager.sliceWidget("Slice")
@@ -772,11 +805,19 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sliceNode.AddSliceOrientationPreset("Coronal", orientationMatrix)
     sliceNode.DisableModifiedEventOff()
 
-    self.initializeAnnotation()
+    self.MarkupsAnnotationNode = self.createAnnotation()
+    self.addAnnotationObservations(self.MarkupsAnnotationNode)
     self.onSliceNodeModifiedEvent() # Init values
     self.updateGUIFromMRML()
 
     self.setDefaultSettings()
+    self.annotationStored(self.MarkupsAnnotationNode)
+
+  def annotationStored(self, annotationNode):
+    """Update scene and annotation storage node stored time. This indicates
+    no saving is required until the next scene or node update."""
+    slicer.mrmlScene.StoredModified()
+    annotationNode.GetStorageNode().StoredModified()
 
   def setup(self):
     ScriptedLoadableModuleWidget.setup(self)
@@ -847,7 +888,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.InteractionNode = interactionNode
 
     # Disable verbose IO
-    slicer.app.coreIOManager().verbose = False
+    slicer.app.ioManager().verbose = False
 
     # Configure sliders
     self.get('StepSizeSliderWidget').setMRMLScene(slicer.mrmlScene)
@@ -862,11 +903,15 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.removeObserver(
       self.MarkupsAnnotationNode, slicer.vtkMRMLMarkupsNode.NthMarkupModifiedEvent, self.onNthMarkupModifiedEvent)
 
-  def addAnnotationObservations(self):
-    self.addObserver(
-      self.MarkupsAnnotationNode, slicer.vtkMRMLMarkupsNode.MarkupAddedEvent, self.onMarkupAddedEvent)
-    self.addObserver(
-      self.MarkupsAnnotationNode, slicer.vtkMRMLMarkupsNode.NthMarkupModifiedEvent, self.onNthMarkupModifiedEvent)
+  def addAnnotationObservations(self, annotationNode):
+    self.addObserver(annotationNode, slicer.vtkMRMLMarkupsNode.MarkupAddedEvent, self.onMarkupAddedEvent)
+    self.addObserver(annotationNode, slicer.vtkMRMLMarkupsNode.NthMarkupModifiedEvent, self.onNthMarkupModifiedEvent)
+
+  def createAnnotation(self):
+    annotationNode = slicer.mrmlScene.AddNode(slicer.vtkMRMLMarkupsSplinesNode())
+    annotationNode.AddDefaultStorageNode()
+    annotationNode.SetName("Annotation")
+    return annotationNode
 
   def removeAnnotation(self):
     if self.MarkupsAnnotationNode is None:
@@ -874,18 +919,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.removeAnnotationObservations()
     slicer.mrmlScene.RemoveNode(self.MarkupsAnnotationNode)
     self.MarkupsAnnotationNode = None
-
-  def initializeAnnotation(self, newNode=None):
-    if newNode:
-      self.MarkupsAnnotationNode = newNode
-    else:
-      self.removeAnnotation()
-      self.MarkupsAnnotationNode = slicer.mrmlScene.AddNode(slicer.vtkMRMLMarkupsSplinesNode())
-      self.MarkupsAnnotationNode.AddDefaultStorageNode()
-      self.MarkupsAnnotationNode.SetDefaultReferenceView(self.get("ReferenceViewComboBox").currentText)
-
-    self.MarkupsAnnotationNode.SetName("Annotation")
-    self.addAnnotationObservations()
 
   def onMarkupAddedEvent(self, caller=None, event=None):
     self.onThicknessChanged(self.get('ThicknessSliderWidget').value)

@@ -104,3 +104,44 @@ labels: 'qa: kitware, Category: Tests'
   * [ ] Add an annotation point -> Annotation Thickness slider is enabled
   * [ ] Add multiple point -> Update thickness -> 3D view annotation thickness is updated
   * [ ] Select point -> Press Delete multiple times to delete all point -> Annotation Thickness slider is disabled
+
+* Confirm Exit Dialog
+  * [ ] Start application -> Close application -> No confirmation dialog -> Application is closed
+  * [ ] Start application -> Update camera, update slice offset, reset FOV -> Close application -> No confirmation dialog -> Application is closed
+  * [ ] Start application -> Select Edit mode -> Add points
+  * [ ] Close application -> Confirmation dialog -> Click "Cancel exit" -> Nothing happen
+  * [ ] Close application -> Confirmation dialog -> Click "Save" -> Save Dialog show -> Click Cancel -> Application stays open
+  * [ ] Close application -> Confirmation dialog -> Click "Save" -> Save Dialog show -> Select location -> Click Save -> Application is closed
+  * [ ] Start application -> Select Edit mode -> Add points -> Close application -> Confirmation dialog -> Click "Exit (discard modification)" -> Exit without saving annotation -> Application is closed    
+
+* New/Save/SaveAs/Load annotation buttons
+  * [ ] Start application -> Check filename text box displays "None"
+  * [ ] Click New -> Select folder & type filename "annotation.json" -> Click Save -> Check that filename text box displays "/path/to/annotation.json"
+  * _Check that cancelling action is a no-op_
+    * [ ] Click New    -> popup -> Click Cancel -> Click Save -> Existing annotation should be saved without showing "Save As" dialog 
+    * [ ] Click SaveAs -> idem
+    * [ ] Click Load   -> idem
+  * [ ] Click New    -> popup -> Select folder & type filename "annotation2.json" -> Click Save -> Check that filename text box displays "/path/to/annotation2.json"   
+  * [ ] Click Load   -> popup -> Select "annotation.json" -> Click Load -> Check that filename text box displays "/path/to/annotation.json"
+  * [ ] Click SaveAs -> popup -> Select folder & type filename "annotation3.json" -> Check that filename text box displays "/path/to/annotation3.json"
+
+* Test Save -> Load -> Save
+  * Create annotation
+    * [ ] Start application -> Set ReferenceView to Sagittal
+    * [ ] Select Edit mode -> Add 3 points
+    * [ ] Set properties
+      * Raw/Pitch/Yaw set to 10/20/30
+      * Slice Step Size to 10
+      * Annotation thickness to 60
+      * Annotation Type to PolyLine
+    * [ ] Click Save -> popup -> Select folder & type filename "annotation.json" -> Click Save
+  * Click New -> popup -> Select folder & type filename "annotation2.json" -> Click Save -> Click Reset -> Set Reference View to Spline
+  * Click Load -> Check that properties match the one entered above
+  * CTRL + W -> Application state is reset -> Click Load -> Check that properties match the ones entered above
+  * Close Application -> Start application -> Click Load -> Check that properties match the ones entered above
+  * Click SaveAs -> popup -> Select folder & type filename "annotation3.json"
+  * Check that file "annotation.json" and "annotation3.json" are identical. **Known issues:** [#78](https://github.com/BICCN/cell-locator/issues/78) 
+
+* Remembering directory used for last saving
+  * [ ] Start application -> Click Save -> Choose a different directory -> Choose Save -> Close application
+  * [ ] Start application -> Click Save -> Check suggest directory is the one of previous step

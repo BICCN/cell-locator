@@ -20,13 +20,28 @@
 #include "qCellLocatorAppMainWindow_p.h"
 
 // Qt includes
+#include <QAbstractButton>
 #include <QDesktopWidget>
+#include <QMessageBox>
+#include <QPushButton>
+
+// PythonQt includes
+#include <PythonQt.h>
+
+// CTK includes
+#include <ctkAbstractPythonManager.h>
+#include <ctkMessageBox.h>
 
 // Slicer includes
 #include "qSlicerApplication.h"
 #include "qSlicerAboutDialog.h"
 #include "qSlicerMainWindow_p.h"
 #include "qSlicerModuleSelectorToolBar.h"
+
+// MRML includes
+#include <vtkMRMLNode.h>
+#include <vtkMRMLScene.h>
+#include <vtkMRMLStorableNode.h>
 
 //-----------------------------------------------------------------------------
 // qCellLocatorAppMainWindowPrivate methods
@@ -104,6 +119,95 @@ void qCellLocatorAppMainWindowPrivate::setupUi(QMainWindow * mainWindow)
   //this->DataProbeCollapsibleWidget->setCollapsed(true);
   this->DataProbeCollapsibleWidget->setVisible(false);
   this->StatusBar->setVisible(false);
+}
+
+//-----------------------------------------------------------------------------
+PyObject* qCellLocatorAppMainWindowPrivate::callPythonFunction(
+    const QString& objectPath, const QString& functionName, PyObject * arguments)
+{
+  PyObject * module = ctkAbstractPythonManager::pythonObject(objectPath.toLatin1());
+  if (!module)
+    {
+    PythonQt::self()->handleError();
+    return 0;
+    }
+  if (!PyObject_HasAttrString(module, functionName.toLatin1()))
+    {
+    qWarning() << "Failed to lookup 'confirmCloseApplication' python method";
+    return 0;
+    }
+  PythonQtObjectPtr method;
+  method.setNewRef(PyObject_GetAttrString(module, functionName.toLatin1()));
+
+  PyObject * result = PyObject_CallObject(method, arguments);
+  if (PythonQt::self()->handleError())
+    {
+    return 0;
+    }
+  return result;
+}
+
+//-----------------------------------------------------------------------------
+bool qCellLocatorAppMainWindowPrivate::isSavingRequired()
+{
+  QString functionName = "isAnnotationSavingRequired";
+  PyObject* result = Self::callPythonFunction("slicer.modules.HomeWidget", functionName);
+  if (!PyBool_Check(result))
+    {
+    qWarning() << "function" << functionName << "is expected to return a boolean";
+    return false;
+    }
+  return result == Py_True;
+}
+
+//-----------------------------------------------------------------------------
+bool qCellLocatorAppMainWindowPrivate::saveAnnotation()
+{
+  QString functionName = "onSaveAnnotationButtonClicked";
+  PyObject* result = Self::callPythonFunction("slicer.modules.HomeWidget", functionName);
+  if (!PyBool_Check(result))
+    {
+    qWarning() << "function" << functionName << "is expected to return a boolean";
+    return false;
+    }
+  return result == Py_True;
+}
+
+//-----------------------------------------------------------------------------
+bool qCellLocatorAppMainWindowPrivate::confirmCloseApplication()
+{
+  Q_Q(qCellLocatorAppMainWindow);
+
+  QString question;
+  if (Self::isSavingRequired())
+    {
+    question = q->tr("Annotation has been created or modified. Do you want to save before exit?");
+    }
+
+  bool close = false;
+  if (!question.isEmpty())
+    {
+    QMessageBox* messageBox = new QMessageBox(QMessageBox::Warning, q->tr("Save before exit?"), question, QMessageBox::NoButton);
+    QAbstractButton* saveButton = messageBox->addButton(q->tr("Save"), QMessageBox::ActionRole);
+    QAbstractButton* exitButton = messageBox->addButton(q->tr("Exit (discard modifications)"), QMessageBox::ActionRole);
+    QAbstractButton* cancelButton = messageBox->addButton(q->tr("Cancel exit"), QMessageBox::ActionRole);
+    Q_UNUSED(cancelButton);
+    messageBox->exec();
+    if (messageBox->clickedButton() == saveButton)
+      {
+      close = Self::saveAnnotation();
+      }
+    else if (messageBox->clickedButton() == exitButton)
+      {
+      close = true;
+      }
+    messageBox->deleteLater();
+    }
+  else
+    {
+    close = ctkMessageBox::confirmExit("MainWindow/DontConfirmExit", q);
+    }
+  return close;
 }
 
 //-----------------------------------------------------------------------------

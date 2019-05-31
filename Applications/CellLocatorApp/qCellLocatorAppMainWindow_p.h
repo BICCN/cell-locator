@@ -24,19 +24,39 @@
 // Slicer includes
 #include "qSlicerMainWindow_p.h"
 
+// PythonQt includes
+#include <PythonQt.h>
+
+// VTK includes
+#include <vtkCollection.h>
+
 //-----------------------------------------------------------------------------
 class Q_CELLLOCATOR_APP_EXPORT qCellLocatorAppMainWindowPrivate
   : public qSlicerMainWindowPrivate
 {
   Q_DECLARE_PUBLIC(qCellLocatorAppMainWindow);
 public:
+  typedef qCellLocatorAppMainWindowPrivate Self;
   typedef qSlicerMainWindowPrivate Superclass;
   qCellLocatorAppMainWindowPrivate(qCellLocatorAppMainWindow& object);
   virtual ~qCellLocatorAppMainWindowPrivate();
 
   virtual void init();
+
   /// Reimplemented for custom behavior
   virtual void setupUi(QMainWindow * mainWindow);
+
+  static PyObject* callPythonFunction(const QString& objectPath, const QString& functionName, PyObject * arguments = 0);
+
+  /// Call HomeWidget.isSavingRequired() python function to check if saving is required
+  static bool isSavingRequired();
+
+  /// Call HomeWidget.onSaveAnnotationButtonClicked() python function
+  /// Returns True if user choose "Save", returns False if user choose "Cancel"
+  static bool saveAnnotation();
+
+  /// Reimplemented for custom behavior
+  virtual bool confirmCloseApplication();
 };
 
 #endif
