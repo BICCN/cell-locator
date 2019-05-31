@@ -15,8 +15,15 @@ labels: 'qa: kitware, Category: Tests'
   * [ ] Start application
   * [ ] Check that Structure is selected by default
   * [ ] Check that Ontology is visible in 2D and 3D views
-  * [ ] Select Layer -> 2D and 3D views should be updated
+  * [ ] Select Layer -> Check that 2D and 3D views are updated
   * [ ] Select None  -> idem
+
+* Contrast
+  * [ ] Start application
+  * [ ] Select None in ontology combo box
+  * [ ] Click in between min/max and hold -> move mouse to translate range -> Check that 2D and 3D views are updated
+  * [ ] Click on handle min handle -> move mouse -> max handle should be symmetrically updated -> Check that 2D and 3D views are updated
+  * [ ] Click Reset button -> Check min/max are set ->  Check that 2D and 3D views are updated
 
 * ReferenceView combox box
   * [ ] Start application
