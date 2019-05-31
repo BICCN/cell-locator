@@ -8,19 +8,19 @@ labels: 'qa: kitware, Category: Tests'
 
 * Data, Data Probe, Units
   * [ ] Start application
-  * [ ] Atlas and ontology are loaded
-  * [ ] Unit displayed in Annotation Thickness spinbox, Slice Step Size spinbox and slice offset text box is `mm`
+  * [ ] Check that Atlas and ontology are loaded
+  * [ ] Check that Unit displayed in Annotation Thickness spinbox, Slice Step Size spinbox and slice offset text box is `mm`
 
 * Ontology combo box (located in the lower left corner)
   * [ ] Start application
-  * [ ] Structure is selected by default
-  * [ ] Ontology is expected to be visible in 2D and 3D views
+  * [ ] Check that Structure is selected by default
+  * [ ] Check that Ontology is visible in 2D and 3D views
   * [ ] Select Layer -> 2D and 3D views should be updated
   * [ ] Select None  -> idem
 
 * ReferenceView combox box
   * [ ] Start application
-  * [ ] Coronal is selected by default
+  * [ ] Check that Coronal is selected
   * [ ] Select Axial    -> 2D and 3D views are updated and have same orientation
   * [ ] Select Sagittal -> idem
   * [ ] Select Coronal  -> idem
@@ -39,7 +39,7 @@ labels: 'qa: kitware, Category: Tests'
 
 * Slice step size
   * [ ] Start application
-  * [ ] Slice Step Size is `1`
+  * [ ] Check that Slice Step Size is `1`
   * [ ] Update to `200`
   * 2D view
     * [ ] Click once on 2D view -> use right&left arrow -> slice offset updated by `200` increment, 2D and 3D views updated
@@ -47,12 +47,12 @@ labels: 'qa: kitware, Category: Tests'
   *  3D view
     * [ ] Click once on 3D view slice plane -> use right&left arrow -> slice offset updated by `200` increment, 2D and 3D views updated
     * [ ] Click once on 3D view slice plane -> move mouse cursor outside slice plane -> use right&left arrow -> camera is updated
-    * [ ] use mouse wheel to zoom in until no background is visible -> move mouse cursor outside -> use right&left arrow -> slice offset updated by `200` increment, 2D and 3D views updated
+    * [ ] Use mouse wheel to zoom in until no background is visible -> move mouse cursor outside -> use right&left arrow -> slice offset updated by `200` increment, 2D and 3D views updated
 
 * Roll/Pitch/Yaw
   * [ ] Start application
-  * [ ] Reset button is enabled
-  * [ ] Apply button is disabled
+  * [ ] Check that Reset button is enabled
+  * [ ] Check that Apply button is disabled
   * [ ] Move Roll, Pitch and Yaw sliders -> Apply button is enabled -> wait few seconds, no update should happen -> click Apply -> 2D and 3D views should be updated
   * [ ] Click Reset -> Raw/Pitch/Yaw reset to 0 -> Apply button disabled, slice offset set to `6600`
   * [ ] Update Roll, Pitch, Yaw spin boxes with 25, 35 and 50 -> wait few seconds, nothing should happen -> click Apply -> 2D and 3D views should be updated, slice offset is set to `9465.563`
@@ -72,7 +72,7 @@ labels: 'qa: kitware, Category: Tests'
 
 * Annotation creation and updates (Edit mode vs Exploration mode)
   * [ ] Start application
-  * [ ] Exploration mode is selected
+  * [ ] Check that Exploration mode is selected
   * [ ] Select Edit mode -> Click on slice plane in 3D view -> nothing happen
   * [ ] Click once on 2D view -> Annotation point is added -> click multiple time -> annotation is created
   * [ ] Click and hold annotation point -> move mouse cursor -> point position is updated
@@ -92,16 +92,15 @@ labels: 'qa: kitware, Category: Tests'
 
 * Annotation Type
   * [ ] Start application
-  * [ ] Annotation Type is Spline
+  * [ ] Check that Annotation Type is Spline
   * [ ] Select Edit mode -> Create an annotation
   * [ ] Select PolyLine -> Annotation type is updated in 2D and 3D views
   * [ ] Add annotation point -> annotation type should remain the same
 
 * Annotation Thickness
   * [ ] Start application
-  * [ ] Annotation Thickness slider is disabled
+  * [ ] Check that Annotation Thickness slider is disabled
   * [ ] Select Edit mode -> Annotation Thickness slider is still disabled
   * [ ] Add an annotation point -> Annotation Thickness slider is enabled
   * [ ] Add multiple point -> Update thickness -> 3D view annotation thickness is updated
   * [ ] Select point -> Press Delete multiple times to delete all point -> Annotation Thickness slider is disabled
-
