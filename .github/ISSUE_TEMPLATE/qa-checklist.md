@@ -2,7 +2,7 @@
 name: QA checklist
 about: Create checklist for testing the application
 title: 'YYYY-MM-DD QA'
-labels: 'qa: kitware, C: tests'
+labels: 'qa: kitware, Category: Tests'
 
 ---
 

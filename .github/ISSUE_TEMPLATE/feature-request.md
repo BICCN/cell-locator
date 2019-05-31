@@ -1,7 +1,7 @@
 ---
 name: Feature request
 about: Suggest an idea for this project
-labels: 'S: triage'
+labels: 'Status: Triage'
 
 ---
 
