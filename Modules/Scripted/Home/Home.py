@@ -395,7 +395,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
   def updateGUIFromMRML(self):
     self.onMarkupsAnnotationStorageNodeModifiedEvent()
-    self.updateReferenceViewButtonsState()
     self.updateGUIFromAnnotationMarkup(self.MarkupsAnnotationNode)
     self.updateGUIFromSliceNode()
 
@@ -986,6 +985,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def updateGUIFromAnnotationMarkup(self, annotationNode):
     self.get('ThicknessSliderWidget').enabled = False
 
+    hasMarkups = annotationNode is not None and annotationNode.GetNumberOfMarkups() > 0
+    self.get('ReferenceViewComboBox').setDisabled(hasMarkups)
+
     if annotationNode is None or annotationNode.GetNumberOfMarkups() == 0:
       return
 
@@ -1015,10 +1017,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     if not annotationNode or not annotationNode.IsA('vtkMRMLMarkupsSplinesNode'):
       return
     self.updateGUIFromAnnotationMarkup(annotationNode)
-
-  def updateReferenceViewButtonsState(self):
-    hasMarkups = self.MarkupsAnnotationNode is not None and self.MarkupsAnnotationNode.GetNumberOfMarkups() > 0
-    self.get('ReferenceViewComboBox').setDisabled(hasMarkups)
 
   def getReferenceView(self):
     return self.get('ReferenceViewComboBox').currentText
