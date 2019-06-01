@@ -49,7 +49,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.MarkupsAnnotationNode = None
     self.ThreeDWithReformatCustomLayoutId = None
     self.Widget = None
-    self.ReferenceView = 'Coronal'
     self._widget_cache = {}
 
     self.ClearAction = None
@@ -63,6 +62,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.DefaultWindowLevelMax = 0.
 
     self.DefaultAnnotationType = 'spline'
+    self.DefaultReferenceView = 'Coronal'
     self.DefaultStepSize = 1
     self.DefaultThickness = 50
 
@@ -110,7 +110,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       "    <property name=\"viewlabel\" action=\"default\">1</property>"
       "  </view>"
       " </item>"
-      "</layout>") %self.ReferenceView
+      "</layout>") % self.DefaultReferenceView
     self.ThreeDWithReformatCustomLayoutId = 503
     layoutLogic.GetLayoutNode().AddLayoutDescription(self.ThreeDWithReformatCustomLayoutId, customLayout)
 
@@ -269,7 +269,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       "Coronal": slicer.vtkMRMLCameraNode.Posterior,
       "Sagittal": slicer.vtkMRMLCameraNode.Left,
     }
-    cameraNode.RotateTo(rotateTo[self.ReferenceView])
+    cameraNode.RotateTo(rotateTo[self.getReferenceView()])
 
     renderer = threeDView.renderer()
     resetRotation = False
@@ -419,7 +419,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       self.get('StepSizeSliderWidget').value = sliceSpacing[2]
 
     # Update Roll/Pitch/Yaw
-    referenceOrientation = sliceNode.GetSliceOrientationPreset(self.ReferenceView)
+    referenceOrientation = sliceNode.GetSliceOrientationPreset(self.getReferenceView())
     referenceMatrix = vtk.vtkMatrix4x4()
     for row in range(3):
       for column in range(3):
@@ -463,7 +463,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     pitch = self.get('PitchSliderWidget').value
 
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
-    referenceOrientation = sliceNode.GetSliceOrientationPreset(self.ReferenceView)
+    referenceOrientation = sliceNode.GetSliceOrientationPreset(self.getReferenceView())
     referenceMatrix = vtk.vtkMatrix4x4()
     for row in range(3):
       for column in range(3):
@@ -512,9 +512,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get('AnnotationPathLineEdit').currentPath = self.MarkupsAnnotationNode.GetStorageNode().GetFileName()
 
   def resetToReferenceView(self):
-    referenceView = self.ReferenceView
-    self.ReferenceView = ''
-    self.onReferenceViewChanged(referenceView)
+    self.setReferenceView(self.getReferenceView())
 
     self.get('AdjustViewPushButton').enabled = False
 
@@ -523,11 +521,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       with SignalBlocker(self.get('%sSliderWidget' % axe)):
         self.get('%sSliderWidget' % axe).value = 0
 
-  def onReferenceViewChanged(self, orientation):
-    if orientation == self.ReferenceView:
-      return
-
-    self.ReferenceView = orientation
+  def setReferenceView(self, orientation):
     sliceWidget = self.LayoutManager.sliceWidget("Slice")
     sliceNode = sliceWidget.mrmlSliceNode()
 
@@ -680,7 +674,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     referenceViewComboBox = qt.QComboBox()
     referenceViewComboBox.objectName = "ReferenceViewComboBox"
     referenceViewComboBox.addItems(["Axial", "Coronal", "Sagittal"])
-    referenceViewComboBox.setCurrentText(self.ReferenceView) # Update the reference default button
     self.set(referenceViewComboBox)
     self.get("BarWidget", sliceWidget).layout().addWidget(referenceViewComboBox)
     # BarWidget layout
@@ -1020,6 +1013,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     hasMarkups = self.MarkupsAnnotationNode is not None and self.MarkupsAnnotationNode.GetNumberOfMarkups() > 0
     self.get('ReferenceViewComboBox').setDisabled(hasMarkups)
 
+  def getReferenceView(self):
+    return self.get('ReferenceViewComboBox').currentText
+
   def getInteractionState(self):
     interactionNode = slicer.app.applicationLogic().GetInteractionNode()
     if interactionNode.GetCurrentInteractionMode() == interactionNode.Place:
@@ -1069,7 +1065,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get('LoadAnnotationButton').connect("clicked()", self.onLoadAnnotationButtonClicked)
 
     self.get('ResetFieldOfViewButton').connect("clicked()", self.resetFieldOfView)
-    self.get('ReferenceViewComboBox').connect("currentTextChanged(QString)", self.onReferenceViewChanged)
+    self.get('ReferenceViewComboBox').connect("currentTextChanged(QString)", self.setReferenceView)
     self.get('ResetToReferenceViewPushButton').connect("clicked()", self.resetViews)
     self.get('ContrastSlider').connect("valuesChanged(int, int)", self.onContrastValuesChanged)
     self.get('ResetContrastButton').connect("clicked()", self.onResetContrastButtonClicked)
