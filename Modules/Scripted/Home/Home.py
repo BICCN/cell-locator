@@ -378,10 +378,15 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
       # Camera
       position = [0., 0., 0.]
-      self.MarkupsAnnotationNode.GetNthSplineCameraPosition(0, position)
-      cameraNode.SetPosition(position)
       viewUp = [0., 0., 0.]
-      self.MarkupsAnnotationNode.GetNthSplineCameraViewUp(0, viewUp)
+      if self.MarkupsAnnotationNode.GetNumberOfMarkups() == 0:
+        position = self.MarkupsAnnotationNode.GetDefaultCameraPosition()
+        viewUp = self.MarkupsAnnotationNode.GetDefaultCameraViewUp()
+      else:
+        markupIndex = 0
+        self.MarkupsAnnotationNode.GetNthSplineCameraPosition(markupIndex, position)
+        self.MarkupsAnnotationNode.GetNthSplineCameraViewUp(markupIndex, viewUp)
+      cameraNode.SetPosition(position)
       cameraNode.SetViewUp(viewUp)
       cameraNode.ResetClippingRange()
 
@@ -625,15 +630,21 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
   def onCameraNodeModifiedEvent(self, caller, event):
     cameraNode = caller
-    if self.MarkupsAnnotationNode is None or self.MarkupsAnnotationNode.GetNumberOfMarkups() == 0:
+    if self.MarkupsAnnotationNode is None:
       return
-    markupIndex = 0
-    position = [0., 0., 0.]
-    cameraNode.GetPosition(position)
-    self.MarkupsAnnotationNode.SetNthSplineCameraPosition(markupIndex, position)
-    viewUp = [0., 0., 0.]
-    cameraNode.GetViewUp(viewUp)
-    self.MarkupsAnnotationNode.SetNthSplineCameraViewUp(markupIndex, viewUp)
+    with NodeModify(self.MarkupsAnnotationNode):
+      position = [0., 0., 0.]
+      cameraNode.GetPosition(position)
+      self.MarkupsAnnotationNode.SetDefaultCameraPosition(position)
+
+      viewUp = [0., 0., 0.]
+      cameraNode.GetViewUp(viewUp)
+      self.MarkupsAnnotationNode.SetDefaultCameraViewUp(viewUp)
+
+      markupIndex = 0
+      if self.MarkupsAnnotationNode.GetNumberOfMarkups() > 0:
+        self.MarkupsAnnotationNode.SetNthSplineCameraPosition(markupIndex, position)
+        self.MarkupsAnnotationNode.SetNthSplineCameraViewUp(markupIndex, viewUp)
 
   def onSceneStartCloseEvent(self, caller=None, event=None):
     scene = caller

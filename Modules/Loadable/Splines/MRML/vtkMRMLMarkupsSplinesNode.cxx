@@ -67,6 +67,9 @@ void vtkMRMLMarkupsSplinesNode::PrintSelf(ostream& os, vtkIndent indent)
 
   vtkMRMLPrintBeginMacro(os, indent);
   vtkMRMLPrintIntMacro(CurrentSpline);
+  vtkMRMLPrintVectorMacro(DefaultCameraPosition, double, 3);
+  vtkMRMLPrintVectorMacro(DefaultCameraViewUp, double, 3);
+  vtkMRMLPrintStdStringMacro(DefaultOntology);
   vtkMRMLPrintStdStringMacro(DefaultReferenceView);
   vtkMRMLPrintStdStringMacro(DefaultRepresentationType);
   vtkMRMLPrintIntMacro(DefaultStepSize);
@@ -128,10 +131,15 @@ int vtkMRMLMarkupsSplinesNode::AddSpline(vtkVector3d point)
   this->SplineOrientation.push_back(orientation);
   this->SelectedPointIndex.push_back(-1);
   this->RepresentationType.push_back(this->DefaultRepresentationType);
-  std::array<double, 3> cameraPosition = {0., 0., 0.};
+
+  std::array<double, 3> cameraPosition = {0.};
+  this->GetDefaultCameraPosition(cameraPosition.data());
   this->CameraPosition.push_back(cameraPosition);
-  std::array<double, 3> cameraViewUp = {0., 0., 0.};
+
+  std::array<double, 3> cameraViewUp = {0.};
+  this->GetDefaultCameraViewUp(cameraViewUp.data());
   this->CameraViewUp.push_back(cameraViewUp);
+
   this->StepSize.push_back(this->DefaultStepSize);
   this->Ontology.push_back(this->DefaultOntology);
   return this->CurrentSpline;

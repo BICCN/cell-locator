@@ -55,13 +55,19 @@ protected:
   vtkMRMLMarkupsSplinesStorageNode(const vtkMRMLMarkupsSplinesStorageNode&);
   void operator=(const vtkMRMLMarkupsSplinesStorageNode&);
 
+  virtual int ReadMarkupsNodeFromTranslationMap(
+    vtkMRMLMarkupsNode* markupsNode, TranslationMap& markupsMap);
+
+  virtual int WriteMarkupsNodeToTranslationMap(
+    vtkMRMLMarkupsNode* markupsNode, TranslationMap& markupsMap);
+
   virtual int ReadNthMarkupFromTranslationMap(
     int n, std::string key,
-    vtkMRMLMarkupsNode* markups, TranslationMap& markupsMap);
+    vtkMRMLMarkupsNode* markupsNode, TranslationMap& markupsMap);
 
   virtual int WriteNthMarkupToTranslationMap(
     int n, std::string key,
-    vtkMRMLMarkupsNode* markups, TranslationMap& markupsMap);
+    vtkMRMLMarkupsNode* markupsNode, TranslationMap& markupsMap);
 };
 
 #endif

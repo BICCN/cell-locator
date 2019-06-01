@@ -55,6 +55,84 @@ bool vtkMRMLMarkupsSplinesStorageNode::CanReadInReferenceNode(vtkMRMLNode *refNo
 }
 
 //----------------------------------------------------------------------------
+int vtkMRMLMarkupsSplinesStorageNode::ReadMarkupsNodeFromTranslationMap(
+    vtkMRMLMarkupsNode* markupsNode, TranslationMap& markupsMap)
+{
+  int success =
+      this->Superclass::ReadMarkupsNodeFromTranslationMap(markupsNode, markupsMap);
+
+  vtkMRMLMarkupsSplinesNode* splinesNode =
+    vtkMRMLMarkupsSplinesNode::SafeDownCast(markupsNode);
+  if (!success || !splinesNode)
+  {
+    return 0;
+  }
+
+  {
+    double position[3] = {0., 0., 0.};
+    for (int i = 0; i < 3; ++i)
+    {
+      std::stringstream key;
+      key << "/DefaultCameraPosition/" << i;
+      position[i] = markupsMap[key.str()].ToDouble();
+    }
+    splinesNode->SetDefaultCameraPosition(position);
+  }
+
+  {
+    double viewUp[3] = {0., 0., 0.};
+    for (int i = 0; i < 3; ++i)
+    {
+      std::stringstream key;
+      key << "/DefaultCameraViewUp/" << i;
+      viewUp[i] = markupsMap[key.str()].ToDouble();
+    }
+    splinesNode->SetDefaultCameraViewUp(viewUp);
+  }
+
+  return 1;
+}
+
+//----------------------------------------------------------------------------
+int vtkMRMLMarkupsSplinesStorageNode::WriteMarkupsNodeToTranslationMap(
+  vtkMRMLMarkupsNode* markupsNode, TranslationMap& markupsMap)
+{
+  int success =
+      this->Superclass::WriteMarkupsNodeToTranslationMap(markupsNode, markupsMap);
+
+  vtkMRMLMarkupsSplinesNode* splinesNode =
+      vtkMRMLMarkupsSplinesNode::SafeDownCast(markupsNode);
+  if (!success || !splinesNode)
+  {
+    return 0;
+  }
+
+  {
+    double position[3] = {0.};
+    splinesNode->GetDefaultCameraPosition(position);
+    for (int i = 0; i < 3; ++i)
+    {
+      std::stringstream key;
+      key << "/DefaultCameraPosition/" << i;
+      markupsMap[key.str()] = position[i];
+    }
+  }
+
+  {
+    double viewUp[3] = {0.};
+    splinesNode->GetDefaultCameraViewUp(viewUp);
+    for (int i = 0; i < 3; ++i)
+    {
+      std::stringstream key;
+      key << "/DefaultCameraViewUp/" << i;
+      markupsMap[key.str()] = viewUp[i];
+    }
+  }
+
+  return 1;
+}
+
+//----------------------------------------------------------------------------
 int vtkMRMLMarkupsSplinesStorageNode::ReadNthMarkupFromTranslationMap(
   int n, std::string key,
   vtkMRMLMarkupsNode* markupsNode, TranslationMap& markupsMap)
@@ -88,7 +166,6 @@ int vtkMRMLMarkupsSplinesStorageNode::ReadNthMarkupFromTranslationMap(
     }
   }
   splinesNode->SetNthSplineOrientation(n, matrix);
-
 
   double position[3] = {0., 0., 0.};
   for (int i = 0; i < 3; ++i)
