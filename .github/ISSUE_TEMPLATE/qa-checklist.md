@@ -6,6 +6,11 @@ labels: 'qa: kitware, Category: Tests'
 
 ---
 
+Notes:
+* _Click_ means _Left-Click_
+
+Checklist:
+
 * Data, Data Probe, Units
   * [ ] Start application
   * [ ] Check that Atlas and ontology are loaded
@@ -94,8 +99,12 @@ labels: 'qa: kitware, Category: Tests'
   * [ ] Select Exploration mode -> annotation point or line can NOT be selected and translated
   * [ ] Select Edit mode -> annotation point or line can be updated
 
-* Keyboard shortcuts
-  * [ ] Create annotation -> add points -> select point -> Press Delete -> annotation point is removed
+* [Keyboard Accelerators and Mouse Operations](https://github.com/BICCN/cell-locator#keyboard-accelerators-and-mouse-operations)
+  * [ ] Check `General`
+  * [ ] Check `2D Viewer`
+  * [ ] Check `2D Viewer / Zoom and Pan`
+  * [ ] Check `2D Viewer / Annotation`
+  * [ ] Check `3D Viewer`
 
 * Annotation Type
   * [ ] Start application
