@@ -63,3 +63,15 @@ _On macOS use the Command key (⌘) instead of the Control (Ctrl) key_
 | f                               | Increment Slice offset                                   |
 | b                               | Decrement Slice offset                                   |
 | r                               | Adjust field of view to match the extent of the atlas    |
+
+### SpinBoxes and Sliders
+
+* Right/Left key: SingleStep increment
+* PageUp/PageDown key: PageStep increment
+
+|                       | SingleStep increment | PageStep increment       |
+|-----------------------|----------------------|--------------------------|
+| Raw/Pitch/Yaw         | 1                    | 5                        |
+| Annotation Thickness  | 1                    | 10                       |
+| Slice Step Size       | 1                    | 10                       |
+| Slice Offset          | `<slice step size>`  | `<slice step size> * 10` |

@@ -105,6 +105,7 @@ Checklist:
   * [ ] Check `2D Viewer / Zoom and Pan`
   * [ ] Check `2D Viewer / Annotation`
   * [ ] Check `3D Viewer`
+  * [ ] Check `SpinBoxes and Sliders`
 
 * Annotation Type
   * [ ] Start application
