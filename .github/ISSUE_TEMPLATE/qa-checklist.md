@@ -51,15 +51,15 @@ Checklist:
 
 * Slice step size
   * [ ] Start application
-  * [ ] Check that Slice Step Size is `1`
-  * [ ] Update to `200`
+  * [ ] Check that Slice Step Size is `25`
+  * [ ] Update to `5`
   * 2D view
-    * [ ] Click once on 2D view -> use right&left arrow -> slice offset updated by `200` increment, 2D and 3D views updated
+    * [ ] Click once on 2D view -> use right&left arrow -> check slice offset is updated by `5` increment in 2D and 3D views updated
     * [ ] Click once on 2D view -> move mouse cursor outside of 2D view -> use right&left arrow -> idem
   *  3D view
-    * [ ] Click once on 3D view slice plane -> use right&left arrow -> slice offset updated by `200` increment, 2D and 3D views updated
-    * [ ] Click once on 3D view slice plane -> move mouse cursor outside slice plane -> use right&left arrow -> camera is updated
-    * [ ] Use mouse wheel to zoom in until no background is visible -> move mouse cursor outside -> use right&left arrow -> slice offset updated by `200` increment, 2D and 3D views updated
+    * [ ] Click once on 3D view slice plane -> use right&left arrow -> check slice offset is updated by `5` increment, 2D and 3D views updated. **Known issues:** [#83](https://github.com/BICCN/cell-locator/issues/83)
+    * [ ] Click once on 3D view slice plane -> move mouse cursor outside slice plane -> use right&left arrow -> nothing happen. **Known issues:** [#84](https://github.com/BICCN/cell-locator/issues/84)
+    * [ ] Use mouse wheel to zoom in until no background is visible -> move mouse cursor outside -> use right&left arrow -> check slice offset updated by `5` increment in 2D and 3D views updated. **Known issues:** [#83](https://github.com/BICCN/cell-locator/issues/83)
 
 * Roll/Pitch/Yaw
   * [ ] Start application
