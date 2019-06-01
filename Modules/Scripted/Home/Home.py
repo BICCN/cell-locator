@@ -343,8 +343,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     cameraNode = slicer.modules.cameras.logic().GetViewActiveCameraNode(viewNode)
     with NodeModify(cameraNode), NodeModify(sliceNode):
 
-      self.removeAnnotation()
-
       # Save current one
       if self.isAnnotationSavingRequired():
         question = "The annotation has been modified. Do you want to save before loading a new one ?"
@@ -360,9 +358,13 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
       # Get reference to loaded node
       assert loadedNodes.GetNumberOfItems() == 1
-      newNode = loadedNodes.GetItemAsObject(0)
-      newNode.SetName("Annotation")
-      self.MarkupsAnnotationNode = newNode
+      newAnnotationNode = loadedNodes.GetItemAsObject(0)
+      newAnnotationNode.SetName("Annotation")
+
+      # Remove existing annotation, and observe the new one
+      self.removeAnnotation()
+      self.addAnnotationObservations(newAnnotationNode)
+      self.MarkupsAnnotationNode = newAnnotationNode
 
       self.updateGUIFromMRML()
 
