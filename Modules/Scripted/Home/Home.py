@@ -396,7 +396,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def updateGUIFromMRML(self):
     self.onMarkupsAnnotationStorageNodeModifiedEvent()
     self.updateReferenceViewButtonsState()
-    self.updateGUIFromAnnotationMarkup()
+    self.updateGUIFromAnnotationMarkup(self.MarkupsAnnotationNode)
     self.updateGUIFromSliceNode()
 
   def updateGUIFromSliceNode(self):
@@ -983,38 +983,38 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.onThicknessChanged(self.get('ThicknessSliderWidget').value)
     self.onSliceNodeModifiedEvent()
 
-  def updateGUIFromAnnotationMarkup(self):
+  def updateGUIFromAnnotationMarkup(self, annotationNode):
     self.get('ThicknessSliderWidget').enabled = False
 
-    if self.MarkupsAnnotationNode is None or self.MarkupsAnnotationNode.GetNumberOfMarkups() == 0:
+    if annotationNode is None or annotationNode.GetNumberOfMarkups() == 0:
       return
 
     markupIndex = 0
 
     # Thickness
-    if self.MarkupsAnnotationNode.GetNumberOfPointsInNthMarkup(markupIndex) > 0:
+    if annotationNode.GetNumberOfPointsInNthMarkup(markupIndex) > 0:
       self.get('ThicknessSliderWidget').enabled = True
-      self.get('ThicknessSliderWidget').value = self.MarkupsAnnotationNode.GetNthSplineThickness(markupIndex)
+      self.get('ThicknessSliderWidget').value = annotationNode.GetNthSplineThickness(markupIndex)
 
     # ReferenceView
-    self.get('ReferenceViewComboBox').currentText = self.MarkupsAnnotationNode.GetNthSplineReferenceView(markupIndex)
+    self.get('ReferenceViewComboBox').currentText = annotationNode.GetNthSplineReferenceView(markupIndex)
 
     # Type
-    representationType = self.MarkupsAnnotationNode.GetNthSplineRepresentationType(markupIndex)
+    representationType = annotationNode.GetNthSplineRepresentationType(markupIndex)
     self.get('%sRadioButton' % representationType.title()).setChecked(True)
 
     # StepSize
-    self.get('StepSizeSliderWidget').value = self.MarkupsAnnotationNode.GetNthSplineStepSize(markupIndex)
+    self.get('StepSizeSliderWidget').value = annotationNode.GetNthSplineStepSize(markupIndex)
 
     # Ontology
-    self.get('OntologyComboBox').currentText = self.MarkupsAnnotationNode.GetNthSplineOntology(markupIndex)
+    self.get('OntologyComboBox').currentText = annotationNode.GetNthSplineOntology(markupIndex)
 
   @vtk.calldata_type(vtk.VTK_INT)
   def onNthMarkupModifiedEvent(self, caller, event, callData=None):
     annotationNode = caller
     if not annotationNode or not annotationNode.IsA('vtkMRMLMarkupsSplinesNode'):
       return
-    self.updateGUIFromAnnotationMarkup()
+    self.updateGUIFromAnnotationMarkup(annotationNode)
 
   def updateReferenceViewButtonsState(self):
     hasMarkups = self.MarkupsAnnotationNode is not None and self.MarkupsAnnotationNode.GetNumberOfMarkups() > 0
