@@ -52,14 +52,19 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.ReferenceView = 'Coronal'
     self._widget_cache = {}
 
+    self.ClearAction = None
+
     self.InteractionNode = None
-    self.DefaultStepSize = 1
     self.SlicerToAllenMapping = {}
     self.AllenToSlicerMapping = {}
     self.AllenStructurePaths = {}
     self.AllenLayerStructurePaths = {}
     self.DefaultWindowLevelMin = 0.
     self.DefaultWindowLevelMax = 0.
+
+    self.DefaultAnnotationType = 'spline'
+    self.DefaultStepSize = 1
+    self.DefaultThickness = 50
 
   def get(self, name, parent=None):
     """Lookup widget by ``name``.
@@ -749,10 +754,13 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get('StepSizeSliderWidget').value = self.DefaultStepSize
 
     # Thickness
-    self.get('ThicknessSliderWidget').value = 50
+    self.get('ThicknessSliderWidget').value = self.DefaultThickness
 
     # AnnotationType
-    self.get('SplineRadioButton').checked = True
+    self.get('SplineRadioButton').checked = (self.DefaultAnnotationType == 'spline')
+
+    # ReferenceView
+    self.get('ReferenceViewComboBox').currentText = self.DefaultReferenceView
 
     self.setInteractionState('explore')
     self.resetViews()
