@@ -14,7 +14,7 @@ Checklist:
 * Data, Data Probe, Units
   * [ ] Start application
   * [ ] Check that Atlas and ontology are loaded
-  * [ ] Check that Unit displayed in Annotation Thickness spinbox, Slice Step Size spinbox and slice offset text box is `mm`
+  * [ ] Check that Unit displayed in Annotation Thickness spinbox, Slice Step Size spinbox and slice offset text box is `um`
 
 * Ontology combo box (located in the lower left corner)
   * [ ] Start application
