@@ -232,6 +232,9 @@
             <property name="quantity">
              <string>length</string>
             </property>
+            <property name="unitAwareProperties">
+             <set>qMRMLSliderWidget::Suffix</set>
+            </property>
            </widget>
           </item>
           <item row="1" column="0">
@@ -259,7 +262,7 @@
              <string>length</string>
             </property>
             <property name="unitAwareProperties">
-             <set>qMRMLSliderWidget::Prefix|qMRMLSliderWidget::Scaling|qMRMLSliderWidget::Suffix</set>
+             <set>qMRMLSliderWidget::Suffix</set>
             </property>
            </widget>
           </item>
