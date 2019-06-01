@@ -394,14 +394,10 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       self.jumpSliceToAnnotation()
 
   def updateGUIFromMRML(self):
-    self.updateGUIFromAnnotation()
-    self.updateGUIFromSliceNode()
-
-  def updateGUIFromAnnotation(self):
     self.onMarkupsAnnotationStorageNodeModifiedEvent()
-
     self.updateReferenceViewButtonsState()
     self.updateGUIFromAnnotationMarkup()
+    self.updateGUIFromSliceNode()
 
   def updateGUIFromSliceNode(self):
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
