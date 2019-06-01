@@ -401,10 +401,10 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sliceLogic.GetLowestVolumeSliceBounds(bounds)
     spacingRange = bounds[5] - bounds[4]
     if spacingRange > 0:
-      self.get('StepSizeSliderWidget').minimum = 0
+      self.get('StepSizeSliderWidget').minimum = 1
       self.get('StepSizeSliderWidget').maximum = spacingRange / 10
     else:
-      self.get('StepSizeSliderWidget').minimum = 0
+      self.get('StepSizeSliderWidget').minimum = 1
       self.get('StepSizeSliderWidget').maximum = 100
 
     if self.MarkupsAnnotationNode is None or self.MarkupsAnnotationNode.GetNumberOfMarkups() == 0:
@@ -717,8 +717,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       slider = ctk.ctkSliderWidget()
       slider.objectName = "%sSliderWidget" % axeName
       slider.decimals = 0
-      slider.singleStep = 5
-      slider.pageStep = 25
+      slider.singleStep = 1
+      slider.pageStep = 5
       slider.minimum = -180
       slider.maximum = 180
       slider.tracking = True
