@@ -61,6 +61,45 @@ vtkMRMLMarkupsSplinesNode::~vtkMRMLMarkupsSplinesNode()
 }
 
 //----------------------------------------------------------------------------
+void vtkMRMLMarkupsSplinesNode::PrintSelf(ostream& os, vtkIndent indent)
+{
+  Superclass::PrintSelf(os,indent);
+
+  vtkMRMLPrintBeginMacro(os, indent);
+  vtkMRMLPrintIntMacro(CurrentSpline);
+  vtkMRMLPrintStdStringMacro(DefaultReferenceView);
+  vtkMRMLPrintStdStringMacro(DefaultRepresentationType);
+  vtkMRMLPrintIntMacro(DefaultStepSize);
+  vtkMRMLPrintStdStringMacro(DefaultOntology);
+  for(int markupIndex = 0; markupIndex < this->GetNumberOfMarkups(); ++markupIndex)
+    {
+    os << indent << "Spline " << markupIndex << "\n";
+    vtkIndent markupIndent = indent.GetNextIndent();
+    os << markupIndent << "SplineClosed              = " << this->GetNthSplineClosed(markupIndex) << "\n";
+    os << markupIndent << "SplineThickness           = " << this->GetNthSplineThickness(markupIndex) << "\n";
+    os << markupIndent << "SplineReferenceView       = " << this->GetNthSplineReferenceView(markupIndex) << "\n";
+
+    double cameraPosition[3] = {0.};
+    this->GetNthSplineCameraPosition(markupIndex, cameraPosition);
+    os << markupIndent << "SplineCameraPosition      = " << cameraPosition[0] << ", " << cameraPosition[1] << ", " << cameraPosition[2] << "\n";
+
+    double cameraViewUp[3] = {0.};
+    this->GetNthSplineCameraViewUp(markupIndex, cameraViewUp);
+    os << markupIndent << "SplineCameraViewUp        = " << cameraViewUp[0] << ", " << cameraViewUp[1] << ", " << cameraViewUp[2] << "\n";
+
+    os << markupIndent << "SplineStepSize            = " << this->GetNthSplineStepSize(markupIndex) << "\n";
+    os << markupIndent << "SplineOntology            = " << this->GetNthSplineOntology(markupIndex) << "\n";
+
+    os << markupIndent << "SplineOrientation         = " << "\n";
+    this->GetNthSplineOrientation(markupIndex)->PrintSelf(os, markupIndent.GetNextIndent());
+
+    os << markupIndent << "SplineSelectedPointIndex  = " << this->GetNthSplineSelectedPointIndex(markupIndex) << "\n";
+    os << markupIndent << "SplineRepresentationType  = " << this->GetNthSplineRepresentationType(markupIndex) << "\n";
+    }
+  vtkMRMLPrintEndMacro();
+}
+
+//----------------------------------------------------------------------------
 void vtkMRMLMarkupsSplinesNode::SetCurrentSpline(int i)
 {
   if (this->CurrentSpline == i)

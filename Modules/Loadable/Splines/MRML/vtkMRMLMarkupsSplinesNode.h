@@ -42,6 +42,8 @@ public:
   static vtkMRMLMarkupsSplinesNode *New();
   vtkTypeMacro(vtkMRMLMarkupsSplinesNode, vtkMRMLMarkupsNode);
 
+  virtual void PrintSelf(ostream& os, vtkIndent indent);
+
   virtual const char* GetIcon() VTK_OVERRIDE { return ":/Icons/SplinesMouseModePlace.png"; }
 
   //--------------------------------------------------------------------------
@@ -50,7 +52,7 @@ public:
 
   virtual vtkMRMLNode* CreateNodeInstance() VTK_OVERRIDE;
   /// Get node XML tag name (like Volume, Model)
-  virtual const char* GetNodeTagName() VTK_OVERRIDE { return "MarkupsSpline"; };
+  virtual const char* GetNodeTagName() VTK_OVERRIDE { return "MarkupsSpline"; }
 
   // Return the current spline index which may be modified.
   // -1 means no spline is selected.
