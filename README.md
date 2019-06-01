@@ -17,11 +17,15 @@ _On macOS use the Command key (⌘) instead of the Control (Ctrl) key_
 
 ### General
 
-| Key      | Effect                                                  |
-|----------|---------------------------------------------------------|
-| Ctrl + n | Save if needed and create a new annotation              |
-| Ctrl + s | Save current annotation                                 |
-| Ctrl + w | Reset views discarding current changes                  |
+| Key      | Effect                                 |
+|----------|----------------------------------------|
+| Ctrl + n | Create a new annotation                |
+| Ctrl + s | Save current annotation                |
+| Ctrl + o | Load an annotation from file           |
+| Ctrl + w | Reset views discarding current changes |
+
+_If it applies, user will be prompted with a save dialog before creating, saving
+or loading a annotation._
 
 
 ### 2D Viewer

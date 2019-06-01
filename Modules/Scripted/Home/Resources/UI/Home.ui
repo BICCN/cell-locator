@@ -132,6 +132,9 @@
                <iconset resource="../../HomeLib/Home.qrc">
                 <normaloff>:/Icons/load_icon.svg.png</normaloff>:/Icons/load_icon.svg.png</iconset>
               </property>
+              <property name="shortcut">
+               <string>Ctrl+O</string>
+              </property>
              </widget>
             </item>
            </layout>
