@@ -9,7 +9,7 @@ Manually align specimens to annotated 3D spaces
 
 * Inserting point in a `Spline` annotation does not work reliably. Workaround by switch the annotation type
   to `PolyLine` and then inserting the point. See [#80](https://github.com/BICCN/cell-locator/issues/80)
-
+* For Roll, pitch and yaw, the angle mappings differ from the coordinate system the lab uses. See [#81](https://github.com/BICCN/cell-locator/issues/81)
 
 ## Keyboard Accelerators and Mouse Operations
 
