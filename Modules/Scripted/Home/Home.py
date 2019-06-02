@@ -89,26 +89,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     key = "%s-%s" % (parent, widget.objectName)
     self._widget_cache[key] = widget
 
-  def registerCustomLayouts(self):
-    layoutLogic = self.LayoutManager.layoutLogic()
-    customLayout = (
-      "<layout type=\"horizontal\" split=\"false\" >"
-      " <item>"
-      "  <view class=\"vtkMRMLSliceNode\" singletontag=\"Slice\">"
-      "   <property name=\"orientation\" action=\"default\">%s</property>"
-      "   <property name=\"viewlabel\" action=\"default\">R</property>"
-      "   <property name=\"viewcolor\" action=\"default\">#EFEFEF</property>"
-      "  </view>"
-      " </item>"
-      " <item>"
-      "  <view class=\"vtkMRMLViewNode\" singletontag=\"1\">"
-      "    <property name=\"viewlabel\" action=\"default\">1</property>"
-      "  </view>"
-      " </item>"
-      "</layout>") % self.DefaultReferenceView
-    self.ThreeDWithReformatCustomLayoutId = 503
-    layoutLogic.GetLayoutNode().AddLayoutDescription(self.ThreeDWithReformatCustomLayoutId, customLayout)
-
   def onStartupCompleted(self, *unused):
     qt.QTimer.singleShot(0, lambda: self.onSceneEndCloseEvent(slicer.mrmlScene))
 
@@ -789,9 +769,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.LayoutManager.setViewport(self.Widget.LayoutWidget)
 
     # Configure layout
-    self.registerCustomLayouts()
     #slicer.modules.celllocator.registerCustomViewFactories(self.LayoutManager)
-    self.LayoutManager.setLayout(self.ThreeDWithReformatCustomLayoutId)
+    self.LayoutManager.setLayout(
+      self.logic.registerCustomLayouts(self.LayoutManager.layoutLogic(), self.DefaultReferenceView))
 
     self.addObserver(slicer.mrmlScene, slicer.mrmlScene.StartCloseEvent, self.onSceneStartCloseEvent)
     self.addObserver(slicer.mrmlScene, slicer.mrmlScene.EndCloseEvent, self.onStartupCompleted)
@@ -1015,6 +995,27 @@ class HomeLogic(object):
 
     self.DefaultWindowLevelMin = 0.
     self.DefaultWindowLevelMax = 0.
+
+  @staticmethod
+  def registerCustomLayouts(layoutLogic, defaultReferenceView):
+    customLayout = (
+      "<layout type=\"horizontal\" split=\"false\" >"
+      " <item>"
+      "  <view class=\"vtkMRMLSliceNode\" singletontag=\"Slice\">"
+      "   <property name=\"orientation\" action=\"default\">%s</property>"
+      "   <property name=\"viewlabel\" action=\"default\">R</property>"
+      "   <property name=\"viewcolor\" action=\"default\">#EFEFEF</property>"
+      "  </view>"
+      " </item>"
+      " <item>"
+      "  <view class=\"vtkMRMLViewNode\" singletontag=\"1\">"
+      "    <property name=\"viewlabel\" action=\"default\">1</property>"
+      "  </view>"
+      " </item>"
+      "</layout>") % defaultReferenceView
+    threeDWithReformatCustomLayoutId = 503
+    layoutLogic.GetLayoutNode().AddLayoutDescription(threeDWithReformatCustomLayoutId, customLayout)
+    return threeDWithReformatCustomLayoutId
 
   @staticmethod
   def jumpSliceToAnnotation(annotationNode, markupIndex=0):
