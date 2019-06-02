@@ -45,6 +45,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def __init__(self, parent = None):
     ScriptedLoadableModuleWidget.__init__(self, parent)
     VTKObservationMixin.__init__(self)
+    self.logic = None
     self.LayoutManager = slicer.app.layoutManager()
     self.MarkupsAnnotationNode = None
     self.ThreeDWithReformatCustomLayoutId = None
@@ -54,12 +55,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.ClearAction = None
 
     self.InteractionNode = None
-    self.SlicerToAllenMapping = {}
-    self.AllenToSlicerMapping = {}
-    self.AllenStructurePaths = {}
-    self.AllenLayerStructurePaths = {}
-    self.DefaultWindowLevelMin = 0.
-    self.DefaultWindowLevelMax = 0.
 
     self.DefaultAnnotationType = 'spline'
     self.DefaultReferenceView = 'Coronal'
@@ -113,126 +108,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       "</layout>") % self.DefaultReferenceView
     self.ThreeDWithReformatCustomLayoutId = 503
     layoutLogic.GetLayoutNode().AddLayoutDescription(self.ThreeDWithReformatCustomLayoutId, customLayout)
-
-  @staticmethod
-  def dataPath():
-    return os.path.join(os.path.dirname(slicer.util.modulePath('Home')), 'CellLocatorData')
-
-  def averageTemplateFilePath(self):
-    return os.path.join(self.dataPath(), 'average_template_%s.nrrd' % Config.ANNOTATION_RESOLUTION)
-
-  def annotationFilePath(self):
-    return os.path.join(self.dataPath(), 'annotation_%s_contiguous.nrrd' % Config.ANNOTATION_RESOLUTION)
-
-  def colorTableFilePath(self):
-    return os.path.join(self.dataPath(), 'annotation_color_table.txt')
-
-  def layerColorTableFilePath(self):
-    return os.path.join(self.dataPath(), 'annotation_layer_color_table.txt')
-
-  def ontologyFilePath(self):
-    return os.path.join(self.dataPath(), 'ontology-formatted.json')
-
-  def layerOntologyFilePath(self):
-    return os.path.join(self.dataPath(), 'layer-ontology-formatted.json')
-
-  def slicerToAllenMappingFilePath(self):
-    return os.path.join(self.dataPath(), 'annotation_color_slicer2allen_mapping.json')
-
-  def allenToSlicerMappingFilePath(self):
-    return os.path.join(self.dataPath(), 'annotation_color_allen2slicer_mapping.json')
-
-  def loadData(self):
-    """Load average template, annotation and associated color table.
-    """
-
-    # Load template
-    loaded, averageTemplate = slicer.util.loadVolume(
-      self.averageTemplateFilePath(), returnNode=True)
-    if not loaded:
-      logging.error('Average template [%s] does not exists' %self.averageTemplateFilePath())
-
-    # Set the min/max window level
-    range = averageTemplate.GetImageData().GetScalarRange()
-    averageTemplateDisplay = averageTemplate.GetDisplayNode()
-    averageTemplateDisplay.SetAutoWindowLevel(0)
-    # No option to set the window level to min/max through the node. Instead
-    # do it manually (see qMRMLWindowLevelWidget::setMinMaxRangeValue)
-    window = range[1] - range[0]
-    level = 0.5 * (range[0] + range[1])
-
-    averageTemplateDisplay.SetWindowLevel(window, level)
-
-    self.DefaultWindowLevelMin = range[0]
-    self.DefaultWindowLevelMax = range[1]
-
-    # Lock the window level
-    averageTemplateDisplay.SetWindowLevelLocked(True)
-
-    # Load Allen color table
-    colorLogic = slicer.modules.colors.logic()
-    colorNodeID = None
-    if os.path.exists(self.colorTableFilePath()):
-      colorNode = colorLogic.LoadColorFile(self.colorTableFilePath(), "allen")
-      colorNodeID = colorNode.GetID()
-    else:
-      logging.error("Color table [%s] does not exist" % self.colorTableFilePath())
-
-    # Load Allen "layer" color table
-    if os.path.exists(self.layerColorTableFilePath()):
-      colorLogic.LoadColorFile(self.layerColorTableFilePath(), "allen_layer")
-    else:
-      logging.error("Color table [%s] does not exist" % self.layerColorTableFilePath())
-
-    # Load slicer2allen mapping
-    with open(self.slicerToAllenMappingFilePath()) as content:
-      mapping = json.load(content)
-      self.SlicerToAllenMapping = {int(key): int(value) for (key, value) in mapping.items()}
-
-    # Load allen2slicer mapping
-    with open(self.allenToSlicerMappingFilePath()) as content:
-      mapping = json.load(content)
-      self.AllenToSlicerMapping = {int(key): int(value) for (key, value) in mapping.items()}
-
-    # Load ontology
-    with open(self.ontologyFilePath()) as content:
-      msg = json.load(content)["msg"]
-
-    allenStructureNames = {}
-    for structure in msg:
-      allenStructureNames[structure["id"]] = structure["acronym"]
-
-    self.AllenStructurePaths = {}
-    for structure in msg:
-      self.AllenStructurePaths[structure["id"]] = " > ".join([allenStructureNames[int(structure_id)] for structure_id in structure["structure_id_path"][1:-1].split("/")])
-
-    # Load "layer" ontology
-    with open(self.layerOntologyFilePath()) as content:
-      msg = json.load(content)["msg"]
-
-    allenStructureNames = {997: "root"}
-    for structure in msg:
-      allenStructureNames[structure["id"]] = structure["acronym"]
-
-    self.AllenLayerStructurePaths = {}
-    for structure in msg:
-      self.AllenLayerStructurePaths[structure["id"]] = " > ".join([allenStructureNames[int(structure_id)] for structure_id in structure["structure_id_path"][1:-1].split("/")])
-
-    # Load annotation
-    if os.path.exists(self.annotationFilePath()):
-      loaded, annotation = slicer.util.loadVolume(
-        self.annotationFilePath(),
-        properties={
-          "labelmap": "1",
-          "colorNodeID": colorNodeID
-        },
-        returnNode=True
-        )
-    else:
-      annotation = None
-      logging.error("Annotation file [%s] does not exist" % self.annotationFilePath())
-
-    return averageTemplate, annotation
 
   def onStartupCompleted(self, *unused):
     qt.QTimer.singleShot(0, lambda: self.onSceneEndCloseEvent(slicer.mrmlScene))
@@ -775,7 +650,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get('ThicknessSliderWidget').enabled = False
     self.get('AdjustViewPushButton').enabled = False
 
-    averageTemplate, annotation = self.loadData()
+    averageTemplate, annotation = self.logic.loadData()
 
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
 
@@ -879,6 +754,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
   def setup(self):
     ScriptedLoadableModuleWidget.setup(self)
+
+    self.logic = HomeLogic()
 
     # Style
     slicer.app.styleSheet = textwrap.dedent("""
@@ -1140,7 +1017,148 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     crosshairNode = caller
     if not crosshairNode or not crosshairNode.IsA('vtkMRMLCrosshairNode'):
       return
+    self.get("DataProbeLabel").text = self.logic.getCrosshairPixelString(crosshairNode)
 
+  def cleanup(self):
+    self.Widget = None
+
+
+class HomeLogic(object):
+
+  def __init__(self):
+    self.AllenStructurePaths = {}
+    self.AllenLayerStructurePaths = {}
+    self.SlicerToAllenMapping = {}
+    self.AllenToSlicerMapping = {}
+
+    self.DefaultWindowLevelMin = 0.
+    self.DefaultWindowLevelMax = 0.
+
+  @staticmethod
+  def dataPath():
+    return os.path.join(os.path.dirname(slicer.util.modulePath('Home')), 'CellLocatorData')
+
+  def averageTemplateFilePath(self):
+    return os.path.join(self.dataPath(), 'average_template_%s.nrrd' % Config.ANNOTATION_RESOLUTION)
+
+  def annotationFilePath(self):
+    return os.path.join(self.dataPath(), 'annotation_%s_contiguous.nrrd' % Config.ANNOTATION_RESOLUTION)
+
+  def colorTableFilePath(self):
+    return os.path.join(self.dataPath(), 'annotation_color_table.txt')
+
+  def layerColorTableFilePath(self):
+    return os.path.join(self.dataPath(), 'annotation_layer_color_table.txt')
+
+  def ontologyFilePath(self):
+    return os.path.join(self.dataPath(), 'ontology-formatted.json')
+
+  def layerOntologyFilePath(self):
+    return os.path.join(self.dataPath(), 'layer-ontology-formatted.json')
+
+  def slicerToAllenMappingFilePath(self):
+    return os.path.join(self.dataPath(), 'annotation_color_slicer2allen_mapping.json')
+
+  def allenToSlicerMappingFilePath(self):
+    return os.path.join(self.dataPath(), 'annotation_color_allen2slicer_mapping.json')
+
+  def loadData(self):
+    """Load average template, annotation and associated color table.
+    """
+
+    # Load template
+    loaded, averageTemplate = slicer.util.loadVolume(
+      self.averageTemplateFilePath(), returnNode=True)
+    if not loaded:
+      logging.error('Average template [%s] does not exists' % self.averageTemplateFilePath())
+
+    # Set the min/max window level
+    range = averageTemplate.GetImageData().GetScalarRange()
+    averageTemplateDisplay = averageTemplate.GetDisplayNode()
+    averageTemplateDisplay.SetAutoWindowLevel(0)
+    # No option to set the window level to min/max through the node. Instead
+    # do it manually (see qMRMLWindowLevelWidget::setMinMaxRangeValue)
+    window = range[1] - range[0]
+    level = 0.5 * (range[0] + range[1])
+
+    averageTemplateDisplay.SetWindowLevel(window, level)
+
+    self.DefaultWindowLevelMin = range[0]
+    self.DefaultWindowLevelMax = range[1]
+
+    # Lock the window level
+    averageTemplateDisplay.SetWindowLevelLocked(True)
+
+    # Load Allen color table
+    colorLogic = slicer.modules.colors.logic()
+    colorNodeID = None
+    if os.path.exists(self.colorTableFilePath()):
+      colorNode = colorLogic.LoadColorFile(self.colorTableFilePath(), "allen")
+      colorNodeID = colorNode.GetID()
+    else:
+      logging.error("Color table [%s] does not exist" % self.colorTableFilePath())
+
+    # Load Allen "layer" color table
+    if os.path.exists(self.layerColorTableFilePath()):
+      colorLogic.LoadColorFile(self.layerColorTableFilePath(), "allen_layer")
+    else:
+      logging.error("Color table [%s] does not exist" % self.layerColorTableFilePath())
+
+    # Load slicer2allen mapping
+    with open(self.slicerToAllenMappingFilePath()) as content:
+      mapping = json.load(content)
+      self.SlicerToAllenMapping = {int(key): int(value) for (key, value) in mapping.items()}
+
+    # Load allen2slicer mapping
+    with open(self.allenToSlicerMappingFilePath()) as content:
+      mapping = json.load(content)
+      self.AllenToSlicerMapping = {int(key): int(value) for (key, value) in mapping.items()}
+
+    # Load ontology
+    with open(self.ontologyFilePath()) as content:
+      msg = json.load(content)["msg"]
+
+    allenStructureNames = {}
+    for structure in msg:
+      allenStructureNames[structure["id"]] = structure["acronym"]
+
+    self.AllenStructurePaths = {}
+    for structure in msg:
+      self.AllenStructurePaths[structure["id"]] = " > ".join(
+        [allenStructureNames[int(structure_id)] for structure_id in structure["structure_id_path"][1:-1].split("/")])
+
+    # Load "layer" ontology
+    with open(self.layerOntologyFilePath()) as content:
+      msg = json.load(content)["msg"]
+
+    allenStructureNames = {997: "root"}
+    for structure in msg:
+      allenStructureNames[structure["id"]] = structure["acronym"]
+
+    self.AllenLayerStructurePaths = {}
+    for structure in msg:
+      self.AllenLayerStructurePaths[structure["id"]] = " > ".join(
+        [allenStructureNames[int(structure_id)] for structure_id in structure["structure_id_path"][1:-1].split("/")])
+
+    # Load annotation
+    if os.path.exists(self.annotationFilePath()):
+      loaded, annotation = slicer.util.loadVolume(
+        self.annotationFilePath(),
+        properties={
+          "labelmap": "1",
+          "colorNodeID": colorNodeID
+        },
+        returnNode=True
+      )
+    else:
+      annotation = None
+      logging.error("Annotation file [%s] does not exist" % self.annotationFilePath())
+
+    return averageTemplate, annotation
+
+  def getCrosshairPixelString(self, crosshairNode):
+    """Given a crosshair node, create a human readable string describing
+    the contents associated with crosshair cursor position."""
     ras = [0.0,0.0,0.0]
     xyz = [0.0,0.0,0.0]
     insideView = crosshairNode.GetCursorPositionRAS(ras)
@@ -1164,7 +1182,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       ijkFloat = xyToIJK.TransformDoublePoint(xyz)
       ijk = [_roundInt(value) for value in ijkFloat]
 
-    self.get("DataProbeLabel").text = self.getPixelString(volumeNode, ijk, ras)
+    return self.getPixelString(volumeNode, ijk, ras)
 
   def getPixelString(self,volumeNode,ijk,ras):
     """Given a volume node, create a human readable
@@ -1198,9 +1216,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             return rasStr
 
     return ""
-
-  def cleanup(self):
-    self.Widget = None
 
 
 class HomeTest(ScriptedLoadableModuleTest):
