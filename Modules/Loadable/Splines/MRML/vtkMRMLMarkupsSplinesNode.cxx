@@ -81,6 +81,7 @@ void vtkMRMLMarkupsSplinesNode::PrintSelf(ostream& os, vtkIndent indent)
     os << markupIndent << "SplineClosed              = " << this->GetNthSplineClosed(markupIndex) << "\n";
     os << markupIndent << "SplineThickness           = " << this->GetNthSplineThickness(markupIndex) << "\n";
     os << markupIndent << "SplineReferenceView       = " << this->GetNthSplineReferenceView(markupIndex) << "\n";
+    os << markupIndent << "SplineRepresentationType  = " << this->GetNthSplineRepresentationType(markupIndex) << "\n";
 
     double cameraPosition[3] = {0.};
     this->GetNthSplineCameraPosition(markupIndex, cameraPosition);
