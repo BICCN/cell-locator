@@ -20,7 +20,6 @@ _Click_ means _Left-Click_
 * [ ] Slice Step Size is `25`
 * [ ] Reset button is enabled
 * [ ] Apply button is disabled
-* [ ] Annotation Thickness slider is disabled
 * [ ] Annotation Type is Spline
 * [ ] Filename text box is `None`
 * [ ] Coronal reference view is selected 
@@ -137,10 +136,8 @@ See https://github.com/BICCN/cell-locator#keyboard-accelerators-and-mouse-operat
 
 ## Annotation Thickness
 
-* [ ] Select Edit mode -> Annotation Thickness slider is still disabled
-* [ ] Add an annotation point -> Annotation Thickness slider is enabled
-* [ ] Add multiple point -> Update thickness -> 3D view annotation thickness is updated
-* [ ] Select point -> Press Delete multiple times to delete all point -> Annotation Thickness slider is disabled
+* [ ] Select Edit mode -> Add at least 3 points -> Update thickness
+      -> 3D view annotation thickness is updated
 
 ## Confirm Exit Dialog
 

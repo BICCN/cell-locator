@@ -388,11 +388,13 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self.resetCamera()
 
-    if self.MarkupsAnnotationNode is not None:
+    if self.MarkupsAnnotationNode is None:
+      return
+
+    with NodeModify(self.MarkupsAnnotationNode):
       self.MarkupsAnnotationNode.SetDefaultReferenceView(orientation)
-      with NodeModify(self.MarkupsAnnotationNode):
-        for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
-          self.MarkupsAnnotationNode.SetNthSplineReferenceView(i, orientation)
+      for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
+        self.MarkupsAnnotationNode.SetNthSplineReferenceView(i, orientation)
 
   def onContrastValuesChanged(self, minValue, maxValue):
     sliceWidget = self.LayoutManager.sliceWidget("Slice")
@@ -410,9 +412,10 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def onThicknessChanged(self, value):
     if not self.MarkupsAnnotationNode:
       return
-
-    for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
-      self.MarkupsAnnotationNode.SetNthSplineThickness(i, value)
+    with NodeModify(self.MarkupsAnnotationNode):
+      self.MarkupsAnnotationNode.SetDefaultThickness(value)
+      for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
+        self.MarkupsAnnotationNode.SetNthSplineThickness(i, value)
 
   def onAnnotationTypeChanged(self):
     if not self.MarkupsAnnotationNode:
@@ -434,7 +437,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
 
     # GUI update
-    self.updateGUIFromMRML()
+    self.updateGUIFromSliceNode()
 
     # Markup Annotation update
     if not self.MarkupsAnnotationNode:
@@ -443,6 +446,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     with NodeModify(self.MarkupsAnnotationNode):
 
       # Update the spline's normal and origin
+      self.MarkupsAnnotationNode.SetDefaultSplineOrientation(sliceNode.GetSliceToRAS())
       for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
         if not self.MarkupsAnnotationNode.GetNthMarkupLocked(i):
           self.MarkupsAnnotationNode.SetNthSplineOrientation(i,
@@ -615,7 +619,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.MarkupsAnnotationNode = None
 
     # Configure UI
-    self.get('ThicknessSliderWidget').enabled = False
     self.get('AdjustViewPushButton').enabled = False
 
     averageTemplate, annotation = self.logic.loadData()
@@ -822,33 +825,35 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.onSliceNodeModifiedEvent()
 
   def updateGUIFromAnnotationMarkup(self, annotationNode):
-    self.get('ThicknessSliderWidget').enabled = False
-
-    hasMarkups = annotationNode is not None and annotationNode.GetNumberOfMarkups() > 0
-    self.get('ReferenceViewComboBox').setDisabled(hasMarkups)
-
-    if annotationNode is None or annotationNode.GetNumberOfMarkups() == 0:
+    if annotationNode is None:
       return
 
-    markupIndex = 0
-
-    # Thickness
-    if annotationNode.GetNumberOfPointsInNthMarkup(markupIndex) > 0:
-      self.get('ThicknessSliderWidget').enabled = True
+    if annotationNode.GetNumberOfMarkups() == 0:
+      # DefaultDefaultOntology
+      self.get('OntologyComboBox').currentText = annotationNode.GetDefaultOntology()
+      # DefaultReferenceView
+      self.get('ReferenceViewComboBox').currentText = annotationNode.GetDefaultReferenceView()
+      # DefaultRepresentationType
+      representationType = annotationNode.GetDefaultRepresentationType()
+      self.get('%sRadioButton' % representationType.title()).setChecked(True)
+      # DefaultStepSize
+      self.get('StepSizeSliderWidget').value = annotationNode.GetDefaultStepSize()
+      # DefaultThickness
+      self.get('ThicknessSliderWidget').value = annotationNode.GetDefaultThickness()
+    else:
+      markupIndex = 0
+      # Ontology
+      self.get('OntologyComboBox').currentText = annotationNode.GetNthSplineOntology(markupIndex)
+      # ReferenceView
+      self.get('ReferenceViewComboBox').currentText = annotationNode.GetNthSplineReferenceView(markupIndex)
+      # RepresentationType
+      representationType = annotationNode.GetNthSplineRepresentationType(markupIndex)
+      self.get('%sRadioButton' % representationType.title()).setChecked(True)
+      # StepSize
+      self.get('StepSizeSliderWidget').value = annotationNode.GetNthSplineStepSize(markupIndex)
+      # Thickness
       self.get('ThicknessSliderWidget').value = annotationNode.GetNthSplineThickness(markupIndex)
 
-    # ReferenceView
-    self.get('ReferenceViewComboBox').currentText = annotationNode.GetNthSplineReferenceView(markupIndex)
-
-    # Type
-    representationType = annotationNode.GetNthSplineRepresentationType(markupIndex)
-    self.get('%sRadioButton' % representationType.title()).setChecked(True)
-
-    # StepSize
-    self.get('StepSizeSliderWidget').value = annotationNode.GetNthSplineStepSize(markupIndex)
-
-    # Ontology
-    self.get('OntologyComboBox').currentText = annotationNode.GetNthSplineOntology(markupIndex)
 
   @vtk.calldata_type(vtk.VTK_INT)
   def onNthMarkupModifiedEvent(self, caller, event, callData=None):
@@ -970,6 +975,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     if self.MarkupsAnnotationNode is None:
       return
+    self.MarkupsAnnotationNode.SetDefaultOntology(ontology)
     with NodeModify(self.MarkupsAnnotationNode):
       self.MarkupsAnnotationNode.SetDefaultOntology(ontology)
       for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
@@ -1022,12 +1028,13 @@ class HomeLogic(object):
     if not annotationNode:
       return
 
-    if annotationNode.GetNumberOfMarkups() < 1:
-      return
-
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
-    sliceNode.GetSliceToRAS().DeepCopy(
-      annotationNode.GetNthSplineOrientation(markupIndex))
+    if annotationNode.GetNumberOfMarkups() == 0:
+      sliceNode.GetSliceToRAS().DeepCopy(
+        annotationNode.GetDefaultSplineOrientation())
+    else:
+      sliceNode.GetSliceToRAS().DeepCopy(
+        annotationNode.GetNthSplineOrientation(markupIndex))
     sliceNode.UpdateMatrices()
 
   @staticmethod
