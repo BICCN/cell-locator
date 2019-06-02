@@ -185,7 +185,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       return self.onSaveAsAnnotationButtonClicked(self.MarkupsAnnotationNode)
     else:
       self.MarkupsAnnotationNode.GetStorageNode().WriteData(self.MarkupsAnnotationNode)
-      self.annotationStored(self.MarkupsAnnotationNode)
+      self.logic.annotationStored(self.MarkupsAnnotationNode)
       return True
 
   def onSaveAsAnnotationButtonClicked(self, annotationNode=None, windowTitle=None):
@@ -211,7 +211,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     if success:
       directory = os.path.dirname(annotationNode.GetStorageNode().GetFileName())
       slicer.app.userSettings().setValue("LastAnnotationDirectory", directory)
-      self.annotationStored(annotationNode)
+      self.logic.annotationStored(annotationNode)
 
     return success
 
@@ -744,13 +744,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.updateGUIFromMRML()
 
     self.setDefaultSettings()
-    self.annotationStored(self.MarkupsAnnotationNode)
-
-  def annotationStored(self, annotationNode):
-    """Update scene and annotation storage node stored time. This indicates
-    no saving is required until the next scene or node update."""
-    slicer.mrmlScene.StoredModified()
-    annotationNode.GetStorageNode().StoredModified()
+    self.logic.annotationStored(self.MarkupsAnnotationNode)
 
   def setup(self):
     ScriptedLoadableModuleWidget.setup(self)
@@ -1033,6 +1027,13 @@ class HomeLogic(object):
 
     self.DefaultWindowLevelMin = 0.
     self.DefaultWindowLevelMax = 0.
+
+  @staticmethod
+  def annotationStored(annotationNode):
+    """Update scene and annotation storage node stored time. This indicates
+    no saving is required until the next scene or node update."""
+    slicer.mrmlScene.StoredModified()
+    annotationNode.GetStorageNode().StoredModified()
 
   @staticmethod
   def dataPath():
