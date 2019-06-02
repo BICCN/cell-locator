@@ -416,6 +416,26 @@ std::string vtkMRMLMarkupsSplinesNode::GetNthSplineOntology(int n)
 }
 
 //----------------------------------------------------------------------------
+void vtkMRMLMarkupsSplinesNode::SetDefaultSplineOrientation(vtkMatrix4x4* matrix)
+{
+  if (!matrix
+      || vtkAddonMathUtilities::MatrixAreEqual(this->DefaultSplineOrientation, matrix))
+    {
+    return;
+    }
+  vtkNew<vtkMatrix4x4> orientation;
+  orientation->DeepCopy(matrix);
+  this->DefaultSplineOrientation = orientation;
+  this->Modified();
+}
+
+//----------------------------------------------------------------------------
+vtkMatrix4x4* vtkMRMLMarkupsSplinesNode::GetDefaultSplineOrientation()
+{
+  return this->DefaultSplineOrientation;
+}
+
+//----------------------------------------------------------------------------
 void vtkMRMLMarkupsSplinesNode::SetNthSplineOrientation(int n, vtkMatrix4x4* matrix)
 {
   size_t i = static_cast<size_t>(n);

@@ -68,6 +68,26 @@ int vtkMRMLMarkupsSplinesStorageNode::ReadMarkupsNodeFromTranslationMap(
     return 0;
   }
 
+  splinesNode->SetDefaultOntology(markupsMap["/DefaultOntology"].ToString());
+  splinesNode->SetDefaultReferenceView(markupsMap["/DefaultReferenceView"].ToString());
+  splinesNode->SetDefaultRepresentationType(markupsMap["/DefaultRepresentationType"].ToString());
+  splinesNode->SetDefaultStepSize(markupsMap["/DefaultStepSize"].ToDouble());
+  splinesNode->SetDefaultThickness(markupsMap["/DefaultThickness"].ToDouble());
+
+  {
+    vtkNew<vtkMatrix4x4> matrix;
+    for (int i = 0; i < 4; ++i)
+    {
+      for (int j = 0; j < 4; ++j)
+      {
+        std::stringstream orientationKey;
+        orientationKey << "/DefaultSplineOrientation/" << i * 4 + j;
+        matrix->SetElement(i, j, markupsMap[orientationKey.str()].ToDouble());
+      }
+    }
+    splinesNode->SetDefaultSplineOrientation(matrix);
+  }
+
   {
     double position[3] = {0., 0., 0.};
     for (int i = 0; i < 3; ++i)
@@ -105,6 +125,25 @@ int vtkMRMLMarkupsSplinesStorageNode::WriteMarkupsNodeToTranslationMap(
   if (!success || !splinesNode)
   {
     return 0;
+  }
+
+  markupsMap["/DefaultOntology"] = splinesNode->GetDefaultOntology().c_str();
+  markupsMap["/DefaultRepresentationType"] = splinesNode->GetDefaultRepresentationType().c_str();
+  markupsMap["/DefaultReferenceView"] = splinesNode->GetDefaultReferenceView().c_str();
+  markupsMap["/DefaultStepSize"] = splinesNode->GetDefaultStepSize();
+  markupsMap["/DefaultThickness"] = splinesNode->GetDefaultThickness();
+
+  {
+    vtkMatrix4x4* matrix = splinesNode->GetDefaultSplineOrientation();
+    for (int i = 0; i < 4; ++i)
+    {
+      for (int j = 0; j < 4; ++j)
+      {
+        std::stringstream orientationKey;
+        orientationKey << "/DefaultSplineOrientation/" << i * 4 + j;
+        markupsMap[orientationKey.str()] = matrix->GetElement(i, j);
+      }
+    }
   }
 
   {

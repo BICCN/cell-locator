@@ -76,6 +76,11 @@ public:
   void SetNthSplineClosed(int n, bool closed);
   bool GetNthSplineClosed(int n);
 
+  /// Set/Get default thickness
+  vtkGetMacro(DefaultThickness, double)
+  vtkSetMacro(DefaultThickness, double)
+
+  /// Set/Get the thickness of the Nth spline
   void SetNthSplineThickness(int n, double thickness);
   double GetNthSplineThickness(int n);
 
@@ -138,6 +143,9 @@ public:
   /// \note This property is specific to CellLocator
   void SetNthSplineOntology(int n, const std::string& ontology);
   std::string GetNthSplineOntology(int n);
+
+  void SetDefaultSplineOrientation(vtkMatrix4x4* matrix);
+  vtkMatrix4x4* GetDefaultSplineOrientation();
 
   void SetNthSplineOrientation(int n, vtkMatrix4x4* matrix);
   vtkMatrix4x4* GetNthSplineOrientation(int n);
