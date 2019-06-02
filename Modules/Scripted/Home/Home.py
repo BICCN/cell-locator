@@ -266,7 +266,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       cameraNode.ResetClippingRange()
 
       # SplineOrientation
-      self.jumpSliceToAnnotation()
+      self.logic.jumpSliceToAnnotation(self.MarkupsAnnotationNode)
 
   def updateGUIFromMRML(self):
     self.onMarkupsAnnotationStorageNodeModifiedEvent()
@@ -447,18 +447,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       self.MarkupsAnnotationNode.SetDefaultRepresentationType(representationType)
       for i in range(self.MarkupsAnnotationNode.GetNumberOfMarkups()):
         self.MarkupsAnnotationNode.SetNthSplineRepresentationType(i, representationType)
-
-  def jumpSliceToAnnotation(self, markupIndex=0):
-    if not self.MarkupsAnnotationNode:
-      return
-
-    if self.MarkupsAnnotationNode.GetNumberOfMarkups() < 1:
-      return
-
-    sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
-    sliceNode.GetSliceToRAS().DeepCopy(
-      self.MarkupsAnnotationNode.GetNthSplineOrientation(markupIndex))
-    sliceNode.UpdateMatrices()
 
   def onSliceNodeModifiedEvent(self, caller=None, event=None):
     sliceNode = caller
@@ -931,7 +919,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
       # 5: Snap the slice to the spline
       if newState == 'annotate':
-        self.jumpSliceToAnnotation()
+        self.logic.jumpSliceToAnnotation(self.MarkupsAnnotationNode)
 
   def setupConnections(self):
     slicer.app.connect("startupCompleted()", self.onStartupCompleted)
@@ -1027,6 +1015,19 @@ class HomeLogic(object):
 
     self.DefaultWindowLevelMin = 0.
     self.DefaultWindowLevelMax = 0.
+
+  @staticmethod
+  def jumpSliceToAnnotation(annotationNode, markupIndex=0):
+    if not annotationNode:
+      return
+
+    if annotationNode.GetNumberOfMarkups() < 1:
+      return
+
+    sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
+    sliceNode.GetSliceToRAS().DeepCopy(
+      annotationNode.GetNthSplineOrientation(markupIndex))
+    sliceNode.UpdateMatrices()
 
   @staticmethod
   def annotationStored(annotationNode):
