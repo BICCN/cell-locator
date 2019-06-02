@@ -82,8 +82,8 @@ public:
   /// Set/Get default reference view
   ///
   /// \note This property is specific to CellLocator
-  vtkGetMacro(DefaultReferenceView, std::string);
-  vtkSetMacro(DefaultReferenceView, std::string);
+  vtkGetMacro(DefaultReferenceView, std::string)
+  vtkSetMacro(DefaultReferenceView, std::string)
 
   /// Set/Get the reference view of the Nth spline (Axial, Sagittal or Coronal)
   ///
@@ -94,8 +94,8 @@ public:
   /// Set/Get default camera position
   ///
   /// \note This property is specific to CellLocator
-  vtkGetVector3Macro(DefaultCameraPosition, double);
-  vtkSetVector3Macro(DefaultCameraPosition, double);
+  vtkGetVector3Macro(DefaultCameraPosition, double)
+  vtkSetVector3Macro(DefaultCameraPosition, double)
 
   /// Set/Get camera position
   ///
@@ -106,8 +106,8 @@ public:
   /// Set/Get default camera view up
   ///
   /// \note This property is specific to CellLocator
-  vtkGetVector3Macro(DefaultCameraViewUp, double);
-  vtkSetVector3Macro(DefaultCameraViewUp, double);
+  vtkGetVector3Macro(DefaultCameraViewUp, double)
+  vtkSetVector3Macro(DefaultCameraViewUp, double)
 
   /// Set/Get camera view up
   ///
@@ -118,8 +118,8 @@ public:
   /// Set/Get default step size
   ///
   /// \note This property is specific to CellLocator
-  vtkGetMacro(DefaultStepSize, double);
-  vtkSetMacro(DefaultStepSize, double);
+  vtkGetMacro(DefaultStepSize, double)
+  vtkSetMacro(DefaultStepSize, double)
 
   /// Set/Get slice viewer step size
   ///
@@ -130,8 +130,8 @@ public:
   /// Set/Get default ontology
   ///
   /// \note This property is specific to CellLocator
-  vtkGetMacro(DefaultOntology, std::string);
-  vtkSetMacro(DefaultOntology, std::string);
+  vtkGetMacro(DefaultOntology, std::string)
+  vtkSetMacro(DefaultOntology, std::string)
 
   /// Set/Get ontology
   ///
