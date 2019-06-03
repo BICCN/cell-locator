@@ -184,7 +184,9 @@ Create annotation:
 Then:
 
 * [ ] Click New -> popup -> Enter `annotation2.json` -> Click Save -> Click Reset -> Set Reference View to Axial
-* [ ] Click Load -> Check that properties match the one entered above
+* [ ] Click Load
+      -> Check that properties match the one entered above
+      -> Update Roll/Pitch/Yaw then select Edit mode and confirm the annotation is snapped back.
 * [ ] CTRL + W -> Application state is reset -> Click Load -> Check that properties match the ones entered above
 * [ ] Close Application -> no confirmation dialog expected
       -> Start application -> Click Load -> Check that properties match the ones entered above
