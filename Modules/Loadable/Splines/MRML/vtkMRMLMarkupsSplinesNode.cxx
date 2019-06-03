@@ -74,6 +74,9 @@ void vtkMRMLMarkupsSplinesNode::PrintSelf(ostream& os, vtkIndent indent)
   vtkMRMLPrintStdStringMacro(DefaultRepresentationType);
   vtkMRMLPrintIntMacro(DefaultStepSize);
   vtkMRMLPrintStdStringMacro(DefaultOntology);
+  os << "DefaultSplineOrientation : " << "\n";
+  this->GetDefaultSplineOrientation()->PrintSelf(os, indent.GetNextIndent());
+
   for(int markupIndex = 0; markupIndex < this->GetNumberOfMarkups(); ++markupIndex)
     {
     os << indent << "Spline " << markupIndex << "\n";
