@@ -12,7 +12,8 @@ _Click_ means _Left-Click_
 
 ## Data, Units and default values
 
-* [ ] Start application, and check:
+Start application, and check:
+
 * [ ] Atlas and ontology are loaded
 * [ ] Unit displayed in Annotation Thickness, Slice Step Size and Slice offset boxes is `um`
 * [ ] Exploration mode is selected
@@ -22,7 +23,11 @@ _Click_ means _Left-Click_
 * [ ] Apply button is disabled
 * [ ] Annotation Type is Spline
 * [ ] Filename text box is `None`
-* [ ] Coronal reference view is selected 
+* [ ] Coronal reference view is selected
+
+Reset view using CTRL+W, restart the application and check:
+* [ ] Unit displayed in Annotation Thickness, Slice Step Size and Slice offset boxes is `um`
+  **Known Issues:** [#89](https://github.com/BICCN/cell-locator/issues/89)
 
 ## Ontology combo box
 
@@ -191,8 +196,12 @@ Then:
       -> Start application -> Click Load -> Check that properties match the ones entered above
       **Known issues:** [#87](https://github.com/BICCN/cell-locator/issues/87)
 * [ ] Click SaveAs -> Enter `annotation3.json` -> Click Save
-* [ ] Check that file `annotation.json` and `annotation3.json` are identical.
+
+Check that file `annotation.json` and `annotation3.json` are:
+
+* [ ] identical
       **Known issues:** [#78](https://github.com/BICCN/cell-locator/issues/78)
+* [ ] quasi-identical expect numerical precisions
 
 ## Remembering directory used for last saving
 
