@@ -166,7 +166,6 @@ See https://github.com/BICCN/cell-locator#keyboard-accelerators-and-mouse-operat
 * [ ] Click SaveAs -> idem
 * [ ] Click Load   -> idem
 * [ ] Click SaveAs -> Check that "Save As" dialog is shown
-      **Known issues:** [#86](https://github.com/BICCN/cell-locator/issues/86)
 
 ## Test Save -> New -> Load -> Save
 
