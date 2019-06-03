@@ -5,6 +5,8 @@ import textwrap
 
 import vtk, qt, ctk, slicer
 
+from contextlib import contextmanager
+
 from slicer.util import NodeModify, VTKObservationMixin
 from slicer.ScriptedLoadableModule import *
 from HomeLib import HomeResources as Resources
@@ -164,8 +166,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     if not self.MarkupsAnnotationNode.GetStorageNode().GetFileName():
       return self.onSaveAsAnnotationButtonClicked(self.MarkupsAnnotationNode)
     else:
-      self.MarkupsAnnotationNode.GetStorageNode().WriteData(self.MarkupsAnnotationNode)
-      self.logic.annotationStored(self.MarkupsAnnotationNode)
+      with self.interactionState('explore'):
+        self.MarkupsAnnotationNode.GetStorageNode().WriteData(self.MarkupsAnnotationNode)
+        self.logic.annotationStored(self.MarkupsAnnotationNode)
       return True
 
   def onSaveAsAnnotationButtonClicked(self, annotationNode=None, windowTitle=None):
@@ -185,8 +188,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     if windowTitle is not None:
       properties["windowTitle"] = windowTitle
 
-    success = slicer.app.ioManager().openDialog(
-      "MarkupsSplines", slicer.qSlicerFileDialog.Write, properties)
+    with self.interactionState('explore'):
+      success = slicer.app.ioManager().openDialog(
+        "MarkupsSplines", slicer.qSlicerFileDialog.Write, properties)
 
     if success:
       directory = os.path.dirname(annotationNode.GetStorageNode().GetFileName())
@@ -864,6 +868,13 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
   def getReferenceView(self):
     return self.get('ReferenceViewComboBox').currentText
+
+  @contextmanager
+  def interactionState(self, newState):
+    previousState = self.getInteractionState()
+    self.setInteractionState(newState)
+    yield
+    self.setInteractionState(previousState)
 
   def getInteractionState(self):
     interactionNode = slicer.app.applicationLogic().GetInteractionNode()
