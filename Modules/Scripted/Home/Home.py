@@ -169,6 +169,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       with self.interactionState('explore'):
         self.MarkupsAnnotationNode.GetStorageNode().WriteData(self.MarkupsAnnotationNode)
         self.logic.annotationStored(self.MarkupsAnnotationNode)
+      self.updateGUIFromMRML()
       return True
 
   def onSaveAsAnnotationButtonClicked(self, annotationNode=None, windowTitle=None):
@@ -196,6 +197,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       directory = os.path.dirname(annotationNode.GetStorageNode().GetFileName())
       slicer.app.userSettings().setValue("LastAnnotationDirectory", directory)
       self.logic.annotationStored(annotationNode)
+
+    self.updateGUIFromMRML()
 
     return success
 
