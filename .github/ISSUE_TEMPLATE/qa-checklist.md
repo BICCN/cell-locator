@@ -198,4 +198,3 @@ Then:
 * [ ] Start application -> Click Save -> Choose a different directory -> Choose Save -> Close application
 * [ ] Start application -> Click Save -> Check suggest directory is the one of previous step
 * [ ] Start application -> Click Load -> idem
-      **Known issues:** [#85](https://github.com/BICCN/cell-locator/issues/85)

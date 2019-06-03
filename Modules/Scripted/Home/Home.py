@@ -214,8 +214,13 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
           if not self.onSaveAnnotationButtonClicked():
             return
 
+      directory = slicer.app.userSettings().value("LastAnnotationDirectory", qt.QStandardPaths.writableLocation(
+        qt.QStandardPaths.DocumentsLocation))
+
       # Load a new one
-      properties = {}
+      properties = {
+        "defaultFileName": os.path.join(directory, "annotation.json"),
+      }
       loadedNodes = vtk.vtkCollection()
       if not app.ioManager().openDialog('MarkupsSplines', qSlicerFileDialog.Read, properties, loadedNodes):
         return
