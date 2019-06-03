@@ -253,7 +253,7 @@ void vtkSlicerSplinesLogic::ObserveMRMLScene()
     selectionNode->AddNewPlaceNodeClassNameToList(
       "vtkMRMLMarkupsSplinesNode", ":/Icons/SplinesMouseModePlace.png", "Splines");
 
-    // trigger an upate on the mouse mode toolbar
+    // trigger an update on the mouse mode toolbar
     this->GetMRMLScene()->EndState(vtkMRMLScene::BatchProcessState);
   }
 

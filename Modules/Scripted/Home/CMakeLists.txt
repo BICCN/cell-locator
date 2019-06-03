@@ -92,7 +92,7 @@ elseif(annotation_resolution STREQUAL "25")
     "c620cbcc562183e4dcd40250d440130501781f74b41de35b1c1bdabace290c42"
     )
 else()
-  message(FATAL_ERROR "Unkown annotation resolution: ${annotation_resolution}")
+  message(FATAL_ERROR "Unknown annotation resolution: ${annotation_resolution}")
 endif()
 
 #-----------------------------------------------------------------------------
