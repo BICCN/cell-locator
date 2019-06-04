@@ -5,13 +5,6 @@ Manually align specimens to annotated 3D spaces
 
 ![CellLocator by Allen Institute](Applications/CellLocatorApp/Resources/Images/SplashScreen.png?raw=true)
 
-## Known Issues
-
-* Inserting point in a `Spline` annotation does not work reliably. Workaround by switch the annotation type
-  to `PolyLine` and then inserting the point. See [#80](https://github.com/BICCN/cell-locator/issues/80)
-* For Roll, pitch and yaw, the angle mappings differ from the coordinate system the lab uses. See [#81](https://github.com/BICCN/cell-locator/issues/81)
-* After using Ctrl+w and restarting the application, `mm` unit prefix is displayed instead of `um`. See [#89](https://github.com/BICCN/cell-locator/issues/89)
-
 ## Keyboard Accelerators and Mouse Operations
 
 _On macOS use the Command key (⌘) instead of the Control (Ctrl) key_
@@ -80,3 +73,10 @@ or loading a annotation._
 | Annotation Thickness  | 1                    | 10                       |
 | Slice Step Size       | 1                    | 10                       |
 | Slice Offset          | `<slice step size>`  | `<slice step size> * 10` |
+
+## Known Issues
+
+* Inserting point in a `Spline` annotation does not work reliably. Workaround by switch the annotation type
+  to `PolyLine` and then inserting the point. See [#80](https://github.com/BICCN/cell-locator/issues/80)
+* For Roll, pitch and yaw, the angle mappings differ from the coordinate system the lab uses. See [#81](https://github.com/BICCN/cell-locator/issues/81)
+* After using Ctrl+w and restarting the application, `mm` unit prefix is displayed instead of `um`. See [#89](https://github.com/BICCN/cell-locator/issues/89)
