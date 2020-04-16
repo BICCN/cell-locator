@@ -123,7 +123,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     cameraNode = threeDView.interactorStyle().GetCameraNode()
     rotateTo ={
       "Axial": slicer.vtkMRMLCameraNode.Inferior,
-      "Coronal": slicer.vtkMRMLCameraNode.Posterior,
+      "Coronal": slicer.vtkMRMLCameraNode.Anterior,
       "Sagittal": slicer.vtkMRMLCameraNode.Left,
     }
     cameraNode.RotateTo(rotateTo[self.getReferenceView()])
