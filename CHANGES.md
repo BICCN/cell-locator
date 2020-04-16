@@ -1,3 +1,10 @@
+## Cell Locator 0.1.0 2020-04-16
+
+Fixes:
+
+* Ensure Coronal referenceView is coherent between 2D and 3D view. See [#101](https://github.com/BICCN/cell-locator/issues/101)
+
+
 ## Cell Locator 0.1.0 2019-06-03
 
 Features:
