@@ -208,3 +208,12 @@ Check that file `annotation.json` and `annotation3.json` are:
 * [ ] Start application -> Click Save -> Choose a different directory -> Choose Save -> Close application
 * [ ] Start application -> Click Save -> Check suggest directory is the one of previous step
 * [ ] Start application -> Click Load -> idem
+
+## Remembering directory used for last loading
+
+* [ ] Move `annotation.json` created in previous step onto the Desktop
+* [ ] Delete application settings directory (Running `CellLocator --settings-path` allows to get the directory)
+* [ ] Start application -> Click Load -> `Document` directory should be selected
+  * Navigate to `Desktop` -> Select `annotation.json` -> Choose Load
+  * Click Load -> `Desktop` directory should be selected -> Close application
+* [ ] Start application -> Click Load -> `Desktop` directory should be selected

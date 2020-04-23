@@ -233,6 +233,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       newAnnotationNode = loadedNodes.GetItemAsObject(0)
       newAnnotationNode.SetName("Annotation")
 
+      directory = os.path.dirname(newAnnotationNode.GetStorageNode().GetFileName())
+      slicer.app.userSettings().setValue("LastAnnotationDirectory", directory)
+
       # Remove existing annotation, and observe the new one
       self.removeAnnotation()
       self.addAnnotationObservations(newAnnotationNode)

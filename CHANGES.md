@@ -1,3 +1,9 @@
+## Next Release
+
+Fixes:
+
+* Ensure load dialog is associated with directory last used for loading. See [#105](https://github.com/BICCN/cell-locator/issues/105)
+
 ## Cell Locator 0.1.0 2020-04-16
 
 Fixes:
