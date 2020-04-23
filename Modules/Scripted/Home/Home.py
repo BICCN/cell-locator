@@ -123,7 +123,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     cameraNode = threeDView.interactorStyle().GetCameraNode()
     rotateTo ={
       "Axial": slicer.vtkMRMLCameraNode.Inferior,
-      "Coronal": slicer.vtkMRMLCameraNode.Anterior,
+      "Coronal": slicer.vtkMRMLCameraNode.Posterior,
       "Sagittal": slicer.vtkMRMLCameraNode.Left,
     }
     cameraNode.RotateTo(rotateTo[self.getReferenceView()])
@@ -669,6 +669,10 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     threeDNode.SetAxisLabel(4, "V") # I -> V
     threeDNode.SetAxisLabel(5, "D") # S -> D
 
+    # Flip coronal axis to match PIR convention
+    threeDNode.SetAxisLabel(2, "A")  # P -> A
+    threeDNode.SetAxisLabel(3, "P")  # A -> P
+
     # Connections
     self.addObserver(sliceNode, vtk.vtkCommand.ModifiedEvent, self.onSliceNodeModifiedEvent)
     cameraNode = slicer.modules.cameras.logic().GetViewActiveCameraNode(threeDWidget.threeDView().mrmlViewNode())
@@ -712,14 +716,16 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     #   0  1  0
     #
     # Updated matrix:
-    #  -1  0  0
+    #   1  0  0
     #   0  0  1
-    #   0 -1  0
+    #   0  1  0
     #
     sliceNode.DisableModifiedEventOn()
     orientationMatrix = vtk.vtkMatrix3x3()
     slicer.vtkMRMLSliceNode.InitializeCoronalMatrix(orientationMatrix)
-    orientationMatrix.SetElement(1, 2, -1.0)
+    orientationMatrix.SetElement(0, 0, 1.0)
+    orientationMatrix.SetElement(1, 2, 1.0)
+    orientationMatrix.SetElement(2, 1, 1.0)
     sliceNode.RemoveSliceOrientationPreset("Coronal")
     sliceNode.AddSliceOrientationPreset("Coronal", orientationMatrix)
     sliceNode.DisableModifiedEventOff()

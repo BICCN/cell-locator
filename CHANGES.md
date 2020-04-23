@@ -1,6 +1,8 @@
-## Next Release
+## Cell Locator 0.1.0 2020-04-30
 
 Fixes:
+
+* Ensure that +x is +P in both slice view and 3D view. See [#101](https://github.com/BICCN/cell-locator/issues/101#issuecomment-615406252)
 
 * Ensure load dialog is associated with directory last used for loading. See [#105](https://github.com/BICCN/cell-locator/issues/105)
 
