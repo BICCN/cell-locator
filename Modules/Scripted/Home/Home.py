@@ -60,6 +60,13 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self.DefaultAnnotationType = 'spline'
     self.DefaultReferenceView = 'Coronal'
+    if slicer.app.commandOptions().referenceView:
+      referenceView = slicer.app.commandOptions().referenceView
+      if referenceView in ["Axial", "Coronal", "Sagittal"]:
+        self.DefaultReferenceView = referenceView
+      else:
+        logging.error("Invalid value '%s' associated with --reference-view command-line argument. "
+                      "Accepted values are %s" % (referenceView, ", ".join(["Axial", "Coronal", "Sagittal"])))
     self.DefaultStepSize = 1
     self.DefaultThickness = 50
 
@@ -92,7 +99,32 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self._widget_cache[key] = widget
 
   def onStartupCompleted(self, *unused):
-    qt.QTimer.singleShot(0, lambda: self.onSceneEndCloseEvent(slicer.mrmlScene))
+
+    def postStartupInitialization():
+      self.onSceneEndCloseEvent(slicer.mrmlScene)
+
+      if slicer.app.commandOptions().argumentParsed("view-angle"):
+        viewAngle = slicer.app.commandOptions().viewAngle
+
+        angles = {'Roll': 0, 'Yaw': 0, 'Pitch': 0}
+        if self.getReferenceView() == "Coronal":
+          angles['Roll'] = viewAngle - 90
+        elif self.getReferenceView() == "Sagittal":
+          angles['Pitch'] = viewAngle - 90
+        elif self.getReferenceView() == "Axial":
+          angles['Yaw'] = viewAngle - 90
+
+        for axe in angles:
+          with SignalBlocker(self.get('%sSliderWidget' % axe)):
+            self.get('%sSliderWidget' % axe).value = angles[axe]
+
+        self.onViewOrientationChanged()
+
+      annotationFilePath = slicer.app.commandOptions().annotationFilePath
+      if annotationFilePath:
+        self.loadAnnotationFile(annotationFilePath)
+
+    qt.QTimer.singleShot(0, lambda: postStartupInitialization())
 
   def isAnnotationSavingRequired(self):
     shouldSave = (slicer.mrmlScene.GetStorableNodesModifiedSinceReadByClass("vtkMRMLMarkupsSplinesNode")
@@ -205,32 +237,47 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def onLoadAnnotationButtonClicked(self):
     from slicer import app, qSlicerFileDialog
 
+    # Save current one
+    if self.isAnnotationSavingRequired():
+      question = "The annotation has been modified. Do you want to save before loading a new one ?"
+      if slicer.util.confirmYesNoDisplay(question, parent=slicer.util.mainWindow()):
+        if not self.onSaveAnnotationButtonClicked():
+          return
+
+    directory = slicer.app.userSettings().value("LastAnnotationDirectory", qt.QStandardPaths.writableLocation(
+      qt.QStandardPaths.DocumentsLocation))
+
+    # Load a new one
+    properties = {
+      "defaultFileName": os.path.join(directory, "annotation.json"),
+    }
+    loadedNodes = vtk.vtkCollection()
+    if not app.ioManager().openDialog('MarkupsSplines', qSlicerFileDialog.Read, properties, loadedNodes):
+      return
+
+    # Get reference to loaded node
+    assert loadedNodes.GetNumberOfItems() == 1
+    newAnnotationNode = loadedNodes.GetItemAsObject(0)
+
+    self.onAnnotationLoaded(newAnnotationNode)
+
+  def loadAnnotationFile(self, filename):
+    if not os.path.exists(filename):
+      logging.error(
+        "Annotation file '%s' associated with --annotation-file command-line argument does not exist" % filename)
+      return False
+    success, loadedNode = slicer.util.loadNodeFromFile(filename, 'MarkupsSplines', {}, returnNode=True)
+    if success:
+      self.onAnnotationLoaded(loadedNode)
+    return success
+
+  def onAnnotationLoaded(self, newAnnotationNode):
+
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
     viewNode = slicer.app.layoutManager().threeDWidget(0).threeDView().mrmlViewNode()
     cameraNode = slicer.modules.cameras.logic().GetViewActiveCameraNode(viewNode)
     with NodeModify(cameraNode), NodeModify(sliceNode):
 
-      # Save current one
-      if self.isAnnotationSavingRequired():
-        question = "The annotation has been modified. Do you want to save before loading a new one ?"
-        if slicer.util.confirmYesNoDisplay(question, parent=slicer.util.mainWindow()):
-          if not self.onSaveAnnotationButtonClicked():
-            return
-
-      directory = slicer.app.userSettings().value("LastAnnotationDirectory", qt.QStandardPaths.writableLocation(
-        qt.QStandardPaths.DocumentsLocation))
-
-      # Load a new one
-      properties = {
-        "defaultFileName": os.path.join(directory, "annotation.json"),
-      }
-      loadedNodes = vtk.vtkCollection()
-      if not app.ioManager().openDialog('MarkupsSplines', qSlicerFileDialog.Read, properties, loadedNodes):
-        return
-
-      # Get reference to loaded node
-      assert loadedNodes.GetNumberOfItems() == 1
-      newAnnotationNode = loadedNodes.GetItemAsObject(0)
       newAnnotationNode.SetName("Annotation")
 
       directory = os.path.dirname(newAnnotationNode.GetStorageNode().GetFileName())

@@ -1,5 +1,10 @@
 ## Cell Locator 0.1.0 2020-04-30
 
+Features:
+
+* Add support for ``--reference-view``, ``--view-angle`` and ``--annotation-file``
+  command-line arguments. See [#97](https://github.com/BICCN/cell-locator/issues/97)
+
 Fixes:
 
 * Ensure that +x is +P in both slice view and 3D view. See [#101](https://github.com/BICCN/cell-locator/issues/101#issuecomment-615406252)
