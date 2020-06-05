@@ -30,9 +30,6 @@ Prerequisites
 
     * Setup [your git username](https://help.github.com/articles/setting-your-username-in-git) and [your git email](https://help.github.com/articles/setting-your-email-in-git).
 
-    * If not already done, email `Jean-Christophe Fillion-Robin <jchris.fillionr@kitware.com>` to be granted access to
-    the [BICCN/cell-locator](https://github.com/BICCN/cell-locator) repository.
-
 Checkout
 --------
 
