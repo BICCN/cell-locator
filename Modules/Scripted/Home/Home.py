@@ -1,7 +1,11 @@
 import os
 import json
 import logging
+import shutil
 import textwrap
+import urllib
+import urllib2
+import urlparse
 
 import vtk, qt, ctk, slicer
 
@@ -123,6 +127,10 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       annotationFilePath = slicer.app.commandOptions().annotationFilePath
       if annotationFilePath:
         self.loadAnnotationFile(annotationFilePath)
+
+      limsSpecimenID = slicer.app.commandOptions().limsSpecimenID
+      if limsSpecimenID:
+        self.loadLIMSSpecimen(limsSpecimenID)
 
     qt.QTimer.singleShot(0, lambda: postStartupInitialization())
 
@@ -270,6 +278,96 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     if success:
       self.onAnnotationLoaded(loadedNode)
     return success
+
+  def loadAnnotationJson(self, body):
+    tempdir = os.path.join(slicer.app.temporaryPath, 'json')
+    tempfile = os.path.join(tempdir, 'annotation.json')
+
+    if not (os.path.exists(tempdir) and os.path.isdir(tempdir)):
+      os.mkdir(tempdir)
+
+    with open(tempfile, 'w') as f:
+      json.dump(body, f)
+
+    self.loadAnnotationFile(tempfile)
+    self.MarkupsAnnotationNode.GetStorageNode().ResetFileNameList()
+    self.updateGUIFromMRML()
+
+    shutil.rmtree(tempdir)
+
+  def loadLIMSSpecimen(self, specimenID):
+    logging.info('Loading LIMS specimen id %s', specimenID)
+
+    base = slicer.app.commandOptions().limsBaseURL or 'http://localhost:5000/'
+    path = '/specimen_metadata/view'
+    url = urlparse.urljoin(base, path)
+
+    query = urllib.urlencode({
+      'kind': 'IVSCC cell locations',
+      'specimen_id': specimenID
+    })
+
+    try:
+      res = urllib2.urlopen('%s?%s' % (url, query))
+    except urllib2.URLError as e:
+      logging.error('Failed to connect to LIMS server.')
+      return
+
+    if res.getcode() != 200:
+      logging.error('Failed to load specimen ID %s from LIMS server.', specimenID)
+      return
+
+    body = json.loads(res.read())
+
+    self.loadAnnotationJson(body['data']['data'])
+
+  def onUploadAnnotationButtonClicked(self):
+    logging.info('Upload Annotation Button Clicked')
+
+    limsSpecimenID = slicer.app.commandOptions().limsSpecimenID
+    self.saveLIMSSpecimen(self.MarkupsAnnotationNode, limsSpecimenID)
+
+  def saveLIMSSpecimen(self, annotationNode, specimenID):
+    logging.info('Saving LIMS specimen id %s', specimenID)
+
+    data = self.saveAnnotationJson(annotationNode)
+
+    base = slicer.app.commandOptions().limsBaseURL or 'http://localhost:5000/'
+    path = '/specimen_metadata/store'
+    url = urlparse.urljoin(base, path)
+
+    body = json.dumps({
+      'kind': 'IVSCC cell locations',
+      'specimen_id': specimenID,
+      'data': data
+    })
+
+    try:
+      res = urllib2.urlopen(url, data=body)
+    except urllib2.URLError as e:
+      logging.error('Failed to connect to LIMS server')
+      return
+
+    if res.getcode() != 200:
+      logging.error('Failed to store specimen ID %s to LIMS server.', specimenID)
+
+  def saveAnnotationJson(self, annotationNode):
+    tempdir = os.path.join(slicer.app.temporaryPath, 'json')
+    tempfile = os.path.join(tempdir, 'annotation.json')
+
+    if not (os.path.exists(tempdir) and os.path.isdir(tempdir)):
+      os.mkdir(tempdir)
+
+    slicer.util.saveNode(annotationNode, tempfile)
+    self.logic.annotationStored(annotationNode)
+    self.updateGUIFromMRML()
+
+    with open(tempfile, 'r') as f:
+      data = json.load(f)
+
+    shutil.rmtree(tempdir)
+
+    return data
 
   def onAnnotationLoaded(self, newAnnotationNode):
 
@@ -987,6 +1085,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get('SaveAnnotationButton').connect("clicked()", self.onSaveAnnotationButtonClicked)
     self.get('SaveAsAnnotationButton').connect("clicked()", self.onSaveAsAnnotationButtonClicked)
     self.get('LoadAnnotationButton').connect("clicked()", self.onLoadAnnotationButtonClicked)
+    self.get('UploadAnnotationButton').connect("clicked()", self.onUploadAnnotationButtonClicked)
 
     self.get('ResetFieldOfViewButton').connect("clicked()", self.resetFieldOfView)
     self.get('ReferenceViewComboBox').connect("currentTextChanged(QString)", self.setReferenceView)

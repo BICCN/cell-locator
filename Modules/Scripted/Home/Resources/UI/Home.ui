@@ -140,6 +140,22 @@
            </layout>
           </item>
           <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_8">
+            <item>
+             <widget class="QPushButton" name="UploadAnnotationButton">
+              <property name="text">
+               <string>Save to LIMS</string>
+              </property>
+              <property name="icon">
+               <iconset>
+                <normalon>:/Icons/save_icon.svg.png</normalon>
+               </iconset>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
            <widget class="ctkPathLineEdit" name="AnnotationPathLineEdit">
             <property name="enabled">
              <bool>false</bool>
