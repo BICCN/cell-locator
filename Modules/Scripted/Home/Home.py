@@ -319,7 +319,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     body = json.loads(res.read())
 
-    self.loadAnnotationJson(body['data']['data'])
+    self.loadAnnotationJson(body['data'])
 
   def onUploadAnnotationButtonClicked(self):
     logging.info('Upload Annotation Button Clicked')
