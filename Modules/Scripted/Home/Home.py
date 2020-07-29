@@ -1,11 +1,11 @@
 import os
 import json
 import logging
-import shutil
 import textwrap
-import urllib
-import urllib2
-import urlparse
+import shutil
+import urllib.request
+import urllib.error
+import urllib.parse
 
 import vtk, qt, ctk, slicer
 
@@ -17,9 +17,59 @@ from HomeLib import HomeResources as Resources
 from HomeLib import CellLocatorConfig as Config
 
 
+def matrixToList(mat):
+  dim = 4
+
+  return [round(mat.GetElement(i, j), 7) for i in range(dim) for j in range(dim)]
+
+
+def listToMatrix(lst):
+  dim = 4
+
+  mat = vtk.vtkMatrix4x4()
+  for i in range(dim):
+    for j in range(dim):
+      mat.SetElement(i, j, lst[i * dim + j])
+
+
+def markupToJson(node):
+  tmpdir = os.path.join(slicer.app.temporaryPath, 'json')
+  tmpfile = os.path.join(tmpdir, 'annotation.json')
+
+  if not (os.path.exists(tmpdir) and os.path.isdir(tmpdir)):
+    os.mkdir(tmpdir)
+
+  slicer.util.saveNode(node, tmpfile)
+
+  with open(tmpfile, 'r') as f:
+    data = json.load(f)
+
+  return data['markups'][0]
+
+
+def jsonToMarkup(data):
+  tmpdir = os.path.join(slicer.app.temporaryPath, 'json')
+  tmpfile = os.path.join(tmpdir, 'annotation.json')
+
+  if not (os.path.exists(tmpdir) and os.path.isdir(tmpdir)):
+    os.mkdir(tmpdir)
+
+  with open(tmpfile, 'w') as f:
+    json.dump({
+      '@schema': 'https://raw.githubusercontent.com/slicer/slicer/master/Modules/Loadable/Markups/Resources/Schema/markups-schema-v1.0.0.json#',
+      'markups': [
+        data
+      ]
+    }, f)
+
+  node = slicer.util.loadMarkups(tmpfile)
+
+  return node
+
+
 class SplineManager:
   def __init__(self):
-    self.annotations = []
+    self.markups = []
     self.currentId = None
 
     self.cameraPosition = [0.0, 0.0, 0.0]
@@ -28,35 +78,67 @@ class SplineManager:
     self.stepSize = 1
     self.thickness = 50
     self.referenceView = 'Coronal'
+    # todo: each markup will be either a spline or polyline, this should not be global
     self.representationType = 'spline'
     self.splineOrientation = None
-    self.ontology = None
+    self.ontology = 'Structure'
 
-    self.add()
+    self.fileName = None
 
   @property
   def currentNode(self):
     if self.currentId is None:
       return None
 
-    return self.annotations[self.currentId]
+    return self.markups[self.currentId]
 
   def add(self):
     node = slicer.mrmlScene.AddNode(slicer.vtkMRMLMarkupsClosedCurveNode())
     node.AddDefaultStorageNode()
-    # node.setName("Annotation")
 
-    self.currentId = len(self.annotations)
-    self.annotations.append(node)
+    self.currentId = len(self.markups)
+    self.markups.append(node)
 
     return node
 
   def remove(self, id):
-    node = self.annotations.pop(id)
+    node = self.markups.pop(id)
     slicer.mrmlScene.RemoveNode(node)
 
   def removeCurrent(self):
     self.remove(self.currentId)
+
+  def toDict(self):
+    return {
+      'markups': [markupToJson(node) for node in self.markups],
+      'currentId': self.currentId,
+      'cameraPosition': self.cameraPosition,
+      'cameraViewUp': self.cameraViewUp,
+      'stepSize': self.stepSize,
+      'thickness': self.thickness,
+      'referenceView': self.referenceView,
+      # 'representationType': self.representationType,
+      'splineOrientation': matrixToList(self.splineOrientation),
+      'ontology': self.ontology,
+    }
+
+  @classmethod
+  def fromDict(cls, data):
+    splines = cls()
+
+    splines.markups = [jsonToMarkup(item) for item in data['markups']]
+
+    splines.currentId = data['currentId']
+    splines.cameraPosition = data['cameraPosition']
+    splines.cameraViewUp = data['cameraViewUp']
+    splines.stepSize = data['stepSize']
+    splines.thickness = data['thickness']
+    splines.referenceView = data['referenceView']
+    splines.representationType = 'spline'
+    splines.splineOrientation = listToMatrix(data['splineOrientation'])
+    splines.ontology = data['ontology']
+
+    return splines
 
 #
 # Home
@@ -96,7 +178,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     VTKObservationMixin.__init__(self)
     self.logic = None
     self.LayoutManager = slicer.app.layoutManager()
-    self.Splines = None
+    self.Splines = None  # type: SplineManager
     self.ThreeDWithReformatCustomLayoutId = None
     self.Widget = None
     self._widget_cache = {}
@@ -218,128 +300,83 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     cameraNode.Reset(resetRotation, resetTranslation, resetDistance, renderer)
 
   def onNewAnnotationButtonClicked(self):
-    pass
-    # todo port to new slicer
-    # # Save current
-    # if self.isAnnotationSavingRequired():
-    #   question = "The annotation has been modified. Do you want to save before creating a new one ?"
-    #   if slicer.util.confirmYesNoDisplay(question, parent=slicer.util.mainWindow()):
-    #      if not self.onSaveAnnotationButtonClicked():
-    #        return
-    #
-    # # Create a new one
-    # newAnnotationNode = self.createAnnotation()
-    # title = "New Annotation File Name"
-    # if not self.onSaveAsAnnotationButtonClicked(newAnnotationNode, windowTitle=title):
-    #   # If user cancel, remove the temporary one
-    #   slicer.mrmlScene.RemoveNode(newAnnotationNode)
-    #   return
-    #
-    # # Remove existing annotation, and observe the new one
-    # self.removeAnnotation()
-    # self.addAnnotationObservations(newAnnotationNode)
-    # self.Splines.currentNode = newAnnotationNode
-    #
-    # self.updateGUIFromMRML()
-    # self.onSliceNodeModifiedEvent() # Init values
-
-  def onSaveAnnotationButtonClicked(self):
-    if not self.Splines.currentNode or \
-       not self.Splines.currentNode.GetStorageNode():
-      return False
-
-    if not self.Splines.currentNode.GetStorageNode().GetFileName():
-      return self.onSaveAsAnnotationButtonClicked(self.Splines.currentNode)
-    else:
-      with self.interactionState('explore'):
-        self.Splines.currentNode.GetStorageNode().WriteData(self.Splines.currentNode)
-        self.logic.annotationStored(self.Splines.currentNode)
-      self.updateGUIFromMRML()
-      return True
-
-  def onSaveAsAnnotationButtonClicked(self, annotationNode=None, windowTitle=None):
-
-    if annotationNode is None:
-      annotationNode = self.Splines.currentNode
-
-    defaultFileName = "annotation.json"
-    directory = slicer.app.userSettings().value("LastAnnotationDirectory", qt.QStandardPaths.writableLocation(qt.QStandardPaths.DocumentsLocation))
-    if os.path.exists(directory):
-      defaultFileName = directory + "/" + defaultFileName
-
-    properties = {
-      "nodeID": annotationNode.GetID(),
-      "defaultFileName": defaultFileName
-    }
-    if windowTitle is not None:
-      properties["windowTitle"] = windowTitle
-
-    with self.interactionState('explore'):
-      success = slicer.app.ioManager().openDialog('MarkupsFile', slicer.qSlicerFileDialog.Write, properties)
-
-    if success:
-      directory = os.path.dirname(annotationNode.GetStorageNode().GetFileName())
-      slicer.app.userSettings().setValue("LastAnnotationDirectory", directory)
-      self.logic.annotationStored(annotationNode)
-
-    self.updateGUIFromMRML()
-
-    return success
-
-  def onLoadAnnotationButtonClicked(self):
-    from slicer import app, qSlicerFileDialog
-
-    # Save current one
+    # todo: DRY save if needed
+    # Save current
     if self.isAnnotationSavingRequired():
-      question = "The annotation has been modified. Do you want to save before loading a new one ?"
+      question = "The annotation has been modified. Do you want to save before creating a new one ?"
       if slicer.util.confirmYesNoDisplay(question, parent=slicer.util.mainWindow()):
         if not self.onSaveAnnotationButtonClicked():
           return
 
-    directory = slicer.app.userSettings().value("LastAnnotationDirectory", qt.QStandardPaths.writableLocation(
-      qt.QStandardPaths.DocumentsLocation))
+    self.removeAnnotation()
 
-    # Load a new one
-    properties = {
-      "defaultFileName": os.path.join(directory, "annotation.json"),
-    }
-    loadedNodes = vtk.vtkCollection()
-    if not app.ioManager().openDialog('MarkupsFile', qSlicerFileDialog.Read, properties, loadedNodes):
+    self.Splines = SplineManager()
+    self.Splines.add()
+    self.addAnnotationObservations(self.Splines.currentNode)
+
+    self.updateGUIFromMRML()
+    self.onSliceNodeModifiedEvent()
+
+  def onSaveAnnotationButtonClicked(self):
+    if not self.Splines.fileName:
+      return self.onSaveAsAnnotationButtonClicked()
+
+    try:
+      with open(self.Splines.fileName, 'w') as f:
+        json.dump(self.Splines.toDict(), f)
+    except IOError:
+      return False
+
+    self.logic.annotationStored(self.Splines.currentNode)
+
+    return True
+
+  def onSaveAsAnnotationButtonClicked(self):
+    fileName = qt.QFileDialog.getSaveFileName(
+      None,
+      'Save Annotation As',
+      'annotation.json',
+      'Annotations (*.json)'
+    )
+
+    if fileName:
+      self.Splines.fileName = fileName
+      return self.onSaveAnnotationButtonClicked()
+
+    return False
+
+  def onLoadAnnotationButtonClicked(self):
+    # todo: DRY save if needed
+    # Save current
+    if self.isAnnotationSavingRequired():
+      question = "The annotation has been modified. Do you want to save before creating a new one ?"
+      if slicer.util.confirmYesNoDisplay(question, parent=slicer.util.mainWindow()):
+        if not self.onSaveAnnotationButtonClicked():
+          return
+
+    fileName = qt.QFileDialog.getOpenFileName(
+      None,
+      'Load Annotation',
+      None,
+      'Annotations (*.json)'
+    )
+
+    if not fileName:
       return
 
-    # Get reference to loaded node
-    assert loadedNodes.GetNumberOfItems() == 1
-    newAnnotationNode = loadedNodes.GetItemAsObject(0)
+    self.removeAnnotation()
 
-    self.onAnnotationLoaded(newAnnotationNode)
+    with open(fileName) as f:
+      data = json.load(f)
 
-  def loadAnnotationFile(self, filename):
-    if not os.path.exists(filename):
-      logging.error(
-        "Annotation file '%s' associated with --annotation-file command-line argument does not exist" % filename)
-      return False
-    try:
-      loadedNode = slicer.util.loadNodeFromFile(filename, 'MarkupsFile', {})
-      self.onAnnotationLoaded(loadedNode)
-      return True
-    except RuntimeError:
-      return False
+    self.Splines = SplineManager.fromDict(data)
+    print(len(self.Splines.markups))
+    self.addAnnotationObservations(self.Splines.currentNode)
 
-  def loadAnnotationJson(self, body):
-    tempdir = os.path.join(slicer.app.temporaryPath, 'json')
-    tempfile = os.path.join(tempdir, 'annotation.json')
-
-    if not (os.path.exists(tempdir) and os.path.isdir(tempdir)):
-      os.mkdir(tempdir)
-
-    with open(tempfile, 'w') as f:
-      json.dump(body, f)
-
-    self.loadAnnotationFile(tempfile)
-    self.MarkupsAnnotationNode.GetStorageNode().ResetFileNameList()
     self.updateGUIFromMRML()
+    self.onSliceNodeModifiedEvent()
 
-    shutil.rmtree(tempdir)
+    self.onAnnotationLoaded(self.Splines)
 
   def loadLIMSSpecimen(self, specimenID):
     logging.info('Loading LIMS specimen id %s', specimenID)
@@ -348,14 +385,14 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     path = '/specimen_metadata/view'
     url = urlparse.urljoin(base, path)
 
-    query = urllib.urlencode({
+    query = urllib.parse.urlencode({
       'kind': 'IVSCC cell locations',
       'specimen_id': specimenID
     })
 
     try:
-      res = urllib2.urlopen('%s?%s' % (url, query))
-    except urllib2.URLError as e:
+      res = urllib.request.urlopen('%s?%s' % (url, query))
+    except urllib.error.URLError as e:
       logging.error('Failed to connect to LIMS server.')
       return
 
@@ -365,18 +402,19 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     body = json.loads(res.read())
 
-    self.loadAnnotationJson(body['data'])
+    splines = SplineManager.fromDict(body['data'])
+    self.setSplines(splines)
 
   def onUploadAnnotationButtonClicked(self):
     logging.info('Upload Annotation Button Clicked')
 
     limsSpecimenID = slicer.app.commandOptions().limsSpecimenID
-    self.saveLIMSSpecimen(self.MarkupsAnnotationNode, limsSpecimenID)
+    self.saveLIMSSpecimen(limsSpecimenID)
 
-  def saveLIMSSpecimen(self, annotationNode, specimenID):
+  def saveLIMSSpecimen(self, specimenID):
     logging.info('Saving LIMS specimen id %s', specimenID)
 
-    data = self.saveAnnotationJson(annotationNode)
+    data = self.Splines.toDict()
 
     base = slicer.app.commandOptions().limsBaseURL or 'http://localhost:5000/'
     path = '/specimen_metadata/store'
@@ -389,53 +427,32 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     })
 
     try:
-      res = urllib2.urlopen(url, data=body)
-    except urllib2.URLError as e:
+      res = urllib.request.urlopen(url, data=body)
+    except urllib.error.URLError as e:
       logging.error('Failed to connect to LIMS server')
       return
 
     if res.getcode() != 200:
       logging.error('Failed to store specimen ID %s to LIMS server.', specimenID)
 
-  def saveAnnotationJson(self, annotationNode):
-    tempdir = os.path.join(slicer.app.temporaryPath, 'json')
-    tempfile = os.path.join(tempdir, 'annotation.json')
+  def onAnnotationLoaded(self, splines):
+    # todo: port to latest slicer
+    sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
+    viewNode = slicer.app.layoutManager().threeDWidget(0).threeDView().mrmlViewNode()
+    cameraNode = slicer.modules.cameras.logic().GetViewActiveCameraNode(viewNode)
 
-    if not (os.path.exists(tempdir) and os.path.isdir(tempdir)):
-      os.mkdir(tempdir)
-
-    slicer.util.saveNode(annotationNode, tempfile)
-    self.logic.annotationStored(annotationNode)
-    self.updateGUIFromMRML()
-
-    with open(tempfile, 'r') as f:
-      data = json.load(f)
-
-    shutil.rmtree(tempdir)
-
-    return data
-
-  def onAnnotationLoaded(self, newAnnotationNode):
-    # todo port to latest slicer
-    # sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
-    # viewNode = slicer.app.layoutManager().threeDWidget(0).threeDView().mrmlViewNode()
-    # cameraNode = slicer.modules.cameras.logic().GetViewActiveCameraNode(viewNode)
-    #
-    # with NodeModify(cameraNode), NodeModify(sliceNode):
-    #   newAnnotationNode.SetName("Annotation")
-    #
-    #   # directory = os.path.dirname(newAnnotationNode.GetStorageNode().GetFileName())
-    #   # slicer.app.userSettings().setValue("LastAnnotationDirectory", directory)
-    #
-    #   # Remove existing annotation, and observe the new one
-    #   self.removeAnnotation()
-    #   self.addAnnotationObservations(newAnnotationNode)
-    #   self.Splines.currentNode = newAnnotationNode
-    #
-    #   self.updateGUIFromMRML()
-    #
-    #   self.resetViews()
     with NodeModify(cameraNode), NodeModify(sliceNode):
+      # directory = os.path.dirname(newAnnotationNode.GetStorageNode().GetFileName())
+      # slicer.app.userSettings().setValue("LastAnnotationDirectory", directory)
+
+      # Remove existing annotation, and observe the new one
+      # self.removeAnnotation()
+      self.addAnnotationObservations(splines.currentNode)
+
+      self.updateGUIFromMRML()
+
+      self.resetViews()
+
       self.setInteractionState('explore')
 
       # Camera
@@ -446,7 +463,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       cameraNode.ResetClippingRange()
 
       # SplineOrientation
-      self.logic.jumpSliceToAnnotation(self.Splines)
+      self.logic.jumpSliceToAnnotation(splines)
 
   def updateGUIFromMRML(self):
     self.onMarkupsAnnotationStorageNodeModifiedEvent()
@@ -559,6 +576,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.Splines.stepSize = spacing
 
   def onMarkupsAnnotationStorageNodeModifiedEvent(self):
+    # todo: port to latest slicer
+    #   annotation path mechanism is going to have to change.
     if not self.Splines.currentNode or not self.Splines.currentNode.GetStorageNode():
       return
     self.get('AnnotationPathLineEdit').currentPath = self.Splines.currentNode.GetStorageNode().GetFileName()
@@ -881,7 +900,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sliceNode.AddSliceOrientationPreset("Coronal", orientationMatrix)
     sliceNode.DisableModifiedEventOff()
 
+    # todo: use loading mechanism
     self.Splines = SplineManager()
+    self.Splines.add()
     self.addAnnotationObservations(self.Splines.currentNode)
     self.onSliceNodeModifiedEvent() # Init values
     self.updateGUIFromMRML()
