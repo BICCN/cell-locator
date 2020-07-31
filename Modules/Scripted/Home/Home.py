@@ -201,7 +201,7 @@ class Home(ScriptedLoadableModule):
   """
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
-    self.parent.title = "Home" # TODO make this more human readable by adding spaces
+    self.parent.title = "Home"
     self.parent.categories = [""]
     self.parent.dependencies = []
     self.parent.contributors = ["Johan Andruejol (Kitware)", "Jean-Christophe Fillion-Robin (Kitware)"]
@@ -605,8 +605,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.Splines.stepSize = spacing
 
   def onMarkupsAnnotationStorageNodeModifiedEvent(self):
-    # todo: port to latest slicer
-    #   annotation path mechanism is going to have to change.
     if not self.Splines or not self.Splines.fileName:
       return
     self.get('AnnotationPathLineEdit').currentPath = self.Splines.fileName
@@ -976,7 +974,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.LayoutManager.setViewport(self.Widget.LayoutWidget)
 
     # Configure layout
-    # todo port to latest slicer
     # slicer.modules.celllocator.registerCustomViewFactories(self.LayoutManager)
     self.LayoutManager.setLayout(
       self.logic.registerCustomLayouts(
@@ -989,12 +986,11 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     # Prevent accidental placement of polyline point by associating the 3D view
     # with its own interaction node.
-    # todo port to latest slicer
-    # interactionNode = slicer.vtkMRMLInteractionNode()
-    # interactionNode.SetSingletonOff()
-    # slicer.mrmlScene.AddNode(interactionNode)
-    # self.LayoutManager.threeDWidget(0).threeDView().mrmlViewNode().SetInteractionNode(interactionNode)
-    # self.InteractionNode = interactionNode
+    interactionNode = slicer.vtkMRMLInteractionNode()
+    interactionNode.SetSingletonOff()
+    slicer.mrmlScene.AddNode(interactionNode)
+    self.LayoutManager.threeDWidget(0).threeDView().mrmlViewNode().SetInteractionNode(interactionNode)
+    self.InteractionNode = interactionNode
 
     # Configure sliders
     self.get('StepSizeSliderWidget').setMRMLScene(slicer.mrmlScene)
@@ -1079,11 +1075,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       locked = (newState == 'explore')
       for i in range(self.Splines.currentNode.GetNumberOfMarkups()):
         self.Splines.currentNode.SetNthMarkupLocked(i, locked)
-
-      # todo port to latest slicer
-      # # 4: if any, select first spline
-      # if self.Splines.currentNode.GetNumberOfMarkups() > 0:
-      #   self.Splines.currentNode.SetCurrentSpline(0)
 
       # 5: Snap the slice to the spline
       if newState == 'annotate':
