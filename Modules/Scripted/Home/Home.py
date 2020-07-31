@@ -607,9 +607,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def onMarkupsAnnotationStorageNodeModifiedEvent(self):
     # todo: port to latest slicer
     #   annotation path mechanism is going to have to change.
-    if not self.Splines.currentNode or not self.Splines.currentNode.GetStorageNode():
+    if not self.Splines or not self.Splines.fileName:
       return
-    self.get('AnnotationPathLineEdit').currentPath = self.Splines.currentNode.GetStorageNode().GetFileName()
+    self.get('AnnotationPathLineEdit').currentPath = self.Splines.fileName
 
   def resetToReferenceView(self):
     self.setReferenceView(self.getReferenceView())
