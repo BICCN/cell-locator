@@ -17,58 +17,6 @@ from HomeLib import HomeResources as Resources
 from HomeLib import CellLocatorConfig as Config
 
 
-def matrixToList(mat):
-  dim = 4
-
-  return [mat.GetElement(i, j) for i in range(dim) for j in range(dim)]
-
-
-def listToMatrix(lst):
-  dim = 4
-
-  mat = vtk.vtkMatrix4x4()
-  for i in range(dim):
-    for j in range(dim):
-      mat.SetElement(i, j, lst[i * dim + j])
-
-  return mat
-
-
-def markupToJson(node):
-  tmpdir = os.path.join(slicer.app.temporaryPath, 'json')
-  tmpfile = os.path.join(tmpdir, 'annotation.json')
-
-  if not (os.path.exists(tmpdir) and os.path.isdir(tmpdir)):
-    os.mkdir(tmpdir)
-
-  slicer.util.saveNode(node, tmpfile)
-
-  with open(tmpfile, 'r') as f:
-    data = json.load(f)
-
-  return data['markups'][0]
-
-
-def jsonToMarkup(data):
-  tmpdir = os.path.join(slicer.app.temporaryPath, 'json')
-  tmpfile = os.path.join(tmpdir, 'annotation.json')
-
-  if not (os.path.exists(tmpdir) and os.path.isdir(tmpdir)):
-    os.mkdir(tmpdir)
-
-  with open(tmpfile, 'w') as f:
-    json.dump({
-      '@schema': 'https://raw.githubusercontent.com/slicer/slicer/master/Modules/Loadable/Markups/Resources/Schema/markups-schema-v1.0.0.json#',
-      'markups': [
-        data
-      ]
-    }, f)
-
-  node = slicer.util.loadMarkups(tmpfile)
-
-  return node
-
-
 class SplineManager:
   """Manages initialization, deinitialization, and serialization for a list of markups."""
 
@@ -124,7 +72,7 @@ class SplineManager:
   def toDict(self):
     """Convert this SplineManager to dict representation."""
     return {
-      'markups': [markupToJson(node) for node in self.markups],
+      'markups': [self.markupToJson(node) for node in self.markups],
       'currentId': self.currentId,
       'cameraPosition': self.cameraPosition,
       'cameraViewUp': self.cameraViewUp,
@@ -132,7 +80,7 @@ class SplineManager:
       'thickness': self.thickness,
       'referenceView': self.referenceView,
       # 'representationType': self.representationType,
-      'splineOrientation': matrixToList(self.splineOrientation),
+      'splineOrientation': self.matrixToList(self.splineOrientation),
       'ontology': self.ontology,
     }
 
@@ -146,7 +94,7 @@ class SplineManager:
     """Initialize a SplineManager from a dict representation."""
     splines = cls(markupCount=0)
 
-    splines.markups = [jsonToMarkup(item) for item in data['markups']]
+    splines.markups = [cls.jsonToMarkup(item) for item in data['markups']]
 
     splines.currentId = data['currentId']
     splines.cameraPosition = data['cameraPosition']
@@ -155,7 +103,7 @@ class SplineManager:
     splines.thickness = data['thickness']
     splines.referenceView = data['referenceView']
     splines.representationType = 'spline'
-    splines.splineOrientation = listToMatrix(data['splineOrientation'])
+    splines.splineOrientation = cls.listToMatrix(data['splineOrientation'])
     splines.ontology = data['ontology']
 
     return splines
@@ -170,6 +118,63 @@ class SplineManager:
     splines.fileName = fileName
 
     return splines
+
+  @staticmethod
+  def matrixToList(mat):
+    dim = 4
+
+    return [mat.GetElement(i, j) for i in range(dim) for j in range(dim)]
+
+
+  @staticmethod
+  def listToMatrix(lst):
+    dim = 4
+
+    mat = vtk.vtkMatrix4x4()
+    for i in range(dim):
+      for j in range(dim):
+        mat.SetElement(i, j, lst[i * dim + j])
+
+    return mat
+
+
+  @staticmethod
+  def markupToJson(node):
+    tmpdir = os.path.join(slicer.app.temporaryPath, 'json')
+    tmpfile = os.path.join(tmpdir, 'annotation.json')
+
+    if not (os.path.exists(tmpdir) and os.path.isdir(tmpdir)):
+      os.mkdir(tmpdir)
+
+    slicer.util.saveNode(node, tmpfile)
+
+    with open(tmpfile, 'r') as f:
+      data = json.load(f)
+
+    return data['markups'][0]
+
+
+  @staticmethod
+  def jsonToMarkup(data):
+    tmpdir = os.path.join(slicer.app.temporaryPath, 'json')
+    tmpfile = os.path.join(tmpdir, 'annotation.json')
+
+    if not (os.path.exists(tmpdir) and os.path.isdir(tmpdir)):
+      os.mkdir(tmpdir)
+
+    with open(tmpfile, 'w') as f:
+      json.dump({
+        '@schema': 'https://raw.githubusercontent.com/slicer/slicer/master/Modules/Loadable/Markups/Resources/Schema/markups-schema-v1.0.0.json#',
+        'markups': [
+          data
+        ]
+      }, f)
+
+    node = slicer.util.loadMarkups(tmpfile)
+
+    return node
+
+
 
 #
 # Home
