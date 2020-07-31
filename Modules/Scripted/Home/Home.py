@@ -131,7 +131,6 @@ class SplineManager:
 
     return [mat.GetElement(i, j) for i in range(dim) for j in range(dim)]
 
-
   @staticmethod
   def listToMatrix(lst):
     dim = 4
@@ -179,7 +178,6 @@ class SplineManager:
     node = slicer.util.loadMarkups(tmpfile)
 
     return node
-
 
 
 #
@@ -354,7 +352,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def saveIfRequired(self):
     """Save if annotation requires saving.
 
-    returns True if safe to proceed (saving is not required or user chooses not to)
+    returns True if safe to proceed (saving is not required, user chooses not to save, or saving is successful)
     returns False if saving fails
     """
 
