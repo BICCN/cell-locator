@@ -20,6 +20,12 @@ from HomeLib import CellLocatorConfig as Config
 class SplineManager:
   """Manages initialization, deinitialization, and serialization for a list of markups."""
 
+  DefaultReferenceView = 'Coronal'
+  DefaultRepresentationType = 'spline'
+  DefaultOntology = 'Structure'
+  DefaultStepSize = 1
+  DefaultThickness = 50
+
   def __init__(self, markupCount=1):
     """
     :param markupCount: The number of markups to initially populate the manager.
@@ -30,18 +36,18 @@ class SplineManager:
     self.cameraPosition = [0.0, 0.0, 0.0]
     self.cameraViewUp = [0.0, 0.0, 0.0]
 
-    self.stepSize = 1
-    self.thickness = 50
-    self.referenceView = 'Coronal'
+    self.referenceView = self.DefaultReferenceView
+    self.representationType = self.DefaultRepresentationType
+    self.ontology = self.DefaultOntology
+    self.stepSize = self.DefaultStepSize
+    self.thickness = self.DefaultThickness
     # todo: each markup will be either a spline or polyline, this should not be global
-    self.representationType = 'spline'
     self.splineOrientation = None
-    self.ontology = 'Structure'
 
     self.fileName = None
 
     for _ in range(markupCount):
-      self.add()
+      self.addMarkup()
 
   @property
   def currentNode(self):
@@ -51,7 +57,7 @@ class SplineManager:
 
     return self.markups[self.currentId]
 
-  def add(self):
+  def addMarkup(self):
     """Add a markup to the list."""
     node = slicer.mrmlScene.AddNode(slicer.vtkMRMLMarkupsClosedCurveNode())
     node.AddDefaultStorageNode()
@@ -223,17 +229,13 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self.InteractionNode = None
 
-    self.DefaultAnnotationType = 'spline'
-    self.DefaultReferenceView = 'Coronal'
     if slicer.app.commandOptions().referenceView:
       referenceView = slicer.app.commandOptions().referenceView
       if referenceView in ["Axial", "Coronal", "Sagittal"]:
-        self.DefaultReferenceView = referenceView
+        SplineManager.DefaultReferenceView = referenceView
       else:
         logging.error("Invalid value '%s' associated with --reference-view command-line argument. "
                       "Accepted values are %s" % (referenceView, ", ".join(["Axial", "Coronal", "Sagittal"])))
-    self.DefaultStepSize = 1
-    self.DefaultThickness = 50
 
   def get(self, name, parent=None):
     """Lookup widget by ``name``.
@@ -313,7 +315,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.Splines = splines
 
     self.addAnnotationObservations(self.Splines.currentNode)
-    # self.onSliceNodeModifiedEvent()
     self.updateGUIFromMRML()
     self.updateCameraFromSplines()
     self.updateSliceFromSplines()
@@ -980,7 +981,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.LayoutManager.setLayout(
       self.logic.registerCustomLayouts(
         self.LayoutManager.layoutLogic(),
-        self.DefaultReferenceView)
+        SplineManager.DefaultReferenceView)
     )
 
     self.addObserver(slicer.mrmlScene, slicer.mrmlScene.StartCloseEvent, self.onSceneStartCloseEvent)
