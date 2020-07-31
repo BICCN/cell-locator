@@ -421,7 +421,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     base = slicer.app.commandOptions().limsBaseURL or 'http://localhost:5000/'
     path = '/specimen_metadata/view'
-    url = urlparse.urljoin(base, path)
+    url = urllib.parse.urljoin(base, path)
 
     query = urllib.parse.urlencode({
       'kind': 'IVSCC cell locations',
@@ -456,7 +456,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     base = slicer.app.commandOptions().limsBaseURL or 'http://localhost:5000/'
     path = '/specimen_metadata/store'
-    url = urlparse.urljoin(base, path)
+    url = urllib.parse.urljoin(base, path)
 
     body = json.dumps({
       'kind': 'IVSCC cell locations',
@@ -465,7 +465,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     })
 
     try:
-      res = urllib.request.urlopen(url, data=body)
+      res = urllib.request.urlopen(url, data=body.encode('utf-8'))
+      self.logic.annotationStored(self.Splines.currentNode)
     except urllib.error.URLError as e:
       logging.error('Failed to connect to LIMS server')
       return
