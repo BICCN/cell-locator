@@ -74,6 +74,23 @@ or loading a annotation._
 | Slice Step Size       | 1                    | 10                       |
 | Slice Offset          | `<slice step size>`  | `<slice step size> * 10` |
 
+## LIMS integration
+
+Support is enabled specifying command-line flags `--lims-specimen-id` and `--lims-base-url`.
+
+If `--lims-specimen-id` command-line flag is provided, it is used:
+* At application startup time to (1) retrieve the corresponding annotation from LIMS and
+  load it by using the `/specimen_metadata/view` endpoint and (2) to enable the "Upload Annotation" button
+* After user initiate annotation upload to LIMS while using the `/specimen_metadata/store` endpoint.
+
+The "kind" parameter for both  endpoints `/specimen_metadata/view` and `/specimen_metadata/store`
+is set to "IVSCC cell locations"
+
+IVSCC expected cell count is currently unsupported.
+
+For testing this functionality, a mock server as been implemented. Relevant instructions
+are available here: https://github.com/KitwareMedical/AllenInstituteMockLIMS
+
 ## Known Issues
 
 * Inserting point in a `Spline` annotation does not work reliably. Workaround by switch the annotation type

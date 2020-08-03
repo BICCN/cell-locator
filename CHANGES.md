@@ -1,3 +1,17 @@
+## Cell Locator 0.1.0 2020-07-30
+
+Features:
+
+* Add LIMS support. See [#93](https://github.com/BICCN/cell-locator/issues/93)
+  * Support command-line flags `--lims-specimen-id` and `--lims-base-url`.
+  * Add new section to [README](README.md#lims-integration)
+
+Tests:
+
+* Add mock server to test LIMS functionalities. See instructions at
+  https://github.com/KitwareMedical/AllenInstituteMockLIMS
+ 
+
 ## Cell Locator 0.1.0 2020-04-30
 
 Features:
