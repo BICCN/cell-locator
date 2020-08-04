@@ -12,8 +12,8 @@ include(FetchContent)
 if(NOT DEFINED slicersources_SOURCE_DIR)
   # Download Slicer sources and set variables slicersources_SOURCE_DIR and slicersources_BINARY_DIR
   FetchContent_Populate(slicersources
-    GIT_REPOSITORY git://github.com/allemangd/Slicer
-    GIT_TAG        working # working
+    GIT_REPOSITORY git://github.com/KitwareMedical/Slicer
+    GIT_TAG        567322c68aab146400a3073728c6589d21b23679 # cell-locator-v4.11.0-2020-07-10-b13a49465e
     GIT_PROGRESS   1
     )
 else()
@@ -114,8 +114,8 @@ set(Slicer_EXTENSION_SOURCE_DIRS
   )
 
 # Custom CTK
-set(Slicer_CTK_GIT_REPOSITORY "${EP_GIT_PROTOCOL}://github.com/allemangd-forks/CTK.git")
-set(Slicer_CTK_GIT_TAG "working") # working
+set(Slicer_CTK_GIT_REPOSITORY "${EP_GIT_PROTOCOL}://github.com/KitwareMedical/CTK.git")
+set(Slicer_CTK_GIT_TAG "13ce3d6d99a27c2d7d98cee656fb9c72e2f4e8fc") # cell-locator-2020-07-10-f0bb5d78
 
 # Add Slicer sources
 add_subdirectory(${slicersources_SOURCE_DIR} ${slicersources_BINARY_DIR})
