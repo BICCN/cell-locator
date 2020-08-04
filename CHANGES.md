@@ -1,3 +1,11 @@
+## Cell Locator Release 2020-08-04
+
+Features:
+
+* Update Slicer to July 9 2020 Nightly. See [#96](https://github.com/BICCN/cell-locator/issues/96)
+* Update to Python 3
+* Introduce SplineManager class for interacting with native Slicer spline markups.
+
 ## Cell Locator 0.1.0 2020-07-30
 
 Features:
@@ -10,7 +18,6 @@ Tests:
 
 * Add mock server to test LIMS functionalities. See instructions at
   https://github.com/KitwareMedical/AllenInstituteMockLIMS
- 
 
 ## Cell Locator 0.1.0 2020-04-30
 
