@@ -31,6 +31,8 @@ class SplineManager:
     :param markupCount: The number of markups to initially populate the manager.
     """
     self.markups = []
+    self.models = []
+
     self.currentId = None
 
     self.cameraPosition = [0.0, 0.0, 0.0]
@@ -57,22 +59,46 @@ class SplineManager:
 
     return self.markups[self.currentId]
 
+  @property
+  def currentModel(self):
+    if self.currentId is None:
+      return None
+
+    return self.models[self.currentId]
+
   def addMarkup(self):
     """Add a markup to the list."""
-    node = slicer.mrmlScene.AddNode(slicer.vtkMRMLMarkupsClosedCurveNode())
-    node.AddDefaultStorageNode()
+    markup = slicer.mrmlScene.AddNode(slicer.vtkMRMLMarkupsClosedCurveNode())
+    markup.AddDefaultStorageNode()
+
+    generator = markup.GetCurveGenerator()
+    generator.SetNumberOfPointsPerInterpolatingSegment(20)
+    # todo: This may be a way to handle polylines, since the polyline markup need to be closed.
+    # generator.SetCurveType(generator.CURVE_TYPE_LINEAR_SPLINE)
+
+    model = slicer.mrmlScene.AddNode(slicer.vtkMRMLModelNode())
+    model.CreateDefaultDisplayNodes()
+    display = model.GetDisplayNode()
+
+    display.SetColor(0.4, 0.4, 0.4)
+    display.EdgeVisibilityOff()
+    display.SetOpacity(0.6)
 
     self.currentId = len(self.markups)
-    self.markups.append(node)
-
-    return node
+    self.markups.append(markup)
+    self.models.append(model)
 
   def clear(self):
     """Clear the list of markups."""
-    for node in self.markups:
-      slicer.mrmlScene.RemoveNode(node)
+    for markup in self.markups:
+      slicer.mrmlScene.RemoveNode(markup)
+
+    for model in self.models:
+      slicer.mrmlScene.RemoveNode(model)
 
     self.markups.clear()
+    self.models.clear()
+
     self.currentId = None
 
   def toDict(self):
@@ -647,6 +673,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
   def onThicknessChanged(self, value):
     self.Splines.thickness = value
+    self.updateCurrentModel()
 
   def onAnnotationTypeChanged(self):
     if self.get('SplineRadioButton').checked:
@@ -1015,9 +1042,28 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def removeAnnotation(self):
     self.removeAnnotationObservations(self.Splines.currentNode)
 
+  def updateCurrentModel(self):
+    model = self.Splines.currentModel
+    markup = self.Splines.currentNode
+    if markup.GetNumberOfControlPoints() < 3:
+      model.SetAndObserveMesh(vtk.vtkPolyData())  # clear mesh
+      return
+
+    sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
+    orientation = sliceNode.GetSliceToRAS()
+    normal = orientation.MultiplyPoint([0, 0, 1, 0])[:3]
+    normal = vtk.vtkVector3d(normal)
+    normal.Normalize()
+
+    contour = markup.GetCurve()
+    thickness = self.Splines.thickness
+
+    slicer.modules.splines.logic().BuildSplineModel(model, contour, normal, thickness)
+
   def onPointAddedEvent(self, caller=None, event=None):
     self.onThicknessChanged(self.get('ThicknessSliderWidget').value)
     self.onSliceNodeModifiedEvent()
+    self.updateCurrentModel()
 
   def updateGUIFromAnnotationMarkup(self, splines):
     self.get('OntologyComboBox').currentText = splines.ontology
@@ -1031,6 +1077,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     if not caller or not caller.IsA('vtkMRMLMarkupsClosedCurveNode'):
       return
     self.updateGUIFromAnnotationMarkup(self.Splines)
+    self.updateCurrentModel()
 
   def getReferenceView(self):
     return self.get('ReferenceViewComboBox').currentText
