@@ -341,6 +341,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       if annotationFilePath:
         annotations = AnnotationManager.fromFile(annotationFilePath)
         self.setAnnotations(annotations)
+        self.annotationStored()
 
       limsSpecimenID = slicer.app.commandOptions().limsSpecimenID
       if limsSpecimenID:
@@ -422,14 +423,14 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     annotations = AnnotationManager()
     annotations.add()
     self.setAnnotations(annotations)
+    self.annotationStored()
 
   def onSaveAnnotationButtonClicked(self):
     if not self.Annotations.fileName:
       return self.onSaveAsAnnotationButtonClicked()
 
     self.Annotations.toFile()
-
-    self.logic.annotationStored(self.Annotations.current.markup)
+    self.annotationStored()
 
   def onSaveAsAnnotationButtonClicked(self):
     fileName = qt.QFileDialog.getSaveFileName(
@@ -443,7 +444,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     if not fileName:
       return
 
-    return self.Annotations.toFile(fileName)
+    res = self.Annotations.toFile(fileName)
+    self.annotationStored()
+    return res
 
   def onLoadAnnotationButtonClicked(self):
     if not self.saveIfRequired(): return
@@ -459,6 +462,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     annotations = AnnotationManager.fromFile(fileName)
     self.setAnnotations(annotations)
+    self.annotationStored()
 
   def loadLIMSSpecimen(self, specimenID):
     logging.info('Loading LIMS specimen id %s', specimenID)
@@ -510,13 +514,21 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     try:
       res = urllib.request.urlopen(url, data=body.encode('utf-8'))
-      self.logic.annotationStored(self.Annotations.current.markup)
+      self.annotationStored()
     except urllib.error.URLError as e:
       logging.error('Failed to connect to LIMS server')
       return
 
     if res.getcode() != 200:
       logging.error('Failed to store specimen ID %s to LIMS server.', specimenID)
+
+  def annotationStored(self):
+    """Update scene and annotation storage node stored time. This indicates
+    no saving is required until the next scene or node update."""
+    slicer.mrmlScene.StoredModified()
+
+    if self.Annotations.current:
+      self.Annotations.current.markup.GetStorageNode().StoredModified()
 
   def updateCameraFromAnnotations(self):
     viewNode = slicer.app.layoutManager().threeDWidget(0).threeDView().mrmlViewNode()
@@ -966,6 +978,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     annotations.add()
     self.setAnnotations(annotations)
     self.setDefaultSettings()
+    self.annotationStored()
 
   def setup(self):
     ScriptedLoadableModuleWidget.setup(self)
@@ -1222,15 +1235,6 @@ class HomeLogic(object):
     threeDWithReformatCustomLayoutId = 503
     layoutLogic.GetLayoutNode().AddLayoutDescription(threeDWithReformatCustomLayoutId, customLayout)
     return threeDWithReformatCustomLayoutId
-
-  @staticmethod
-  def annotationStored(annotationNode):
-    # todo: move to widget
-    # todo: make this work on AnnotationManager
-    """Update scene and annotation storage node stored time. This indicates
-    no saving is required until the next scene or node update."""
-    slicer.mrmlScene.StoredModified()
-    annotationNode.GetStorageNode().StoredModified()
 
   @staticmethod
   def dataPath():
