@@ -20,6 +20,13 @@ from HomeLib import CellLocatorConfig as Config
 
 @contextmanager
 def tempfile(path):
+  """Manage creation and deletion of a temporary file path within the slicer temporary directory.
+
+  Creates the directory containing the file at path, if it does not exist. Automatically removes the file at path, leaving directories intact.
+
+  Yields the absolute path for the temporary file.
+  """
+
   abspath = os.path.join(slicer.app.temporaryPath, path)
   directory = os.path.dirname(abspath)
 
@@ -31,12 +38,16 @@ def tempfile(path):
 
 
 def matToList(mat: vtk.vtkMatrix4x4) -> list:
+  """Convert a vtkMatrix4x4 to list."""
+
   dim = 4
 
   return [mat.GetElement(i, j) for i in range(dim) for j in range(dim)]
 
 
 def listToMat(lst: list) -> vtk.vtkMatrix4x4:
+  """Convert a list to vtkMatrix4x4."""
+
   dim = 4
 
   mat = vtk.vtkMatrix4x4()
@@ -48,10 +59,16 @@ def listToMat(lst: list) -> vtk.vtkMatrix4x4:
 
 
 class Annotation(VTKObservationMixin):
+  """Manage serialization of a single annotation, and keep that annotation's
+  slice model synchronized with its markup.
+  """
+
   DefaultRepresentationType = 'spline'
   DefaultThickness = 50
 
   def __init__(self, markup=None):
+    """Setup the annotation markup and model, and add each to the scene."""
+
     VTKObservationMixin.__init__(self)
 
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
@@ -81,6 +98,8 @@ class Annotation(VTKObservationMixin):
     self.addObserver(self.markup, self.markup.PointModifiedEvent, self.onMarkupModified)
 
   def __del__(self):
+    """Teardown the annotation markup and model, and remove them from the scene."""
+
     self.removeObserver(self.markup, self.markup.PointAddedEvent, self.onMarkupModified)
     self.removeObserver(self.markup, self.markup.PointModifiedEvent, self.onMarkupModified)
 
@@ -88,6 +107,8 @@ class Annotation(VTKObservationMixin):
     slicer.mrmlScene.RemoveNode(self.model)
 
   def updateModel(self):
+    """Update the annotation model to match the annotation markup and orientation."""
+
     markup = self.markup
     model = self.model
 
@@ -108,9 +129,13 @@ class Annotation(VTKObservationMixin):
     slicer.modules.splines.logic().BuildSplineModel(model, contour, normal, thickness)
 
   def onMarkupModified(self, caller, event):
+    """Event handler to update the annotation model when the markup is modified."""
+
     self.updateModel()
 
   def toDict(self):
+    """Convert this annotation to a dict representation, suitable for json serialization."""
+
     with tempfile('json/annotation.json') as filename:
       slicer.util.saveNode(self.markup, filename)
 
@@ -127,6 +152,8 @@ class Annotation(VTKObservationMixin):
 
   @classmethod
   def fromDict(cls, data):
+    """Convert a dict representation to an annotation, suitable for json deserialization."""
+
     with tempfile('json/annotation.json') as filename:
       with open(filename, 'w') as f:
         json.dump({
@@ -149,6 +176,8 @@ class Annotation(VTKObservationMixin):
 
 
 class AnnotationManager:
+  """Manage serialization and bookkeeping for a collection of annotations."""
+
   DefaultReferenceView = 'Coronal'
   DefaultOntology = 'Structure'
   DefaultStepSize = 1
@@ -157,6 +186,8 @@ class AnnotationManager:
   DefaultCameraViewUp = (1.0, 0.0, 0.0)
 
   def __init__(self):
+    """Initialize an empty collection of annotations. Use add() to create empty annotations."""
+
     self.annotations: typing.List[Annotation] = []
     self.currentId = None
 
@@ -170,21 +201,28 @@ class AnnotationManager:
 
   @property
   def current(self) -> typing.Optional[Annotation]:
-    if self.currentId is None:
+    """The current annotation, or None if currentId is not set."""
+
+    if self.currentId is None or self.currentId > len(self.annotations):
       return None
 
     return self.annotations[self.currentId]
 
   def add(self, setCurrent=True):
+    """Create a blank annotation. If setCurrent is True, then also make this the current annotation."""
     self.annotations.append(Annotation())
 
     if setCurrent:
       self.currentId = len(self.annotations) - 1
 
   def clear(self):
+    """Remove all annotations from the collection."""
+
     self.annotations.clear()
 
   def toDict(self):
+    """Convert this collection to dict representation, suitable for json serialization."""
+
     return {
       'markups': [annotation.toDict() for annotation in self.annotations],
       'currentId': self.currentId,
@@ -199,6 +237,8 @@ class AnnotationManager:
 
   @classmethod
   def fromDict(cls, data):
+    """Convert a dict representation to annotation collection, suitable for json deserialization."""
+
     manager = cls()
 
     manager.annotations = [Annotation.fromDict(item) for item in data['markups']]
@@ -214,6 +254,14 @@ class AnnotationManager:
     return manager
 
   def toFile(self, fileName=None):
+    """Save this annotation collection as a json file.
+
+    If no fileName is provided, use the instance variable fileName.
+
+    If one is provided, then the instance variable is updated so that subsequent
+    calls to toFile() will save to the same location unless a new one is provided.
+    """
+
     if fileName is not None:
       self.fileName = fileName
 
@@ -227,6 +275,12 @@ class AnnotationManager:
 
   @classmethod
   def fromFile(cls, fileName):
+    """Load an annotation collection from a json file.
+
+    Instance variable fileName is set, so that subsequent calls to toFile() will
+    update that same file.
+    """
+
     with open(fileName) as f:
       data = json.load(f)
 
