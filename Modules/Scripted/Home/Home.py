@@ -494,7 +494,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       'Annotations (*.json)'
     )
 
-    logging.info('filename: %s', fileName)
     if not fileName:
       return
 
@@ -1175,8 +1174,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
       # 5: Snap the slice to the spline
       if newState == 'annotate':
-        self.updateSliceFromAnnotations()
         self.onSliceNodeModifiedEvent()
+        self.updateSliceFromAnnotations()
 
   def setupConnections(self):
     slicer.app.connect("startupCompleted()", self.onStartupCompleted)
