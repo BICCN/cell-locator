@@ -41,7 +41,7 @@ set(EXTERNAL_PROJECT_ADDITIONAL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/SuperBuild")
 include(ExternalProjectDependency)
 
 if(NOT CMAKE_CONFIGURATION_TYPES)
-  set(CMAKE_DEFAULT_BUILD_TYPE "Release")
+  set(Slicer_DEFAULT_BUILD_TYPE "Release")
 endif()
 include(SlicerInitializeBuildType)
 include(SlicerInitializeReleaseType)
