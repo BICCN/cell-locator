@@ -97,7 +97,7 @@ class Annotation(VTKObservationMixin):
     self.addObserver(self.markup, self.markup.PointAddedEvent, self.onMarkupModified)
     self.addObserver(self.markup, self.markup.PointModifiedEvent, self.onMarkupModified)
 
-  def __del__(self):
+  def clear(self):
     """Teardown the annotation markup and model, and remove them from the scene."""
 
     self.removeObserver(self.markup, self.markup.PointAddedEvent, self.onMarkupModified)
@@ -115,6 +115,11 @@ class Annotation(VTKObservationMixin):
     if markup.GetNumberOfControlPoints() < 3:
       model.SetAndObserveMesh(vtk.vtkPolyData())  # clear mesh
       return
+
+    if self.representationType == 'spline':
+      self.markup.GetCurveGenerator().SetCurveTypeToCardinalSpline()
+    else:
+      self.markup.GetCurveGenerator().SetCurveTypeToLinearSpline()
 
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
     # orientation = sliceNode.GetSliceToRAS()
@@ -217,6 +222,9 @@ class AnnotationManager:
 
   def clear(self):
     """Remove all annotations from the collection."""
+
+    for annotation in self.annotations:
+      annotation.clear()
 
     self.annotations.clear()
 
@@ -765,7 +773,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     else:
       representationType = 'polyline'
 
-    self.Annotations.representationType = representationType
+    self.Annotations.current.representationType = representationType
+    self.Annotations.current.updateModel()
 
   def onSliceNodeModifiedEvent(self, caller=None, event=None):
     sliceNode = caller
