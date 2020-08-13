@@ -71,6 +71,8 @@ class Annotation(VTKObservationMixin):
 
     VTKObservationMixin.__init__(self)
 
+    self.logic = slicer.vtkSlicerSplinesLogic()
+
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
 
     if markup is not None:
@@ -131,7 +133,7 @@ class Annotation(VTKObservationMixin):
     contour = markup.GetCurve()
     thickness = self.thickness
 
-    slicer.modules.splines.logic().BuildSplineModel(model, contour, normal, thickness)
+    self.logic.BuildSplineModel(model, contour, normal, thickness)
 
   def onMarkupModified(self, caller, event):
     """Event handler to update the annotation model when the markup is modified."""

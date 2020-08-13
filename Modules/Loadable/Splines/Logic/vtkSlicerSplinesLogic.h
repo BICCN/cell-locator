@@ -39,8 +39,7 @@ class vtkPolyData;
 
 #include "vtkSlicerSplinesModuleLogicExport.h"
 
-class VTK_SLICER_SPLINES_MODULE_LOGIC_EXPORT vtkSlicerSplinesLogic :
-  public vtkSlicerModuleLogic
+class VTK_SLICER_SPLINES_MODULE_LOGIC_EXPORT vtkSlicerSplinesLogic : public vtkSlicerModuleLogic
 {
 public:
 
@@ -58,16 +57,15 @@ protected:
   vtkSlicerSplinesLogic();
   virtual ~vtkSlicerSplinesLogic();
 
-  virtual void RegisterNodes() VTK_OVERRIDE;
-  virtual void ObserveMRMLScene() VTK_OVERRIDE;
-  virtual void SetMRMLSceneInternal(vtkMRMLScene* newScene) VTK_OVERRIDE;
-
-  virtual void OnMRMLNodeModified(vtkMRMLNode* node) VTK_OVERRIDE;
-  virtual void OnMRMLSceneNodeAdded(vtkMRMLNode* node) VTK_OVERRIDE;
-  virtual void OnMRMLSceneNodeRemoved(vtkMRMLNode* node) VTK_OVERRIDE;
+  // The following VTK_OVERRIDE methods are required to satisfy the vtkSlicerModuleLogic contract.
+  virtual void RegisterNodes() VTK_OVERRIDE {}
+  virtual void ObserveMRMLScene() VTK_OVERRIDE {}
+  virtual void SetMRMLSceneInternal(vtkMRMLScene* newScene) VTK_OVERRIDE {}
+  virtual void OnMRMLNodeModified(vtkMRMLNode* node) VTK_OVERRIDE {}
+  virtual void OnMRMLSceneNodeAdded(vtkMRMLNode* node) VTK_OVERRIDE {}
+  virtual void OnMRMLSceneNodeRemoved(vtkMRMLNode* node) VTK_OVERRIDE {}
 
 private:
-
   vtkSlicerSplinesLogic(const vtkSlicerSplinesLogic&); // Not implemented
   void operator=(const vtkSlicerSplinesLogic&); // Not implemented
 };

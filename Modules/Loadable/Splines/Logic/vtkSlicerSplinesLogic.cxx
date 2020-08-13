@@ -59,13 +59,6 @@ vtkSlicerSplinesLogic::~vtkSlicerSplinesLogic()
 {
 }
 
-void vtkSlicerSplinesLogic::RegisterNodes() {}
-void vtkSlicerSplinesLogic::ObserveMRMLScene() {}
-void vtkSlicerSplinesLogic::SetMRMLSceneInternal(vtkMRMLScene* newScene) {}
-void vtkSlicerSplinesLogic::OnMRMLNodeModified(vtkMRMLNode* node) {}
-void vtkSlicerSplinesLogic::OnMRMLSceneNodeAdded(vtkMRMLNode* node) {}
-void vtkSlicerSplinesLogic::OnMRMLSceneNodeRemoved(vtkMRMLNode* node) {}
-
 //----------------------------------------------------------------------------
 void vtkSlicerSplinesLogic::PrintSelf(ostream& os, vtkIndent indent)
 {
