@@ -4,7 +4,11 @@ Features:
 
 * Update Slicer to July 9 2020 Nightly. See [#96](https://github.com/BICCN/cell-locator/issues/96)
 * Update to Python 3
-* Introduce SplineManager class for interacting with native Slicer spline markups.
+* Introduce Annotation and AnnotationManager classes for interacting with native Slicer spline markups.
+* Introduce "Place" interaction mode.
+  * The existing "Annotate" interaction mode now for editing existing control points.
+  * The new "Place" interaction mode is for adding new control points. 
+  * The annotation snaps to the slice in both of these modes.
 
 ## Cell Locator 0.1.0 2020-07-30
 

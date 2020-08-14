@@ -230,6 +230,9 @@ class AnnotationManager:
 
     self.annotations.clear()
 
+  def __iter__(self):
+    return iter(self.annotations)
+
   def toDict(self):
     """Convert this collection to dict representation, suitable for json serialization."""
 
@@ -342,6 +345,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.ClearAction = None
 
     self.InteractionNode = None
+
+    self._interactionState = 'explore'
 
     if slicer.app.commandOptions().referenceView:
       referenceView = slicer.app.commandOptions().referenceView
@@ -1038,11 +1043,14 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sliceNode.AddSliceOrientationPreset("Coronal", orientationMatrix)
     sliceNode.DisableModifiedEventOff()
 
+    # Setup Annotations
     annotations = AnnotationManager()
     annotations.add()
     self.setAnnotations(annotations)
     self.setDefaultSettings()
     self.annotationStored()
+
+    self.setInteractionState('explore')
 
   def setup(self):
     ScriptedLoadableModuleWidget.setup(self)
@@ -1151,20 +1159,18 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.setInteractionState(previousState)
 
   def getInteractionState(self):
-    interactionNode = slicer.app.applicationLogic().GetInteractionNode()
-    if interactionNode.GetCurrentInteractionMode() == interactionNode.Place:
-      return 'annotate'
-    else:
-      return 'explore'
+    return self._interactionState
 
   def setInteractionState(self, newState):
-
-    # Update the GUI if we need to
-    with SignalBlocker(self.get('AnnotateRadioButton')), SignalBlocker(self.get('ExploreRadioButton')):
-      self.get('%sRadioButton' % newState.title()).setChecked(True)
-
-    if self.getInteractionState() == newState:
+    newState = newState.lower()
+    if newState not in ('explore', 'annotate', 'place'):
       return
+
+    self._interactionState = newState
+
+    button = self.get('%sRadioButton'%newState.title())
+    with SignalBlocker(button):
+      button.setChecked(True)
 
     # 1: update selection node
     selectionNode = slicer.app.applicationLogic().GetSelectionNode()
@@ -1172,19 +1178,20 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     # 2: update interaction mode:
     interactionNode = slicer.app.applicationLogic().GetInteractionNode()
-    if newState == 'annotate':
+    if newState == 'place':
       interactionNode.SwitchToPersistentPlaceMode()
     else:
       interactionNode.SwitchToViewTransformMode()
 
-    with NodeModify(self.Annotations.current.markup):
-      # 3: update markup as locked
-      locked = (newState == 'explore')
-      for i in range(self.Annotations.current.markup.GetNumberOfMarkups()):
-        self.Annotations.current.markup.SetNthMarkupLocked(i, locked)
+    # 3: update markup as locked
+    locked = (newState=='explore')
+    for annotation in self.Annotations:
+      with NodeModify(annotation.markup):
+        for i in range(annotation.markup.GetNumberOfMarkups()):
+          annotation.markup.SetNthMarkupLocked(i, locked)
 
-      # 5: Snap the slice to the spline
-      if newState == 'annotate':
+    if newState in ('place', 'annotate'):
+      with NodeModify(self.Annotations.current.markup):
         self.onSliceNodeModifiedEvent()
         self.updateSliceFromAnnotations()
 
@@ -1216,13 +1223,16 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get('PolylineRadioButton').connect("toggled(bool)", self.onAnnotationTypeChanged)
     self.get('SplineRadioButton').connect("toggled(bool)", self.onAnnotationTypeChanged)
 
-    def onAnnotateRadioButtonToggled(annotate):
-      if annotate:
-        self.setInteractionState('annotate')
-      else:
-        self.setInteractionState('explore')
+    def interactionStateSetter(state):
+      def handler(mode):
+        if mode:
+          self.setInteractionState(state)
 
-    self.get('AnnotateRadioButton').connect('toggled(bool)', onAnnotateRadioButtonToggled)
+      return handler
+
+    self.get('ExploreRadioButton').connect('toggled(bool)', interactionStateSetter('explore'))
+    self.get('AnnotateRadioButton').connect('toggled(bool)', interactionStateSetter('annotate'))
+    self.get('PlaceRadioButton').connect('toggled(bool)', interactionStateSetter('place'))
 
     self.get('OntologyComboBox').connect("currentTextChanged(QString)", self.onOntologyChanged)
 

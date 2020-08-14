@@ -224,6 +224,23 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QRadioButton" name="PlaceRadioButton">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="../../HomeLib/Home.qrc">
+              <normaloff>:/Icons/place_icon.svg.png</normaloff>:/Icons/place_icon.svg.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>40</width>
+              <height>40</height>
+             </size>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
