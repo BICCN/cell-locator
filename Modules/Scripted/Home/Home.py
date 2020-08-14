@@ -1163,8 +1163,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
   def setInteractionState(self, newState):
     newState = newState.lower()
-    if newState not in ('explore', 'annotate', 'place'):
-      return
+    assert newState in ('explore', 'annotate', 'place')
 
     self._interactionState = newState
 
@@ -1245,6 +1244,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     crosshairNode = slicer.mrmlScene.GetFirstNodeByClass('vtkMRMLCrosshairNode')
     self.addObserver(crosshairNode, slicer.vtkMRMLCrosshairNode.CursorPositionModifiedEvent, self.onCursorPositionModifiedEvent)
 
+    interactionNode = slicer.app.applicationLogic().GetInteractionNode()
+    self.addObserver(interactionNode, interactionNode.InteractionModeChangedEvent, self.onInteractionModeChanged)
+
   def onOntologyChanged(self, ontology):
     annotation = slicer.mrmlScene.GetFirstNodeByName("annotation_%s_contiguous" % Config.ANNOTATION_RESOLUTION)
     if ontology == "Structure":
@@ -1273,6 +1275,17 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     if not crosshairNode or not crosshairNode.IsA('vtkMRMLCrosshairNode'):
       return
     self.get("DataProbeLabel").text = self.logic.getCrosshairPixelString(crosshairNode)
+
+  def onInteractionModeChanged(self, caller, event):
+    interactionNode = caller
+
+    if caller.GetLastInteractionMode() != caller.Place:
+      return
+
+    if caller.GetCurrentInteractionMode() != caller.ViewTransform:
+      return
+
+    self.setInteractionState('annotate')
 
   def cleanup(self):
     self.Widget = None
