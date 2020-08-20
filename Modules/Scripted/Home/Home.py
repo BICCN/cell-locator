@@ -91,7 +91,7 @@ class Annotation(VTKObservationMixin):
     displayNode.EdgeVisibilityOff()
     displayNode.SetOpacity(0.6)
 
-    self.orientation = sliceNode.GetSliceToRAS()
+    self.orientation = vtk.vtkMatrix4x4()
 
     self.representationType = self.DefaultRepresentationType
     self.thickness = self.DefaultThickness
@@ -173,7 +173,7 @@ class Annotation(VTKObservationMixin):
       markup = slicer.util.loadMarkups(filename)
 
     annotation = Annotation(markup)
-    annotation.orientation = listToMat(data['orientation'])
+    annotation.orientation.DeepCopy(listToMat(data['orientation']))
     annotation.representationType = data['representationType']
     annotation.thickness = data['thickness']
 
@@ -614,9 +614,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       return
 
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
-
     with NodeModify(sliceNode):
-      sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
       sliceNode.GetSliceToRAS().DeepCopy(self.Annotations.current.orientation)
       sliceNode.UpdateMatrices()
 
@@ -801,7 +799,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       if self.getInteractionState() == 'explore':
         return
 
-      self.Annotations.current.orientation = sliceNode.GetSliceToRAS()
+      self.Annotations.current.orientation.DeepCopy(sliceNode.GetSliceToRAS())
 
       normal = [0.0, 0.0, 0.0, 0.0]
       sliceNode.GetSliceToRAS().MultiplyPoint([0.0, 0.0, 1.0, 0.0], normal)
@@ -1050,6 +1048,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.setDefaultSettings()
     self.annotationStored()
 
+    self.Annotations.current.orientation.DeepCopy(sliceNode.GetSliceToRAS())
+
     self.setInteractionState('explore')
 
   def setup(self):
@@ -1183,16 +1183,17 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       interactionNode.SwitchToViewTransformMode()
 
     # 3: update markup as locked
-    locked = (newState=='explore')
+    locked = (newState == 'explore')
     for annotation in self.Annotations:
       with NodeModify(annotation.markup):
         for i in range(annotation.markup.GetNumberOfMarkups()):
           annotation.markup.SetNthMarkupLocked(i, locked)
 
+    # 4: update slice
     if newState in ('place', 'annotate'):
       with NodeModify(self.Annotations.current.markup):
-        self.onSliceNodeModifiedEvent()
         self.updateSliceFromAnnotations()
+        self.onSliceNodeModifiedEvent()
 
   def setupConnections(self):
     slicer.app.connect("startupCompleted()", self.onStartupCompleted)
@@ -1277,6 +1278,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get("DataProbeLabel").text = self.logic.getCrosshairPixelString(crosshairNode)
 
   def onInteractionModeChanged(self, caller, event):
+    if self.getInteractionState() == 'annotate':
+      return
+
     interactionNode = caller
 
     if caller.GetLastInteractionMode() != caller.Place:
