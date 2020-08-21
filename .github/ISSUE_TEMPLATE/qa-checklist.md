@@ -107,17 +107,19 @@ _located on the left of the Reference View combo box_
 
 ## Annotation creation and updates (Edit mode vs Exploration mode)
 
-* [ ] Select Edit mode -> Click on slice plane in 3D view -> nothing happen
+* [ ] Select Place mode -> Click on slice plane in 3D view -> nothing happen
 * [ ] Click once on 2D view -> Annotation point is added -> click multiple time -> annotation is created
-* [ ] Click and hold annotation point -> move mouse cursor -> point position is updated
+* [ ] Right click on 2D view -> Edit mode is selected
+* [ ] Select Edit mode -> Click on 2D view -> nothing happens
+* [ ] Select Edit mode -> Click and hold annotation point -> move mouse cursor -> point position is updated
 * [ ] Click and hold near annotation line and away of point -> move mouse cursor -> entire annotation is moved
 * Update slice offset
-  * [ ] Using slider -> annotation position is updated
-  * [ ] Using right&left arrow -> idem
-  * [ ] Click and hold on image slice plane in 3D, move mouse -> idem
+ * [ ] Using slider -> annotation position is updated
+ * [ ] Using right&left arrow -> idem
+ * [ ] Click and hold on image slice plane in 3D, move mouse -> idem
 * Update raw/pitch/yaw
-  * [ ] Click and hold on slice plane red orthogonal arrow in 3D view + move mouse cursor -> annotation position is updated
-  * [ ] Update Roll/Pitch/Yaw text boxes -> idem
+ * [ ] Click and hold on slice plane red orthogonal arrow in 3D view + move mouse cursor -> annotation position is updated
+ * [ ] Update Roll/Pitch/Yaw text boxes -> idem
 * [ ] Select Exploration mode -> annotation point or line can NOT be selected and translated
 * [ ] Select Edit mode -> annotation point or line can be updated
 
