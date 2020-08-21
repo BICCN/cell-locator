@@ -117,5 +117,9 @@ set(Slicer_EXTENSION_SOURCE_DIRS
 set(Slicer_CTK_GIT_REPOSITORY "${EP_GIT_PROTOCOL}://github.com/KitwareMedical/CTK.git")
 set(Slicer_CTK_GIT_TAG "13ce3d6d99a27c2d7d98cee656fb9c72e2f4e8fc") # cell-locator-2020-07-10-f0bb5d78
 
+set(Slicer_ADDITIONAL_DEPENDENCIES
+  python-requests-requirements
+  )
+
 # Add Slicer sources
 add_subdirectory(${slicersources_SOURCE_DIR} ${slicersources_BINARY_DIR})
