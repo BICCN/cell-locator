@@ -3,9 +3,8 @@ import json
 import logging
 import textwrap
 import shutil
-import urllib.request
-import urllib.error
 import urllib.parse
+import requests
 import typing
 
 import vtk, qt, ctk, slicer
@@ -535,29 +534,34 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def loadLIMSSpecimen(self, specimenID):
     logging.info('Loading LIMS specimen id %s', specimenID)
 
+    self.get('AnnotationPathLineEdit').currentPath = 'LIMS Specimen %s' % specimenID
+
     base = slicer.app.commandOptions().limsBaseURL or 'http://localhost:5000/'
     path = '/specimen_metadata/view'
     url = urllib.parse.urljoin(base, path)
 
-    query = urllib.parse.urlencode({
+    query = {
       'kind': 'IVSCC cell locations',
       'specimen_id': specimenID
-    })
+    }
 
-    try:
-      res = urllib.request.urlopen('%s?%s' % (url, query))
-    except urllib.error.URLError as e:
-      logging.error('Failed to connect to LIMS server.')
-      return
+    res = requests.get(url, params=query)
 
-    if res.getcode() != 200:
-      logging.error('Failed to load specimen ID %s from LIMS server.', specimenID)
-      return
+    if res.status_code == 200:
+      annotations = AnnotationManager.fromDict(res.json()['data'])
+      self.setAnnotations(annotations)
+    else:
+      try:
+        message = res.json()['message']
+      except (json.JSONDecodeError, KeyError):
+        message = res.reason
 
-    body = json.loads(res.read())
-
-    annotations = AnnotationManager.fromDict(body['data'])
-    self.setAnnotations(annotations)
+      logging.error(
+        'Failed to load annotations for LIMS specimen %s. Error %s: %r',
+        specimenID,
+        res.status_code,
+        message
+      )
 
   def onUploadAnnotationButtonClicked(self):
     logging.info('Upload Annotation Button Clicked')
@@ -574,21 +578,28 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     path = '/specimen_metadata/store'
     url = urllib.parse.urljoin(base, path)
 
-    body = json.dumps({
+    body = {
       'kind': 'IVSCC cell locations',
       'specimen_id': specimenID,
       'data': data
-    })
+    }
 
-    try:
-      res = urllib.request.urlopen(url, data=body.encode('utf-8'))
+    res = requests.post(url, json=body)
+
+    if res.status_code == 200:
       self.annotationStored()
-    except urllib.error.URLError as e:
-      logging.error('Failed to connect to LIMS server')
-      return
+    else:
+      try:
+        message = res.json()['message']
+      except (json.JSONDecodeError, KeyError):
+        message = res.reason
 
-    if res.getcode() != 200:
-      logging.error('Failed to store specimen ID %s to LIMS server.', specimenID)
+      logging.error(
+        'Failed to save annotations for LIMS specimen %s. Error %s: %r',
+        specimenID,
+        res.status_code,
+        message
+      )
 
   def annotationStored(self):
     """Update scene and annotation storage node stored time. This indicates
