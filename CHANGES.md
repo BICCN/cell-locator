@@ -15,6 +15,14 @@ Infrastructure:
 * Update to Python 3
 * Introduce `Annotation` and `AnnotationManager` classes for interfacing with built-in Slicer markups nodes.
 
+Fixes:
+
+* Improve LIMS integration to address the feedback in [#93](https://github.com/BICCN/cell-locator/issues/93#issuecomment-675102826).
+  * Switch to the `requests` library to properly handle request headers. POST requests use the `json` argument, which sets `Content-Type: application/json`.
+  * Change failure messages to be more helpful. Now includes the error status code and message.
+  For example: `Failed to load annotations for LIMS specimen <ID>. Error <STATUS>: '<REASON>'`
+  * Current LIMS specimen ID is shown in the file path box below "Save to LIMS".
+
 ## Cell Locator 0.1.0 2020-07-30
 
 Features:
