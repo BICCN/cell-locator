@@ -13,7 +13,7 @@ if(NOT DEFINED slicersources_SOURCE_DIR)
   # Download Slicer sources and set variables slicersources_SOURCE_DIR and slicersources_BINARY_DIR
   FetchContent_Populate(slicersources
     GIT_REPOSITORY git://github.com/KitwareMedical/Slicer
-    GIT_TAG        9b00dc521fa993d0c3f266890fdae90c3c9945ca # cell-locator-v4.11.0-2018-12-19-0dc589ee5
+    GIT_TAG        e030103a5a1be941cafdd91dc52114f9c9e456dc # cell-locator-v4.11.0-2020-08-14-376d405c2b
     GIT_PROGRESS   1
     )
 else()
@@ -41,7 +41,7 @@ set(EXTERNAL_PROJECT_ADDITIONAL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/SuperBuild")
 include(ExternalProjectDependency)
 
 if(NOT CMAKE_CONFIGURATION_TYPES)
-  set(CMAKE_DEFAULT_BUILD_TYPE "Release")
+  set(Slicer_DEFAULT_BUILD_TYPE "Release")
 endif()
 include(SlicerInitializeBuildType)
 include(SlicerInitializeReleaseType)
@@ -90,6 +90,7 @@ set(Slicer_QTLOADABLEMODULES_DISABLED
   Tables
   ViewControllers
   VolumeRendering
+  Sequences
   )
 set(Slicer_QTSCRIPTEDMODULES_DISABLED
   DataProbe
@@ -114,7 +115,7 @@ set(Slicer_EXTENSION_SOURCE_DIRS
 
 # Custom CTK
 set(Slicer_CTK_GIT_REPOSITORY "${EP_GIT_PROTOCOL}://github.com/KitwareMedical/CTK.git")
-set(Slicer_CTK_GIT_TAG "ceed735068db56b8445c04572b85dbfc3c6bb496") # cell-locator-2018-11-20-6cd82aab
+set(Slicer_CTK_GIT_TAG "13ce3d6d99a27c2d7d98cee656fb9c72e2f4e8fc") # cell-locator-2020-07-10-f0bb5d78
 
 # Add Slicer sources
 add_subdirectory(${slicersources_SOURCE_DIR} ${slicersources_BINARY_DIR})

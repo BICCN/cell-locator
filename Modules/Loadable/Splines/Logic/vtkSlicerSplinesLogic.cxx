@@ -25,6 +25,7 @@ and was partially funded by Allen Institute
 #include <vtkMRMLModelNode.h>
 #include <vtkMRMLScene.h>
 #include <vtkMRMLSelectionNode.h>
+#include <vtkMRMLMarkupsClosedCurveNode.h>
 
 // VTK includes
 #include <vtkEventBroker.h>
@@ -41,10 +42,6 @@ and was partially funded by Allen Institute
 #include <vtkAppendPolyData.h>
 #include <vtkCleanPolyData.h>
 #include <vtkContourTriangulator.h>
-
-// Splines includes
-#include "vtkMRMLMarkupsSplinesNode.h"
-#include "vtkMRMLMarkupsSplinesStorageNode.h"
 
 // STD includes
 #include <cassert>
@@ -66,85 +63,6 @@ vtkSlicerSplinesLogic::~vtkSlicerSplinesLogic()
 void vtkSlicerSplinesLogic::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os, indent);
-}
-
-//---------------------------------------------------------------------------
-vtkMRMLSelectionNode* vtkSlicerSplinesLogic::GetSelectionNode() const
-{
-  if (!this->GetMRMLScene())
-  {
-    return NULL;
-  }
-
-  // try the application logic first
-  vtkMRMLApplicationLogic *mrmlAppLogic = this->GetMRMLApplicationLogic();
-  return mrmlAppLogic ?
-    (mrmlAppLogic->GetSelectionNode() ?
-      mrmlAppLogic->GetSelectionNode() : NULL) : NULL;
-}
-
-//---------------------------------------------------------------------------
-bool vtkSlicerSplinesLogic
-::GetCentroid(vtkMRMLMarkupsSplinesNode* splinesNode, int n, double centroid[3])
-{
-  if (!splinesNode || !splinesNode->MarkupExists(n))
-  {
-    return false;
-  }
-  int numberOfPoints = splinesNode->GetNumberOfPointsInNthMarkup(n);
-  if (numberOfPoints <= 0)
-  {
-    return false;
-  }
-
-  centroid[0] = 0.0;
-  centroid[1] = 0.0;
-  centroid[2] = 0.0;
-  for (int i = 0; i < numberOfPoints; ++i)
-  {
-    double point[4];
-    splinesNode->GetMarkupPointWorld(n, i, point);
-    vtkMath::Add(point, centroid, centroid);
-  }
-  vtkMath::MultiplyScalar(centroid, 1.0/numberOfPoints);
-  return true;
-}
-
-//---------------------------------------------------------------------------
-char* vtkSlicerSplinesLogic
-::LoadMarkupsSplines(const char *fileName, const char *name)
-{
-  char *nodeID = NULL;
-  std::string idList;
-  if (!fileName)
-  {
-    vtkErrorMacro("LoadMarkupSplines: null file name, cannot load");
-    return nodeID;
-  }
-
-  // turn on batch processing
-  this->GetMRMLScene()->StartState(vtkMRMLScene::BatchProcessState);
-
-  // make a storage node and fiducial node and set the file name
-  vtkNew<vtkMRMLMarkupsSplinesStorageNode> storageNode;
-  storageNode->SetFileName(fileName);
-  vtkNew<vtkMRMLMarkupsSplinesNode> splinesNode;
-  splinesNode->SetName(name);
-
-  // add the nodes to the scene and set up the observation on the storage node
-  this->GetMRMLScene()->AddNode(storageNode.GetPointer());
-  this->GetMRMLScene()->AddNode(splinesNode.GetPointer());
-  splinesNode->SetAndObserveStorageNodeID(storageNode->GetID());
-
-  // read the file
-  if (storageNode->ReadData(splinesNode.GetPointer()))
-    {
-    nodeID = splinesNode->GetID();
-    }
-
-  // turn off batch processing
-  this->GetMRMLScene()->EndState(vtkMRMLScene::BatchProcessState);
-  return nodeID;
 }
 
 //---------------------------------------------------------------------------
@@ -223,142 +141,14 @@ vtkSmartPointer<vtkPolyData> vtkSlicerSplinesLogic::CreateModelFromContour(
   return cleanFilter->GetOutput();
 }
 
-//---------------------------------------------------------------------------
-void vtkSlicerSplinesLogic::SetMRMLSceneInternal(vtkMRMLScene* newScene)
-{
-  vtkNew<vtkIntArray> sceneEvents;
-  sceneEvents->InsertNextValue(vtkMRMLScene::NodeAddedEvent);
-  sceneEvents->InsertNextValue(vtkMRMLScene::NodeRemovedEvent);
+void vtkSlicerSplinesLogic::BuildSplineModel(vtkMRMLModelNode* modelNode, vtkPolyData *contour, vtkVector3d normal, double thickness) {
+    if (!contour || !modelNode) return;
 
-  this->SetAndObserveMRMLSceneEventsInternal(newScene, sceneEvents.GetPointer());
-}
+    vtkSmartPointer<vtkPolyData> mesh = CreateModelFromContour(
+        contour, normal, thickness
+    );
 
-//---------------------------------------------------------------------------
-void vtkSlicerSplinesLogic::ObserveMRMLScene()
-{
-  if (!this->GetMRMLScene())
-  {
+    modelNode->SetAndObserveMesh(mesh);
+
     return;
-  }
-
-  // add known markup types to the selection node
-  vtkMRMLSelectionNode *selectionNode =
-    vtkMRMLSelectionNode::SafeDownCast(this->GetSelectionNode());
-  if (selectionNode)
-  {
-    // got into batch process mode so that an update on the mouse mode tool
-    // bar is triggered when leave it
-    this->GetMRMLScene()->StartState(vtkMRMLScene::BatchProcessState);
-
-    selectionNode->AddNewPlaceNodeClassNameToList(
-      "vtkMRMLMarkupsSplinesNode", ":/Icons/SplinesMouseModePlace.png", "Splines");
-
-    // trigger an update on the mouse mode toolbar
-    this->GetMRMLScene()->EndState(vtkMRMLScene::BatchProcessState);
-  }
-
-  this->Superclass::ObserveMRMLScene();
-}
-
-//-----------------------------------------------------------------------------
-void vtkSlicerSplinesLogic::RegisterNodes()
-{
-  vtkMRMLScene* scene = this->GetMRMLScene();
-  assert(scene != 0);
-  scene->RegisterNodeClass(vtkSmartPointer<vtkMRMLMarkupsSplinesNode>::New());
-  scene->RegisterNodeClass(vtkSmartPointer<vtkMRMLMarkupsSplinesStorageNode>::New());
-}
-
-//----------------------------------------------------------------------------
-void vtkSlicerSplinesLogic::OnMRMLSceneNodeAdded(vtkMRMLNode* node)
-{
-  vtkMRMLMarkupsSplinesNode* splinesNode =
-    vtkMRMLMarkupsSplinesNode::SafeDownCast(node);
-  if (!splinesNode)
-  {
-    return;
-  }
-
-  vtkEventBroker::GetInstance()->AddObservation(
-    splinesNode, vtkCommand::ModifiedEvent, this, this->GetMRMLNodesCallbackCommand());
-  this->UpdateSlabModelNode(splinesNode);
-}
-
-//----------------------------------------------------------------------------
-void vtkSlicerSplinesLogic::OnMRMLSceneNodeRemoved(vtkMRMLNode* node)
-{
-  vtkMRMLMarkupsSplinesNode* splinesNode =
-    vtkMRMLMarkupsSplinesNode::SafeDownCast(node);
-  if (!splinesNode)
-  {
-    return;
-  }
-
-  vtkEventBroker::GetInstance()->RemoveObservations(
-    splinesNode, vtkCommand::ModifiedEvent, this, this->GetMRMLNodesCallbackCommand());
-
-  // Remove all the associated model nodes
-  for (int i = 0; i < splinesNode->GetNumberOfMarkups(); ++i)
-  {
-    std::string modelID = splinesNode->GetNthMarkupAssociatedNodeID(i);
-    vtkMRMLModelNode* modelNode =
-      vtkMRMLModelNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(modelID));
-    if (modelNode)
-    {
-      this->GetMRMLScene()->RemoveNode(modelNode);
-    }
-  }
-}
-
-//-----------------------------------------------------------------------------
-void vtkSlicerSplinesLogic::OnMRMLNodeModified(vtkMRMLNode* node)
-{
-  vtkMRMLMarkupsSplinesNode* splinesNode =
-    vtkMRMLMarkupsSplinesNode::SafeDownCast(node);
-  if (!splinesNode)
-  {
-    return;
-  }
-
-  this->UpdateSlabModelNode(splinesNode);
-}
-
-//-----------------------------------------------------------------------------
-void vtkSlicerSplinesLogic::UpdateSlabModelNode(vtkMRMLMarkupsSplinesNode* splinesNode)
-{
-  if (!splinesNode)
-  {
-    return;
-  }
-
-  for (int i = 0; i < splinesNode->GetNumberOfMarkups(); ++i)
-  {
-    std::string modelID = splinesNode->GetNthMarkupAssociatedNodeID(i);
-    vtkMRMLModelNode* modelNode =
-      vtkMRMLModelNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(modelID));
-
-    bool shouldHaveModel = splinesNode->GetNumberOfPointsInNthMarkup(i) > 2;
-
-    // Cases:
-    // 1- Should have model && model exits -> All good             | DO NOTHING
-    // 2- Should not have model && model doesn't exist -> All good | DO NOTHING
-    // 3- Should have model && model doesn't exist -> Add it
-    // 4- Should not have model && model exist -> Remove it
-
-    if (shouldHaveModel && !modelNode)
-    {
-      std::stringstream modelName;
-      modelName << splinesNode->GetName() << "_Model_" << i;
-
-      vtkMRMLModelNode* newModelNode = vtkMRMLModelNode::SafeDownCast(
-        this->GetMRMLScene()->AddNewNodeByClass(
-          "vtkMRMLModelNode", modelName.str()));
-      splinesNode->SetNthMarkupAssociatedNodeID(i, newModelNode->GetID());
-    }
-    else if (!shouldHaveModel && modelNode)
-    {
-      this->GetMRMLScene()->RemoveNode(modelNode);
-      splinesNode->SetNthMarkupAssociatedNodeID(i, "");
-    }
-  }
 }

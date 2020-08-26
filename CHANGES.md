@@ -1,3 +1,20 @@
+## Next Release
+
+Features:
+
+* In addition of `Explore` and `Annotate` mode, introduce the `Place` interaction mode.
+  * `Annotate`: Used for editing existing control points.
+  * `Place`: Used for adding new control points
+  * `Explore`: Used for exploring the space
+
+Infrastructure:
+
+* Update Slicer to version from 2020-08-14.
+  See [KitwareMedical/Slicer@cell-locator-v4.11.0-2020-08-14-376d405c2b](https://github.com/KitwareMedical/Slicer/commits/cell-locator-v4.11.0-2020-08-14-376d405c2b)
+  and  [#96](https://github.com/BICCN/cell-locator/issues/96)
+* Update to Python 3
+* Introduce `Annotation` and `AnnotationManager` classes for interfacing with built-in Slicer markups nodes.
+
 ## Cell Locator 0.1.0 2020-07-30
 
 Features:
@@ -10,7 +27,6 @@ Tests:
 
 * Add mock server to test LIMS functionalities. See instructions at
   https://github.com/KitwareMedical/AllenInstituteMockLIMS
- 
 
 ## Cell Locator 0.1.0 2020-04-30
 

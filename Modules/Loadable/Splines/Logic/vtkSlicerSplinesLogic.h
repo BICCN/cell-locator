@@ -27,10 +27,10 @@ and was partially funded by Allen Institute
 // Slicer includes
 #include "vtkSlicerModuleLogic.h"
 
-// MRML includes
-class vtkMRMLMarkupsSplinesNode;
+//// MRML includes
+class vtkMRMLMarkupsClosedCurveNode;
 class vtkMRMLModelNode;
-class vtkMRMLSelectionNode;
+//class vtkMRMLSelectionNode;
 
 // VTK includes
 #include <vtkSmartPointer.h>
@@ -39,8 +39,7 @@ class vtkPolyData;
 
 #include "vtkSlicerSplinesModuleLogicExport.h"
 
-class VTK_SLICER_SPLINES_MODULE_LOGIC_EXPORT vtkSlicerSplinesLogic :
-  public vtkSlicerModuleLogic
+class VTK_SLICER_SPLINES_MODULE_LOGIC_EXPORT vtkSlicerSplinesLogic : public vtkSlicerModuleLogic
 {
 public:
 
@@ -48,33 +47,25 @@ public:
   vtkTypeMacro(vtkSlicerSplinesLogic, vtkSlicerModuleLogic);
   void PrintSelf(ostream& os, vtkIndent indent);
 
-  vtkMRMLSelectionNode* GetSelectionNode() const;
-
-  static bool GetCentroid(vtkMRMLMarkupsSplinesNode* splinesNode, int n, double centroid[3]);
-
-  /// Load a markups splines from fileName.
-  char *LoadMarkupsSplines(const char *fileName, const char *name);
-
   /// Create a 3D slab from the given contour, normal and thickness.
   static vtkSmartPointer<vtkPolyData> CreateModelFromContour(
     vtkPolyData* inputContour, vtkVector3d normal, double thickness);
+
+  void BuildSplineModel(vtkMRMLModelNode* modelNode, vtkPolyData *contour, vtkVector3d normal, double thickness);
 
 protected:
   vtkSlicerSplinesLogic();
   virtual ~vtkSlicerSplinesLogic();
 
-  virtual void RegisterNodes() VTK_OVERRIDE;
-  virtual void ObserveMRMLScene() VTK_OVERRIDE;
-  virtual void SetMRMLSceneInternal(vtkMRMLScene* newScene) VTK_OVERRIDE;
-
-  virtual void OnMRMLNodeModified(vtkMRMLNode* node) VTK_OVERRIDE;
-  virtual void OnMRMLSceneNodeAdded(vtkMRMLNode* node) VTK_OVERRIDE;
-  virtual void OnMRMLSceneNodeRemoved(vtkMRMLNode* node) VTK_OVERRIDE;
-
-  void UpdateSlabModelNode(vtkMRMLMarkupsSplinesNode* splinesNode);
+  // The following VTK_OVERRIDE methods are required to satisfy the vtkSlicerModuleLogic contract.
+  virtual void RegisterNodes() VTK_OVERRIDE {}
+  virtual void ObserveMRMLScene() VTK_OVERRIDE {}
+  virtual void SetMRMLSceneInternal(vtkMRMLScene* newScene) VTK_OVERRIDE {}
+  virtual void OnMRMLNodeModified(vtkMRMLNode* node) VTK_OVERRIDE {}
+  virtual void OnMRMLSceneNodeAdded(vtkMRMLNode* node) VTK_OVERRIDE {}
+  virtual void OnMRMLSceneNodeRemoved(vtkMRMLNode* node) VTK_OVERRIDE {}
 
 private:
-
   vtkSlicerSplinesLogic(const vtkSlicerSplinesLogic&); // Not implemented
   void operator=(const vtkSlicerSplinesLogic&); // Not implemented
 };
