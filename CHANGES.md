@@ -1,5 +1,9 @@
 ## Next Release
 
+Documentation:
+
+  * Add [MAINTAINERS.md](MAINTAINERS.md) with `Making a release` section.
+
 ## Cell Locator 0.1.0 2020-08-26
 
 Features:
