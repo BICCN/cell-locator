@@ -16,6 +16,8 @@
     <file alias="reset_field_of_view.svg.png">./Icons/reset_field_of_view.svg.png</file>
     <file alias="save_icon.svg.png">./Icons/save_icon.svg.png</file>
     <file alias="new_icon.svg.png">./Icons/new_icon.svg.png</file>
+    <file alias="add_icon.svg.png">./Icons/add_icon.svg.png</file>
+    <file alias="remove_icon.svg.png">./Icons/remove_icon.svg.png</file>
   </qresource>
 
 </RCC>
