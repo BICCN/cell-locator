@@ -16,6 +16,7 @@ from slicer.ScriptedLoadableModule import *
 from HomeLib import HomeResources as Resources
 from HomeLib import CellLocatorConfig as Config
 
+from SubjectHierarchyPlugins import AbstractScriptedSubjectHierarchyPlugin
 
 @contextmanager
 def tempfile(path):
@@ -90,7 +91,9 @@ class Annotation(VTKObservationMixin):
     displayNode.EdgeVisibilityOff()
     displayNode.SetOpacity(0.6)
 
+    sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
     self.orientation = vtk.vtkMatrix4x4()
+    self.orientation.DeepCopy(sliceNode.GetSliceToRAS())
 
     self.representationType = self.DefaultRepresentationType
     self.thickness = self.DefaultThickness
@@ -195,7 +198,6 @@ class AnnotationManager:
     """Initialize an empty collection of annotations. Use add() to create empty annotations."""
 
     self.annotations: typing.List[Annotation] = []
-    self.currentId = None
 
     self.referenceView = self.DefaultReferenceView
     self.ontology = self.DefaultOntology
@@ -209,17 +211,46 @@ class AnnotationManager:
   def current(self) -> typing.Optional[Annotation]:
     """The current annotation, or None if currentId is not set."""
 
-    if self.currentId is None or self.currentId > len(self.annotations):
+    tv = slicer.modules.HomeWidget.get('SubjectHierarchyTreeView')
+    sh = tv.subjectHierarchyNode()
+
+    currentId = tv.currentItem()
+
+    for annotation in self.annotations:
+      if currentId == sh.GetItemByDataNode(annotation.markup):
+        return annotation
+
+    return None
+
+  @current.setter
+  def current(self, annotation):
+    tv = slicer.modules.HomeWidget.get('SubjectHierarchyTreeView')
+    sh = tv.subjectHierarchyNode()
+
+    itemId = sh.GetItemByDataNode(annotation.markup)
+    tv.setCurrentItem(itemId)
+
+  @property
+  def currentIdx(self):
+    """The index of the current annotation in self.annotations"""
+    current = self.current
+
+    if not current:
       return None
 
-    return self.annotations[self.currentId]
+    return self.annotations.index(current)
+
+  @currentIdx.setter
+  def currentIdx(self, idx):
+    self.current = self.annotations[idx]
 
   def add(self, setCurrent=True):
     """Create a blank annotation. If setCurrent is True, then also make this the current annotation."""
-    self.annotations.append(Annotation())
+    annotation = Annotation()
+    self.annotations.append(annotation)
 
     if setCurrent:
-      self.currentId = len(self.annotations) - 1
+      self.current = annotation
 
   def clear(self):
     """Remove all annotations from the collection."""
@@ -229,6 +260,13 @@ class AnnotationManager:
 
     self.annotations.clear()
 
+  def removeCurrent(self):
+    annotation = self.annotations.pop(self.currentIdx)
+    annotation.clear()
+
+    if self.currentIdx is None and self.annotations:
+      self.currentIdx = len(self.annotations) - 1
+
   def __iter__(self):
     return iter(self.annotations)
 
@@ -237,7 +275,7 @@ class AnnotationManager:
 
     return {
       'markups': [annotation.toDict() for annotation in self.annotations],
-      'currentId': self.currentId,
+      'currentId': self.currentIdx,
 
       'referenceView': self.referenceView,
       'ontology': self.ontology,
@@ -254,7 +292,7 @@ class AnnotationManager:
     manager = cls()
 
     manager.annotations = [Annotation.fromDict(item) for item in data['markups']]
-    manager.currentId = data['currentId']
+    manager.currentIdx = data['currentId']
 
     manager.referenceView = data['referenceView']
     manager.ontology = data['ontology']
@@ -486,6 +524,16 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         return self.onSaveAnnotationButtonClicked()
 
     return True
+
+  def onAddAnnotationButtonClicked(self):
+    """Add an annotation to the tree view."""
+
+    self.Annotations.add(setCurrent=True)
+
+  def onRemoveAnnotationButtonClicked(self):
+    """Remove an annotation from the tree view."""
+
+    self.Annotations.removeCurrent()
 
   def onNewAnnotationButtonClicked(self):
     if not self.saveIfRequired(): return
@@ -1117,7 +1165,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     # Update layout manager viewport
     slicer.util.findChildren(name="CentralWidget")[0].visible = False
-    self.LayoutManager.setViewport(self.Widget.LayoutWidget)
+    self.LayoutManager.setViewport(self.get('LayoutWidget'))
 
     # Configure layout
     # slicer.modules.celllocator.registerCustomViewFactories(self.LayoutManager)
@@ -1141,6 +1189,12 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     # Configure sliders
     self.get('StepSizeSliderWidget').setMRMLScene(slicer.mrmlScene)
     self.get('ThicknessSliderWidget').setMRMLScene(slicer.mrmlScene)
+
+    treeView = self.get('SubjectHierarchyTreeView')
+    treeView.setMRMLScene(slicer.mrmlScene)
+    treeView.setColumnHidden(treeView.model().colorColumn, True)
+    treeView.setColumnHidden(treeView.model().transformColumn, True)
+    treeView.setColumnHidden(treeView.model().idColumn, True)
 
     self.setupViewers()
     self.setupConnections()
@@ -1222,6 +1276,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get('ContrastSlider').connect("valuesChanged(int, int)", self.onContrastValuesChanged)
     self.get('ResetContrastButton').connect("clicked()", self.onResetContrastButtonClicked)
 
+    self.get('AddAnnotationButton').connect('clicked()', self.onAddAnnotationButtonClicked)
+    self.get('RemoveAnnotationButton').connect('clicked()', self.onRemoveAnnotationButtonClicked)
+
     def setAdjustAndResetButtonsEnabled():
       self.get('AdjustViewPushButton').setEnabled(True)
 
@@ -1249,6 +1306,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self.get('OntologyComboBox').connect("currentTextChanged(QString)", self.onOntologyChanged)
 
+    self.get('SubjectHierarchyTreeView').connect('currentItemChanged(vtkIdType)', self.onCurrentItemChanged)
+
     self.ClearAction = qt.QAction(slicer.util.mainWindow())
     self.ClearAction.shortcut = qt.QKeySequence("Ctrl+W")
     self.ClearAction.connect("triggered()", lambda: slicer.mrmlScene.Clear(False))
@@ -1260,6 +1319,19 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     interactionNode = slicer.app.applicationLogic().GetInteractionNode()
     self.addObserver(interactionNode, interactionNode.InteractionModeChangedEvent, self.onInteractionModeChanged)
+
+  def onCurrentItemChanged(self, vtkId):
+    # If things aren't initialized yet then we shouldn't do anything. This will happen a few times during setup while
+    # other nodes are added to the subject hierarchy.
+    if not self.Annotations or not self.Annotations.current:
+      return
+
+    # We need to re-initialize the interaction mode for the current markup. The easiest way is to go to explore, then
+    # back to the original mode. If the mode already is explore, then nothing will happen. That's okay, since explore
+    # does not interact with the current annotation.
+    old = self.getInteractionState()
+    self.setInteractionState('explore')
+    self.setInteractionState(old)
 
   def onOntologyChanged(self, ontology):
     annotation = slicer.mrmlScene.GetFirstNodeByName("annotation_%s_contiguous" % Config.ANNOTATION_RESOLUTION)
