@@ -1,5 +1,7 @@
 ## Next Release
 
+## Cell Locator 0.1.0 2020-08-26
+
 Features:
 
 * In addition of `Explore` and `Annotate` mode, introduce the `Place` interaction mode.
@@ -22,6 +24,9 @@ Fixes:
   * Change failure messages to be more helpful. Now includes the error status code and message.
   For example: `Failed to load annotations for LIMS specimen <ID>. Error <STATUS>: '<REASON>'`
   * Current LIMS specimen ID is shown in the file path box below "Save to LIMS".
+
+* Ensure updating annotation point do not move the whole polygon. See [#109](https://github.com/BICCN/cell-locator/issues/109)
+* Improve insertion of point in existing annotation. See [#80](https://github.com/BICCN/cell-locator/issues/80)
 
 ## Cell Locator 0.1.0 2020-07-30
 
