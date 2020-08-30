@@ -261,7 +261,12 @@ class AnnotationManager:
     self.annotations.clear()
 
   def removeCurrent(self):
-    annotation = self.annotations.pop(self.currentIdx)
+    self.remove(self.current)
+
+  def remove(self, annotation):
+    if annotation in self.annotations:
+      self.annotations.remove(annotation)
+
     annotation.clear()
 
     if self.currentIdx is None and self.annotations:
@@ -965,6 +970,54 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     layout.setContentsMargins(6, 6, 6, 6)
     threeDWidget.layout().insertLayout(0, layout)
 
+    # Configure sideebar for multi-annotation support
+
+    #  tool buttons
+    addButton = qt.QPushButton('Add')
+    addButton.objectName = 'AddAnnotationButton'
+    addButton.setIcon(qt.QIcon(":/Icons/add_icon.svg.png"))
+
+    removeButton = qt.QPushButton('Remove')
+    removeButton.objectName = 'RemoveAnnotationButton'
+    removeButton.setIcon(qt.QIcon(":/Icons/remove_icon.svg.png"))
+
+    sideBarToolLayout = qt.QHBoxLayout()
+    sideBarToolLayout.addWidget(addButton)
+    sideBarToolLayout.addWidget(removeButton)
+
+    sideBarTools = qt.QWidget()
+    sideBarTools.setLayout(sideBarToolLayout)
+
+    #  tree view
+    treeView = slicer.qMRMLSubjectHierarchyTreeView()
+    treeView.objectName = 'SubjectHierarchyTreeView'
+    treeView.setMRMLScene(slicer.mrmlScene)
+    treeView.nodeTypes = ('vtkMRMLMarkupsNode',)
+    treeView.multiSelection = False
+    treeView.editMenuActionVisible = False
+    treeView.selectRoleSubMenuVisible = False
+    treeView.setColumnHidden(treeView.model().colorColumn, True)
+    treeView.setColumnHidden(treeView.model().transformColumn, True)
+    treeView.setColumnHidden(treeView.model().idColumn, True)
+
+    sidebarLayout = qt.QVBoxLayout()
+    sidebarLayout.addWidget(sideBarTools)
+    sidebarLayout.addWidget(treeView)
+    sidebar = qt.QWidget()
+    sidebar.setLayout(sidebarLayout)
+
+    # Since the viewport is managed elsewhere, we need to insert the sidebar
+    # ourselves. The viewport layout is horizontal LTR by default, so inserting 
+    # at index 0 puts it on the left.
+    viewport = self.LayoutManager.viewport()
+    viewport.layout().insertWidget(0, sidebar)
+
+    # We want the sidebar to resize with the rest of the screen. Keep it 1/3 the
+    # width of the slice and 3D views.
+    viewport.layout().setStretchFactor(sliceWidget, 3)
+    viewport.layout().setStretchFactor(threeDWidget, 3)
+    viewport.layout().setStretchFactor(sidebar, 1)
+
     # Yaw/Pitch/Roll
     def _add_slider(axeName):
       label = qt.QLabel("%s:" % axeName)
@@ -1190,12 +1243,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get('StepSizeSliderWidget').setMRMLScene(slicer.mrmlScene)
     self.get('ThicknessSliderWidget').setMRMLScene(slicer.mrmlScene)
 
-    treeView = self.get('SubjectHierarchyTreeView')
-    treeView.setMRMLScene(slicer.mrmlScene)
-    treeView.setColumnHidden(treeView.model().colorColumn, True)
-    treeView.setColumnHidden(treeView.model().transformColumn, True)
-    treeView.setColumnHidden(treeView.model().idColumn, True)
-
     self.setupViewers()
     self.setupConnections()
 
@@ -1276,9 +1323,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get('ContrastSlider').connect("valuesChanged(int, int)", self.onContrastValuesChanged)
     self.get('ResetContrastButton').connect("clicked()", self.onResetContrastButtonClicked)
 
-    self.get('AddAnnotationButton').connect('clicked()', self.onAddAnnotationButtonClicked)
-    self.get('RemoveAnnotationButton').connect('clicked()', self.onRemoveAnnotationButtonClicked)
-
     def setAdjustAndResetButtonsEnabled():
       self.get('AdjustViewPushButton').setEnabled(True)
 
@@ -1306,6 +1350,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self.get('OntologyComboBox').connect("currentTextChanged(QString)", self.onOntologyChanged)
 
+    self.get('AddAnnotationButton').connect('clicked()', self.onAddAnnotationButtonClicked)
+    self.get('RemoveAnnotationButton').connect('clicked()', self.onRemoveAnnotationButtonClicked)
     self.get('SubjectHierarchyTreeView').connect('currentItemChanged(vtkIdType)', self.onCurrentItemChanged)
 
     self.ClearAction = qt.QAction(slicer.util.mainWindow())
@@ -1319,6 +1365,33 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     interactionNode = slicer.app.applicationLogic().GetInteractionNode()
     self.addObserver(interactionNode, interactionNode.InteractionModeChangedEvent, self.onInteractionModeChanged)
+
+    subjectHierarchyNode = self.get('SubjectHierarchyTreeView').subjectHierarchyNode()
+    self.addObserver(subjectHierarchyNode, subjectHierarchyNode.SubjectHierarchyItemRemovedEvent, self.onSubjectHierarchyItemRemovedEvent)
+
+  def onSubjectHierarchyItemRemovedEvent(self, hierarchyNode, event):
+    # A markup was manually removed from the hierarchy. The AnnotationManager
+    # isn't notified of that, so we need to remove annotations with markup missing
+    # from the hierarchy.
+
+    logging.info('removed item from hierarchy...')
+
+    # Get the set of markup IDs in the hierarchy
+    currentNodes = vtk.vtkCollection()
+    hierarchyNode.GetDataNodesInBranch(
+      hierarchyNode.GetSceneItemID(),
+      currentNodes,
+      "vtkMRMLMarkupsNode"
+    )
+    currentIDs = {node.GetID() for node in currentNodes}
+
+    # remove each annotation that has a missing markup.
+    # loop through a copy (list) since we modify the collection.
+    for annotation in list(self.Annotations):
+      logging.info('checking annotation %s', annotation.markup.GetID())
+      if annotation.markup.GetID() not in currentIDs:
+        logging.info('removing annotation %s', annotation.markup.GetID())
+        self.Annotations.remove(annotation)
 
   def onCurrentItemChanged(self, vtkId):
     # If things aren't initialized yet then we shouldn't do anything. This will happen a few times during setup while
