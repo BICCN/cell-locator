@@ -338,91 +338,13 @@
     </layout>
    </item>
    <item>
-    <widget class="QWidget">
-     <layout class="QHBoxLayout">
-      <item>
-       <widget class="QWidget">
-        <layout class="QVBoxLayout">
-         <property name="geometry">
-          <rect>
-           <width>70</width>
-          </rect>
-         </property>
-         <item>
-          <widget class="QWidget">
-           <layout class="QHBoxLayout">
-            <property name="leftMargin">
-             <number>9</number>
-            </property>
-            <property name="topMargin">
-             <number>9</number>
-            </property>
-            <property name="rightMargin">
-             <number>9</number>
-            </property>
-            <property name="bottomMargin">
-             <number>9</number>
-            </property>
-            <item>
-             <widget class="QPushButton" name="AddAnnotationButton">
-              <property name="text">
-               <string>Add</string>
-              </property>
-              <property name="icon">
-               <iconset resource="../../HomeLib/Home.qrc">
-                <normaloff>:/Icons/add_icon.svg.png</normaloff>:/Icons/add_icon.svg.png
-               </iconset>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="RemoveAnnotationButton">
-              <property name="text">
-               <string>Add</string>
-              </property>
-              <property name="icon">
-               <iconset resource="../../HomeLib/Home.qrc">
-                <normaloff>:/Icons/remove_icon.svg.png</normaloff>:/Icons/remove_icon.svg.png
-               </iconset>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item>
-          <widget class="qMRMLSubjectHierarchyTreeView" name="SubjectHierarchyTreeView">
-           <property name="nodeTypes">
-            <string>vtkMRMLMarkupsNode</string>
-           </property>
-           <property name="showRootItem">
-            <bool>false</bool>
-           </property>
-           <property name="multiSelection">
-            <bool>false</bool>
-           </property>
-           <property name="editMenuActionVisible">
-            <bool>false</bool>
-           </property>
-           <property name="selectRoleSubMenuVisible">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QWidget" name="LayoutWidget" native="true">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-       </widget>
-      </item>
-     </layout>
+    <widget class="QWidget" name="LayoutWidget" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
     </widget>
    </item>
    <item>
