@@ -265,13 +265,15 @@ class AnnotationManager:
 
     return manager
 
-  def toFile(self, fileName=None):
+  def toFile(self, fileName=None, indent=2):
     """Save this annotation collection as a json file.
 
     If no fileName is provided, use the instance variable fileName.
 
     If one is provided, then the instance variable is updated so that subsequent
     calls to toFile() will save to the same location unless a new one is provided.
+
+    indent is the same parameter for json.dump. Defaults to 2 to indent file by 2 spaces. Set to None to remove indentation.
     """
 
     if fileName is not None:
@@ -283,7 +285,7 @@ class AnnotationManager:
     data = self.toDict()
 
     with open(self.fileName, 'w') as f:
-      json.dump(data, f)
+      json.dump(data, f, indent=indent)
 
   @classmethod
   def fromFile(cls, fileName):
