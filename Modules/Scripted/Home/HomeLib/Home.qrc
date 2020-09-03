@@ -18,6 +18,7 @@
     <file alias="new_icon.svg.png">./Icons/new_icon.svg.png</file>
     <file alias="add_icon.svg.png">./Icons/add_icon.svg.png</file>
     <file alias="remove_icon.svg.png">./Icons/remove_icon.svg.png</file>
+    <file alias="clone_icon.svg.png">./Icons/clone_icon.svg.png</file>
   </qresource>
 
 </RCC>
