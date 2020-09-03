@@ -76,7 +76,7 @@ class Annotation(VTKObservationMixin):
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
 
     if markup is not None:
-      self.markup = slicer.mrmlScene.AddNode(markup)
+      self.markup = markup
     else:
       self.markup = slicer.mrmlScene.AddNode(slicer.vtkMRMLMarkupsClosedCurveNode())
       self.markup.AddDefaultStorageNode()
@@ -244,9 +244,11 @@ class AnnotationManager:
   def currentIdx(self, idx):
     self.current = self.annotations[idx]
 
-  def add(self, setCurrent=True):
+  def add(self, setCurrent=True, annotation=None):
     """Create a blank annotation. If setCurrent is True, then also make this the current annotation."""
-    annotation = Annotation()
+    if annotation is None:
+      annotation = Annotation()
+
     self.annotations.append(annotation)
 
     if setCurrent:
@@ -535,17 +537,30 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self.Annotations.add(setCurrent=True)
 
+  def onCloneAnnotationButtonClicked(self):
+    """Clone the current annotation and add it to the tree view."""
+
+    # copy all attributes of the annotation, reusing the existing serialization logic.
+    # convert to dict and back.
+    data = self.Annotations.current.toDict()
+    annotation = Annotation.fromDict(data)
+
+    self.Annotations.add(setCurrent=True, annotation=annotation)
+
   def onRemoveAnnotationButtonClicked(self):
     """Remove an annotation from the tree view."""
 
-    self.Annotations.removeCurrent()
+    if self.Annotations.current:
+      self.Annotations.removeCurrent()
 
   def onNewAnnotationButtonClicked(self):
     if not self.saveIfRequired(): return
 
+    self.setInteractionState('explore')
+    self.Annotations.clear()
     annotations = AnnotationManager()
-    annotations.add()
     self.setAnnotations(annotations)
+    annotations.add()
     self.annotationStored()
 
   def onSaveAnnotationButtonClicked(self):
@@ -582,6 +597,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     if not fileName: return
 
+    self.setInteractionState('explore')
+    self.Annotations.clear()
     annotations = AnnotationManager.fromFile(fileName)
     self.setAnnotations(annotations)
     self.annotationStored()
@@ -977,12 +994,17 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     addButton.objectName = 'AddAnnotationButton'
     addButton.setIcon(qt.QIcon(":/Icons/add_icon.svg.png"))
 
+    cloneButton = qt.QPushButton('Clone')
+    cloneButton.objectName = 'CloneAnnotationButton'
+    cloneButton.setIcon(qt.QIcon(":/Icons/clone_icon.svg.png"))
+
     removeButton = qt.QPushButton('Remove')
     removeButton.objectName = 'RemoveAnnotationButton'
     removeButton.setIcon(qt.QIcon(":/Icons/remove_icon.svg.png"))
 
     sideBarToolLayout = qt.QHBoxLayout()
     sideBarToolLayout.addWidget(addButton)
+    sideBarToolLayout.addWidget(cloneButton)
     sideBarToolLayout.addWidget(removeButton)
 
     sideBarTools = qt.QWidget()
@@ -994,6 +1016,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     treeView.setMRMLScene(slicer.mrmlScene)
     treeView.nodeTypes = ('vtkMRMLMarkupsNode',)
     treeView.multiSelection = False
+    treeView.contextMenuEnabled = False
     treeView.editMenuActionVisible = False
     treeView.selectRoleSubMenuVisible = False
     treeView.setColumnHidden(treeView.model().colorColumn, True)
@@ -1359,6 +1382,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self.get('AddAnnotationButton').connect('clicked()', self.onAddAnnotationButtonClicked)
     self.get('RemoveAnnotationButton').connect('clicked()', self.onRemoveAnnotationButtonClicked)
+    self.get('CloneAnnotationButton').connect('clicked()', self.onCloneAnnotationButtonClicked)
     self.get('SubjectHierarchyTreeView').connect('currentItemChanged(vtkIdType)', self.onCurrentItemChanged)
 
     self.ClearAction = qt.QAction(slicer.util.mainWindow())
@@ -1372,33 +1396,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     interactionNode = slicer.app.applicationLogic().GetInteractionNode()
     self.addObserver(interactionNode, interactionNode.InteractionModeChangedEvent, self.onInteractionModeChanged)
-
-    subjectHierarchyNode = self.get('SubjectHierarchyTreeView').subjectHierarchyNode()
-    self.addObserver(subjectHierarchyNode, subjectHierarchyNode.SubjectHierarchyItemRemovedEvent, self.onSubjectHierarchyItemRemovedEvent)
-
-  def onSubjectHierarchyItemRemovedEvent(self, hierarchyNode, event):
-    # A markup was manually removed from the hierarchy. The AnnotationManager
-    # isn't notified of that, so we need to remove annotations with markup missing
-    # from the hierarchy.
-
-    logging.info('removed item from hierarchy...')
-
-    # Get the set of markup IDs in the hierarchy
-    currentNodes = vtk.vtkCollection()
-    hierarchyNode.GetDataNodesInBranch(
-      hierarchyNode.GetSceneItemID(),
-      currentNodes,
-      "vtkMRMLMarkupsNode"
-    )
-    currentIDs = {node.GetID() for node in currentNodes}
-
-    # remove each annotation that has a missing markup.
-    # loop through a copy (list) since we modify the collection.
-    for annotation in list(self.Annotations):
-      logging.info('checking annotation %s', annotation.markup.GetID())
-      if annotation.markup.GetID() not in currentIDs:
-        logging.info('removing annotation %s', annotation.markup.GetID())
-        self.Annotations.remove(annotation)
 
   def onCurrentItemChanged(self, vtkId):
     # If things aren't initialized yet then we shouldn't do anything. This will happen a few times during setup while
