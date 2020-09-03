@@ -154,6 +154,7 @@ class Annotation(VTKObservationMixin):
 
     return {
       'markup': markup,
+      'name': self.markup.GetName(),
       'orientation': matToList(self.orientation),
       'representationType': self.representationType,
       'thickness': self.thickness,
@@ -178,6 +179,8 @@ class Annotation(VTKObservationMixin):
     annotation.orientation.DeepCopy(listToMat(data['orientation']))
     annotation.representationType = data['representationType']
     annotation.thickness = data['thickness']
+
+    annotation.markup.SetName(data['name'])
 
     annotation.updateModel()
 
