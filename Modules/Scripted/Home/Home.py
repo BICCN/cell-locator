@@ -1243,6 +1243,13 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get('StepSizeSliderWidget').setMRMLScene(slicer.mrmlScene)
     self.get('ThicknessSliderWidget').setMRMLScene(slicer.mrmlScene)
 
+    if slicer.app.commandOptions().limsSpecimenID:
+      self.get('FileButtons').setVisible(False)
+      self.get('LIMSButtons').setVisible(True)
+    else:
+      self.get('FileButtons').setVisible(True)
+      self.get('LIMSButtons').setVisible(False)
+
     self.setupViewers()
     self.setupConnections()
 
