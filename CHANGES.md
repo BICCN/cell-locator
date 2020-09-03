@@ -3,6 +3,16 @@
 Documentation:
 
   * Add [MAINTAINERS.md](MAINTAINERS.md) with `Making a release` section.
+  
+Features:
+
+* Add support for editing multiple annotations in one file.
+  * New TreeView widget on left sidebar
+  * Add, clone, and remove annotations in the file
+* Responsive UI depending on whether CellLocator was launched by LIMS
+  * If launched with LIMS enabled, hide the file controls (New, Save, Load, Save As). Otherwise, hide the LIMS controls (Save to LIMS)
+* Save and load annotations by name
+  * Double-click annotation to rename
 
 ## Cell Locator 0.1.0 2020-08-26
 
