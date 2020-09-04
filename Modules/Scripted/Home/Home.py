@@ -939,6 +939,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sliceWidget.sliceView().interactorStyle().SetActionEnabled(slicer.vtkMRMLSliceViewInteractorStyle.ShowSlice, False)
     sliceWidget.sliceView().interactorStyle().SetActionEnabled(slicer.vtkMRMLSliceViewInteractorStyle.Translate, True)
     sliceWidget.sliceView().interactorStyle().SetActionEnabled(slicer.vtkMRMLSliceViewInteractorStyle.Zoom, True)
+    # TODO Explicitly re-enable SetCursorPosition last to workaround https://github.com/Slicer/Slicer/issues/5175
+    sliceWidget.sliceView().interactorStyle().SetActionEnabled(slicer.vtkMRMLSliceViewInteractorStyle.SetCursorPosition, True)
     self.get("PinButton", sliceWidget).visible = False
     self.get("ViewLabel", sliceWidget).visible = False
     self.get("FitToWindowToolButton", sliceWidget).visible = False
@@ -1647,7 +1649,7 @@ class HomeLogic(object):
     if not imageData:
       return ""
     dims = imageData.GetDimensions()
-    for ele in xrange(3):
+    for ele in range(3):
       if ijk[ele] < 0 or ijk[ele] >= dims[ele]:
         return ""  # Out of frame
     rasStr = "{ras_x:3.1f} {ras_y:3.1f} {ras_z:3.1f}".format(ras_x=abs(ras[0]), ras_y=abs(ras[1]), ras_z=abs(ras[2]))
