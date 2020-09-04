@@ -1528,18 +1528,18 @@ class HomeLogic(object):
       logging.error('Average template [%s] does not exists' % self.averageTemplateFilePath())
 
     # Set the min/max window level
-    range = averageTemplate.GetImageData().GetScalarRange()
+    scalarRange = averageTemplate.GetImageData().GetScalarRange()
     averageTemplateDisplay = averageTemplate.GetDisplayNode()
     averageTemplateDisplay.SetAutoWindowLevel(0)
     # No option to set the window level to min/max through the node. Instead
     # do it manually (see qMRMLWindowLevelWidget::setMinMaxRangeValue)
-    window = range[1] - range[0]
-    level = 0.5 * (range[0] + range[1])
+    window = scalarRange[1] - scalarRange[0]
+    level = 0.5 * (scalarRange[0] + scalarRange[1])
 
     averageTemplateDisplay.SetWindowLevel(window, level)
 
-    self.DefaultWindowLevelMin = range[0]
-    self.DefaultWindowLevelMax = range[1]
+    self.DefaultWindowLevelMin = scalarRange[0]
+    self.DefaultWindowLevelMax = scalarRange[1]
 
     # Lock the window level
     averageTemplateDisplay.SetWindowLevelLocked(True)
