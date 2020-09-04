@@ -73,8 +73,6 @@ class Annotation(VTKObservationMixin):
 
     self.logic = slicer.vtkSlicerSplinesLogic()
 
-    sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
-
     if markup is not None:
       self.markup = markup
     else:
@@ -125,7 +123,6 @@ class Annotation(VTKObservationMixin):
     else:
       self.markup.GetCurveGenerator().SetCurveTypeToLinearSpline()
 
-    sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
     # orientation = sliceNode.GetSliceToRAS()
     orientation = self.orientation
     normal = orientation.MultiplyPoint([0, 0, 1, 0])[:3]
@@ -1447,8 +1444,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def onInteractionModeChanged(self, caller, event):
     if self.getInteractionState() == 'annotate':
       return
-
-    interactionNode = caller
 
     if caller.GetLastInteractionMode() != caller.Place:
       return
