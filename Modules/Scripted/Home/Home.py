@@ -560,10 +560,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     if not self.saveIfRequired(): return
 
     self.setInteractionState('explore')
+    self.Annotations.fileName = None
     self.Annotations.clear()
-    annotations = AnnotationManager()
-    self.setAnnotations(annotations)
-    annotations.add()
+    self.Annotations.add()
     self.annotationStored()
 
   def onSaveAnnotationButtonClicked(self):
@@ -608,8 +607,6 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
   def loadLIMSSpecimen(self, specimenID):
     logging.info('Loading LIMS specimen id %s', specimenID)
-
-    self.get('AnnotationPathLineEdit').currentPath = 'LIMS Specimen %s' % specimenID
 
     base = slicer.app.commandOptions().limsBaseURL or 'http://localhost:5000/'
     path = '/specimen_metadata/view'
@@ -683,6 +680,11 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     if self.Annotations.current:
       self.Annotations.current.markup.GetStorageNode().StoredModified()
+
+    if slicer.app.commandOptions().limsSpecimenID:
+      self.get('AnnotationPathLineEdit').currentPath = 'LIMS Specimen %s' % specimenID
+    else:
+      self.get('AnnotationPathLineEdit').currentPath = str(self.Annotations.fileName)
 
   def updateCameraFromAnnotations(self):
     viewNode = slicer.app.layoutManager().threeDWidget(0).threeDView().mrmlViewNode()
