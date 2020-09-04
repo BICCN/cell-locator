@@ -1,18 +1,20 @@
 ## Next Release
-
-Documentation:
-
-  * Add [MAINTAINERS.md](MAINTAINERS.md) with `Making a release` section.
   
 Features:
 
-* Add support for editing multiple annotations in one file.
-  * New TreeView widget on left sidebar
-  * Add, clone, and remove annotations in the file
+* Add support for editing multiple annotations in one file. See [#90](https://github.com/BICCN/cell-locator/issues/90)
+  * List of annotations displayed on left sidebar.
+  * Add button  for _adding_, _cloning_, and _removing?_ annotations. See [#102](https://github.com/BICCN/cell-locator/issues/102)
+
 * Responsive UI depending on whether CellLocator was launched by LIMS
   * If launched with LIMS enabled, hide the file controls (New, Save, Load, Save As). Otherwise, hide the LIMS controls (Save to LIMS)
+
 * Save and load annotations by name
   * Double-click annotation to rename
+
+Documentation:
+
+* Add [MAINTAINERS.md](MAINTAINERS.md) with `Making a release` section.
 
 ## Cell Locator 0.1.0 2020-08-26
 
