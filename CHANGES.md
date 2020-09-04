@@ -12,6 +12,10 @@ Features:
 * Save and load annotations by name
   * Double-click annotation to rename
 
+Fixes:
+
+* Drawing a second polygon results in empty jsons.  See [#108](https://github.com/BICCN/cell-locator/issues/108)
+
 Documentation:
 
 * Add [MAINTAINERS.md](MAINTAINERS.md) with `Making a release` section.
