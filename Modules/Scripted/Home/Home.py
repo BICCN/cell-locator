@@ -996,14 +996,17 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     #  tool buttons
     addButton = qt.QPushButton('Add')
     addButton.objectName = 'AddAnnotationButton'
+    self.set(addButton)
     addButton.setIcon(qt.QIcon(":/Icons/add_icon.svg.png"))
 
     cloneButton = qt.QPushButton('Clone')
     cloneButton.objectName = 'CloneAnnotationButton'
+    self.set(cloneButton)
     cloneButton.setIcon(qt.QIcon(":/Icons/clone_icon.svg.png"))
 
     removeButton = qt.QPushButton('Remove')
     removeButton.objectName = 'RemoveAnnotationButton'
+    self.set(removeButton)
     removeButton.setIcon(qt.QIcon(":/Icons/remove_icon.svg.png"))
 
     sideBarToolLayout = qt.QHBoxLayout()
@@ -1017,6 +1020,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     #  tree view
     treeView = slicer.qMRMLSubjectHierarchyTreeView()
     treeView.objectName = 'SubjectHierarchyTreeView'
+    self.set(treeView)
     treeView.setMRMLScene(slicer.mrmlScene)
     treeView.nodeTypes = ('vtkMRMLMarkupsNode',)
     treeView.multiSelection = False
@@ -1031,19 +1035,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sidebarLayout.addWidget(sideBarTools)
     sidebarLayout.addWidget(treeView)
     sidebar = qt.QWidget()
+    sidebar.objectName = 'SubjectHierarchyWidget'
+    self.set(sidebar)
     sidebar.setLayout(sidebarLayout)
-
-    # Since the viewport is managed elsewhere, we need to insert the sidebar
-    # ourselves. The viewport layout is horizontal LTR by default, so inserting 
-    # at index 0 puts it on the left.
-    viewport = self.LayoutManager.viewport()
-    viewport.layout().insertWidget(0, sidebar)
-
-    # We want the sidebar to resize with the rest of the screen. Keep it 1/3 the
-    # width of the slice and 3D views.
-    viewport.layout().setStretchFactor(sliceWidget, 3)
-    viewport.layout().setStretchFactor(threeDWidget, 3)
-    viewport.layout().setStretchFactor(sidebar, 1)
 
     # Yaw/Pitch/Roll
     def _add_slider(axeName):
@@ -1124,6 +1118,20 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     # Flip coronal axis to match PIR convention
     threeDNode.SetAxisLabel(2, "A")  # P -> A
     threeDNode.SetAxisLabel(3, "P")  # A -> P
+
+    # Configure annotation list
+    #   Since the viewport is managed elsewhere, we need to insert the sidebar
+    #   ourselves. The viewport layout is horizontal LTR by default, so inserting
+    #   at index 0 puts it on the left.
+    sidebar = self.get("SubjectHierarchyWidget")
+    viewport = self.LayoutManager.viewport()
+    viewport.layout().insertWidget(0, sidebar)
+    sidebar.setVisible(True)
+    #   We want the sidebar to resize with the rest of the screen. Keep it 1/3 the
+    #   width of the slice and 3D views.
+    viewport.layout().setStretchFactor(sliceWidget, 3)
+    viewport.layout().setStretchFactor(threeDWidget, 3)
+    viewport.layout().setStretchFactor(sidebar, 1)
 
     # Connections
     self.addObserver(sliceNode, vtk.vtkCommand.ModifiedEvent, self.onSliceNodeModifiedEvent)
