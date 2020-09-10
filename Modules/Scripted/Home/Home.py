@@ -388,6 +388,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.Widget = None
     self._widget_cache = {}
 
+    self.PreviousViewport = None
+    self.PreviousLayoutId = None
+
     self.ClearAction = None
 
     self.InteractionNode = None
@@ -1251,6 +1254,10 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     panelDockWidget = slicer.util.findChildren(name="PanelDockWidget")[0]
     panelDockWidget.setFeatures(qt.QDockWidget.NoDockWidgetFeatures)
 
+    # Keep track of original viewport and layout
+    self.PreviousViewport = self.LayoutManager.viewport()
+    self.PreviousLayoutId = self.LayoutManager.layout
+
     # Update layout manager viewport
     slicer.util.findChildren(name="CentralWidget")[0].visible = False
     self.LayoutManager.setViewport(self.get('LayoutWidget'))
@@ -1464,6 +1471,10 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.setInteractionState('annotate')
 
   def cleanup(self):
+    self.get('SubjectHierarchyTreeView').disconnect('currentItemChanged(vtkIdType)', self.onCurrentItemChanged)
+    self.onSceneStartCloseEvent(slicer.mrmlScene)
+    self.LayoutManager.setViewport(self.PreviousViewport)
+    self.LayoutManager.layout = self.PreviousLayoutId
     self.Widget = None
 
 
