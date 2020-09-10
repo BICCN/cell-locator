@@ -851,7 +851,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
   def onResetContrastButtonClicked(self):
     self.get('ContrastSlider').setRange(-600, 600)
-    self.get('ContrastSlider').setValues(self.DefaultWindowLevelMin, self.DefaultWindowLevelMax)
+    self.get('ContrastSlider').setValues(self.logic.DefaultWindowLevelMin, self.logic.DefaultWindowLevelMax)
 
   def onThicknessChanged(self, value):
     self.Annotations.current.thickness = value
