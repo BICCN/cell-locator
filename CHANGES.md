@@ -17,6 +17,7 @@ Fixes:
 * Drawing a second polygon results in empty jsons.  See [#108](https://github.com/BICCN/cell-locator/issues/108)
 * Use of contrast "reset" button. See [#136](https://github.com/BICCN/cell-locator/issues/136)
 * Use of Ctrl+W shortcut to reset application state. See [#134](https://github.com/BICCN/cell-locator/issues/134)
+* Crash on application shutdown. See [#154](https://github.com/BICCN/cell-locator/issues/154)
 
 Documentation:
 
