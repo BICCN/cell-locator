@@ -16,6 +16,8 @@ Fixes:
 
 * Drawing a second polygon results in empty jsons.  See [#108](https://github.com/BICCN/cell-locator/issues/108)
 
+* Fix use of contrast "reset" button. See [#136](https://github.com/BICCN/cell-locator/issues/136)
+
 Documentation:
 
 * Add [MAINTAINERS.md](MAINTAINERS.md) with `Making a release` section.
