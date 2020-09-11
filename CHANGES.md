@@ -18,6 +18,7 @@ Fixes:
 * Use of contrast "reset" button. See [#136](https://github.com/BICCN/cell-locator/issues/136)
 * Use of Ctrl+W shortcut to reset application state. See [#134](https://github.com/BICCN/cell-locator/issues/134)
 * Crash on application shutdown. See [#154](https://github.com/BICCN/cell-locator/issues/154)
+* Remember last saved directory. See [#137](https://github.com/BICCN/cell-locator/issues/137)
 
 Documentation:
 
