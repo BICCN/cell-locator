@@ -573,19 +573,30 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.annotationStored()
 
   def onSaveAsAnnotationButtonClicked(self):
+
+    defaultFileName = "annotation.json"
+    directory = slicer.app.userSettings().value(
+      "LastAnnotationDirectory", qt.QStandardPaths.writableLocation(qt.QStandardPaths.DocumentsLocation))
+    if os.path.exists(directory):
+      defaultFileName = directory + "/" + defaultFileName
+
     fileName = qt.QFileDialog.getSaveFileName(
       slicer.util.mainWindow(),
       'Save Annotation As',
-      'annotation.json',
+      defaultFileName,
       'Annotations (*.json)'
     )
 
     if not fileName:
-      return
+      return False
 
-    res = self.Annotations.toFile(fileName)
+    self.Annotations.toFile(fileName)
+
+    directory = os.path.dirname(fileName)
+    slicer.app.userSettings().setValue("LastAnnotationDirectory", directory)
     self.annotationStored()
-    return res
+
+    return True
 
   def onLoadAnnotationButtonClicked(self):
     if not self.saveIfRequired(): return
