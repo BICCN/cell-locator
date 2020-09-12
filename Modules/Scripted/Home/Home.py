@@ -721,7 +721,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       self.Annotations.current.markup.GetStorageNode().StoredModified()
 
     if slicer.app.commandOptions().limsSpecimenID:
-      self.get('AnnotationPathLineEdit').currentPath = 'LIMS Specimen %s' % specimenID
+      self.get('AnnotationPathLineEdit').currentPath = 'LIMS Specimen %s' % slicer.app.commandOptions().limsSpecimenID
     else:
       self.get('AnnotationPathLineEdit').currentPath = str(self.Annotations.fileName)
 
