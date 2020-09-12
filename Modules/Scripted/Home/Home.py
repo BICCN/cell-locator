@@ -78,6 +78,8 @@ class Annotation(VTKObservationMixin):
     else:
       self.markup = slicer.mrmlScene.AddNode(slicer.vtkMRMLMarkupsClosedCurveNode())
       self.markup.AddDefaultStorageNode()
+      self.markup.SetName(
+        self.markup.GetName().replace(self.markup.GetNodeTagName(), "Annotation"))
 
     generator = self.markup.GetCurveGenerator()
     generator.SetNumberOfPointsPerInterpolatingSegment(20)
