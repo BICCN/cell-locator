@@ -20,6 +20,7 @@ Fixes:
 * Crash on application shutdown. See [#154](https://github.com/BICCN/cell-locator/issues/154)
 * Remember last saved directory. See [#137](https://github.com/BICCN/cell-locator/issues/137)
 * Initialize annotation base name to `Annotation` instead of `MarkupsClosedCurve`.
+* Ensure only current annotation can be updated when `annotate` or `place` mode is activated.
 
 Documentation:
 

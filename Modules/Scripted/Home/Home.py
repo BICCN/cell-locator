@@ -256,6 +256,16 @@ class AnnotationManager:
     if setCurrent:
       self.current = annotation
 
+  def setEnabled(self, annotation, enabled):
+    """Enable or disable selected annotation and disable all the other ones.
+
+    This means that the selected annotation is unlocked and can be updated.
+    """
+    for _annotation in self.annotations:
+      locked = True
+      if _annotation == annotation:
+        locked = not enabled
+      _annotation.markup.SetLocked(locked)
   def clear(self):
     """Remove all annotations from the collection."""
 
@@ -1358,15 +1368,12 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     else:
       interactionNode.SwitchToViewTransformMode()
 
-    # 3: update markup as locked
-    locked = (newState == 'explore')
-    for annotation in self.Annotations:
-      with NodeModify(annotation.markup):
-        for i in range(annotation.markup.GetNumberOfMarkups()):
-          annotation.markup.SetNthMarkupLocked(i, locked)
+    # 3: enable annotation based on the current state
+    enabled = newState in ('place', 'annotate')
+    self.Annotations.setEnabled(self.Annotations.current, enabled)
 
     # 4: update slice
-    if newState in ('place', 'annotate'):
+    if enabled:
       with NodeModify(self.Annotations.current.markup):
         self.updateSliceFromAnnotations()
         self.onSliceNodeModifiedEvent()
