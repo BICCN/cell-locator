@@ -257,15 +257,25 @@ class AnnotationManager:
       self.current = annotation
 
   def setEnabled(self, annotation, enabled):
-    """Enable or disable selected annotation and disable all the other ones.
+    """Enable or disable annotation and disable all the other ones.
 
-    This means that the selected annotation is unlocked and can be updated.
+    This means that the selected annotation is unlocked, individual control points
+    can be moved, new point inserted and entire annotation translated or rotated
+    using the interaction handles.
     """
     for _annotation in self.annotations:
       locked = True
       if _annotation == annotation:
         locked = not enabled
       _annotation.markup.SetLocked(locked)
+      _annotation.markup.GetDisplayNode().SetHandlesInteractive(not locked)
+
+    # Always hide interactive handles in 3D view
+    threeDView = slicer.app.layoutManager().threeDWidget(0).threeDView()
+    displayableManager = threeDView.displayableManagerByClassName("vtkMRMLMarkupsDisplayableManager")
+    markupWidget = displayableManager.GetWidget(annotation.markup.GetDisplayNode())
+    markupWidget.GetMarkupsRepresentation().SetInteractionPipelineVisibility(False)
+
   def clear(self):
     """Remove all annotations from the collection."""
 
