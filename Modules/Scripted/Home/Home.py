@@ -639,11 +639,14 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.annotationStored()
 
   def loadLIMSSpecimen(self, specimenID):
+    """Retrieve and load specimenID from LIMS.
+
+    See :func:`HomeLogic.limsBaseURL()`:
+    """
     logging.info('Loading LIMS specimen id %s', specimenID)
 
-    base = slicer.app.commandOptions().limsBaseURL or 'http://localhost:5000/'
     path = '/specimen_metadata/view'
-    url = urllib.parse.urljoin(base, path)
+    url = urllib.parse.urljoin(HomeLogic.limsBaseURL(), path)
 
     query = {
       'kind': 'IVSCC cell locations',
@@ -675,13 +678,16 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.saveLIMSSpecimen(limsSpecimenID)
 
   def saveLIMSSpecimen(self, specimenID):
+    """Publish annotations to LIMS as specimenID.
+
+    See :func:`HomeLogic.limsBaseURL()`:
+    """
     logging.info('Saving LIMS specimen id %s', specimenID)
 
     data = self.Annotations.toDict()
 
-    base = slicer.app.commandOptions().limsBaseURL or 'http://localhost:5000/'
     path = '/specimen_metadata/store'
-    url = urllib.parse.urljoin(base, path)
+    url = urllib.parse.urljoin(HomeLogic.limsBaseURL(), path)
 
     body = {
       'kind': 'IVSCC cell locations',
@@ -1721,6 +1727,10 @@ class HomeLogic(object):
             return rasStr
 
     return ""
+
+  @staticmethod
+  def limsBaseURL():
+    return slicer.app.commandOptions().limsBaseURL or 'http://localhost:5000/'
 
 
 class HomeTest(ScriptedLoadableModuleTest):
