@@ -23,6 +23,7 @@ Fixes:
 * Remember last saved directory. See [#137](https://github.com/BICCN/cell-locator/issues/137)
 * Initialize annotation base name to `Annotation` instead of `MarkupsClosedCurve`.
 * Ensure only current annotation can be updated when `annotate` or `place` mode is activated.
+* Hide irrelevant annotation control point right click menu entries.
 
 Documentation:
 
