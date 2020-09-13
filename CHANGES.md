@@ -32,6 +32,11 @@ Documentation:
 
 * Add [MAINTAINERS.md](MAINTAINERS.md) with `Making a release` section.
 
+Testing:
+
+* Update [AllenInstituteMockLIMS](https://github.com/KitwareMedical/AllenInstituteMockLIMS#getting-started)
+  adding _Getting Started_ section to `README.md`.
+
 ## Cell Locator 0.1.0 2020-08-26
 
 Features:
