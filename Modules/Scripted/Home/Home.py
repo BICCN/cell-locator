@@ -151,6 +151,19 @@ class Annotation(VTKObservationMixin):
         markup = json.load(f)
         markup = markup['markups'][0]
 
+        # Remove optional keys
+        del markup['display']
+        del markup['locked']
+        del markup['labelFormat']
+        for controlPoint in markup['controlPoints']:
+          del controlPoint['associatedNodeID']
+          del controlPoint['description']
+          del controlPoint['label']
+          del controlPoint['locked']
+          del controlPoint['positionStatus']
+          del controlPoint['selected']
+          del controlPoint['visibility']
+
     return {
       'markup': markup,
       'name': self.markup.GetName(),
@@ -165,13 +178,17 @@ class Annotation(VTKObservationMixin):
 
     with tempfile('json/annotation.json') as filename:
       with open(filename, 'w') as f:
+
+        # Initialize Slicer specific properties
+        for controlPoint in data['markup']['controlPoints']:
+          controlPoint['associatedNodeID'] = 'vtkMRMLScalarVolumeNode1';
+
         json.dump({
           '@schema': 'https://raw.githubusercontent.com/slicer/slicer/master/Modules/Loadable/Markups/Resources/Schema/markups-schema-v1.0.0.json#',
           'markups': [
             data['markup']
           ]
         }, f)
-
       markup = slicer.util.loadMarkups(filename)
 
     annotation = Annotation(markup)

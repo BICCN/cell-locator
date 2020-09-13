@@ -16,6 +16,10 @@ Features:
 
 * Display error dialog when LIMS connection failed to be established.
 
+File format:
+
+* Simplify annotation format removing unneeded keys. See [#150](https://github.com/BICCN/cell-locator/issues/150)
+
 Fixes:
 
 * Drawing a second polygon results in an empty json file.  See [#108](https://github.com/BICCN/cell-locator/issues/108)
