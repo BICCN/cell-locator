@@ -12,7 +12,9 @@ Features:
 * Save and load annotations by name
   * Double-click annotation to rename
 
-* Display interaction handles allowing to rotate or translate current annotation. See [#141](https://github.com/BICCN/cell-locator/issues/141) and [#118](https://github.com/BICCN/cell-locator/issues/118) 
+* Display interaction handles allowing to rotate or translate current annotation. See [#141](https://github.com/BICCN/cell-locator/issues/141) and [#118](https://github.com/BICCN/cell-locator/issues/118)
+
+* Display error dialog when LIMS connection failed to be established.
 
 Fixes:
 

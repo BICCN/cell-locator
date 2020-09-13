@@ -658,7 +658,14 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       'specimen_id': specimenID
     }
 
-    res = requests.get(url, params=query)
+    try:
+      res = requests.get(url, params=query)
+    except requests.exceptions.ConnectionError as exc:
+      logging.error(exc)
+      slicer.util.errorDisplay(
+        'Failed to load annotations for LIMS specimen %s. '
+        'Error: Failed to establish LIMS connection at %s' % (specimenID, HomeLogic.limsBaseURL()))
+      return
 
     if res.status_code == 200:
       annotations = AnnotationManager.fromDict(res.json()['data'])
@@ -700,7 +707,14 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       'data': data
     }
 
-    res = requests.post(url, json=body)
+    try:
+      res = requests.post(url, json=body)
+    except requests.exceptions.ConnectionError as exc:
+      logging.error(exc)
+      slicer.util.errorDisplay(
+        'Failed to save annotations for LIMS specimen %s. '
+        'Error: Failed to establish LIMS connection at %s' % (specimenID, HomeLogic.limsBaseURL()))
+      return
 
     if res.status_code == 200:
       self.annotationStored()
