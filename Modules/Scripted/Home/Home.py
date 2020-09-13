@@ -179,7 +179,12 @@ class Annotation(VTKObservationMixin):
     annotation.representationType = data['representationType']
     annotation.thickness = data['thickness']
 
-    annotation.markup.SetName(data['name'])
+    if 'name' in data:
+      annotationName = data['name']
+    else:
+      annotationName = 'Annotation'
+      logging.warning("Annotation data is missing the 'name' key. Defaulting to '%s'." %  annotationName)
+    annotation.markup.SetName(annotationName)
 
     annotation.updateModel()
 

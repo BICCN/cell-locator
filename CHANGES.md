@@ -24,6 +24,7 @@ Fixes:
 * Initialize annotation base name to `Annotation` instead of `MarkupsClosedCurve`.
 * Ensure only current annotation can be updated when `annotate` or `place` mode is activated.
 * Hide irrelevant annotation control point right click menu entries.
+* Handle annotation payload with missing `data` key.
 
 Documentation:
 
