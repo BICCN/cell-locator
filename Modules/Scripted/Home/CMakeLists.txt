@@ -2,12 +2,7 @@
 set(MODULE_NAME Home)
 
 #-----------------------------------------------------------------------------
-set(annotation_resolution 25) # Possible values are 25 or 50
-configure_file(
-  ${MODULE_NAME}Lib/CellLocatorConfig.py.in
-  ${CMAKE_CURRENT_BINARY_DIR}/${MODULE_NAME}Lib/CellLocatorConfig.py
-  @ONLY
-  )
+set(annotation_resolution 25) # Possible values are 25 or 50 (Used in CellLocatorConfig.py)
 
 #-----------------------------------------------------------------------------
 set(MODULE_PYTHON_SCRIPTS
@@ -86,6 +81,12 @@ endfunction()
 
 set(CellLocator_DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/${Slicer_QTSCRIPTEDMODULES_LIB_DIR}/CellLocatorData)
 
+#-----------------------------------------------------------------------------
+# Download CCF average template
+
+message(STATUS "--------------------------")
+message(STATUS "Downloading CCF data files [resolution: ${annotation_resolution}]")
+
 set(average_template_file "${CellLocator_DOWNLOAD_DIR}/average_template_${annotation_resolution}.nrrd")
 set(annotation_file "${CellLocator_DOWNLOAD_DIR}/annotation_${annotation_resolution}.nrrd")
 
@@ -112,7 +113,62 @@ else()
 endif()
 
 #-----------------------------------------------------------------------------
-# Download Ontology
+# Download MNI average template
+
+message(STATUS "--------------------------")
+message(STATUS "Downloading MNI data files")
+
+set(mni_average_template_filename "mni_icbm152_t1_tal_nlin_sym_09b_hires.nii") # Used in CellLocatorConfig.py
+
+set(mni_average_template_extract_directory ${CellLocator_DOWNLOAD_DIR}/mni_icbm152_nlin_sym_09b_nifti)
+
+set(mni_average_template_file "${CellLocator_DOWNLOAD_DIR}/${mni_average_template_filename}")
+set(mni_average_template_file_sha256 "b2ca5ca7c94471f0ca77b64485c0d9655737b9029ec19ef7486ab89f1ce4bf79")
+
+set(mni_average_template_archive_file "${CellLocator_DOWNLOAD_DIR}/mni_icbm152_nlin_sym_09b_nifti.zip")
+set(mni_average_template_archive_file_sha256 "acce3b85039176aaf7de2c3169272551ddfcae5d9a4e5ce642025b795f9f1d20")
+
+CellLocator_check_datafile(${mni_average_template_file} ${mni_average_template_file_sha256} result)
+if(result MATCHES "^(nonexistent|expired)$")
+  CellLocator_download_datafile(${mni_average_template_archive_file}
+    "http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/mni_icbm152_nlin_sym_09b_nifti.zip"
+    "${mni_average_template_archive_file_sha256}"
+    )
+  # Extract archive
+  get_filename_component(filename ${mni_average_template_archive_file} NAME)
+  message(STATUS "Extracting ${filename}")
+  execute_process(
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${mni_average_template_extract_directory}
+    )
+  execute_process(
+    COMMAND ${CMAKE_COMMAND} -E tar xfz ${mni_average_template_archive_file}
+    WORKING_DIRECTORY ${mni_average_template_extract_directory}
+    RESULT_VARIABLE rv
+    )
+  if(rv EQUAL 0)
+    message(STATUS "Extracting ${filename} - done")
+
+    # Copy file
+    message(STATUS "Copying ${filename}")
+    file(
+      COPY ${mni_average_template_extract_directory}/mni_icbm152_nlin_sym_09b/${mni_average_template_filename}
+      DESTINATION ${CellLocator_DOWNLOAD_DIR}
+      )
+    message(STATUS "Copying ${filename} - done")
+
+    CellLocator_check_datafile(${mni_average_template_file} ${mni_average_template_file_sha256} result)
+    if(result MATCHES "^(nonexistent|expired)$")
+      message(FATAL_ERROR "error: Problem downloading ${mni_average_template_file}")
+    endif()
+  else()
+    message(FATAL_ERROR "Extracting ${filename} - failed")
+  endif()
+endif()
+
+message(STATUS "--------------------------")
+
+#-----------------------------------------------------------------------------
+# Download CCF Ontology
 
 set(script "${CMAKE_BINARY_DIR}/ontology_download.cmake")
 set(ontology_download_url "http://api.brain-map.org/api/v2/data/Structure/query.json?criteria=%5Bgraph_id$eq1%5D&num_rows=2000")
@@ -198,12 +254,15 @@ add_custom_target(CellLocatorGenerateContiguousAnnotation ALL
   )
 
 CellLocator_install_datafiles(
+  # CCF
   ${average_template_file}
   ${annotation_contiguous_file}
   ${color_table}
   ${annotation_color_allen2slicer_mapping_file}
   ${annotation_color_slicer2allen_mapping_file}
   ${ontology_file}
+  # MNI
+  ${mni_average_template_file}
   )
 
 #-----------------------------------------------------------------------------
@@ -261,6 +320,13 @@ add_custom_target(CellLocatorGenerateLayerColorTable ALL
 CellLocator_install_datafiles(
   ${layer_color_table}
   ${layer_ontology_file}
+  )
+
+#-----------------------------------------------------------------------------
+configure_file(
+  ${MODULE_NAME}Lib/CellLocatorConfig.py.in
+  ${CMAKE_CURRENT_BINARY_DIR}/${MODULE_NAME}Lib/CellLocatorConfig.py
+  @ONLY
   )
 
 #-----------------------------------------------------------------------------
