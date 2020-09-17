@@ -31,6 +31,7 @@ Fixes:
 * Ensure only current annotation can be updated when `annotate` or `place` mode is activated.
 * Hide irrelevant annotation control point right click menu entries.
 * Handle annotation payload with missing `data` key.
+* Fix annotation scaling. See [#156](https://github.com/BICCN/cell-locator/issues/156)
 
 Documentation:
 
