@@ -36,24 +36,40 @@ slicerMacroBuildScriptedModule(
 #-----------------------------------------------------------------------------
 # Convenience function for downloading and installing data files
 
-function(CellLocator_download_datafile dest_file url expected_sha256)
+function(CellLocator_check_datafile dest_file expected_sha256 output_var)
   get_filename_component(filename ${dest_file} NAME)
   message(STATUS "Checking ${filename}")
+
   if(NOT EXISTS ${dest_file})
     message(STATUS "Checking ${filename} - nonexistent")
+    set(${output_var} "nonexistent" PARENT_SCOPE)
+    return()
+  endif()
+
+  file(SHA256 ${dest_file} current_hash)
+  if(NOT ${current_hash} STREQUAL ${expected_sha256})
+    message(STATUS "Checking ${filename} - expired")
+    set(${output_var} "expired" PARENT_SCOPE)
+    return()
+  endif()
+
+  message(STATUS "Checking ${filename} - up-to-date")
+  set(${output_var} "ok" PARENT_SCOPE)
+endfunction()
+
+function(CellLocator_download_datafile dest_file url expected_sha256)
+  get_filename_component(filename ${dest_file} NAME)
+
+  CellLocator_check_datafile(${dest_file} ${expected_sha256} result)
+
+  if(result MATCHES "^(nonexistent|expired)$")
     message(STATUS "Downloading ${filename}")
     file(DOWNLOAD ${url} ${dest_file} EXPECTED_HASH SHA256=${expected_sha256})
     message(STATUS "Downloading ${filename} - done")
+  elseif(result STREQUAL "ok")
+    return()
   else()
-    file(SHA256 ${dest_file} current_hash)
-    if(NOT ${current_hash} STREQUAL ${expected_sha256})
-      message(STATUS "Checking ${filename} - expired")
-      message(STATUS "Downloading ${filename}")
-      file(DOWNLOAD ${url} ${dest_file} EXPECTED_HASH SHA256=${expected_sha256})
-      message(STATUS "Downloading ${filename} - done")
-    else()
-      message(STATUS "Checking ${filename} - up-to-date")
-    endif()
+    message(FATAL_ERROR "Unknown result value: ${result}")
   endif()
 endfunction()
 
