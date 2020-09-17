@@ -41,15 +41,16 @@ or loading a annotation._
 | Trackpad                        | two-fingers & vertical drag      | Shift+Left-Click & drag   |
 
 
-#### Annotation (available in Edit mode)
+#### Annotation (available in Edit and Place modes)
 
-| Key or mouse operation                  | Effect                                                  |
-|-----------------------------------------|---------------------------------------------------------|
-| Left-Click                              | Add annotation point                                    |
-| Delete                                  | Delete currently selected annotation point              |
-| Ctrl + Left-Click on annotation line    | Insert annotation point                                 |
-| Left-Click near annotation line & drag  | Translate annotation                                    |
-| Right-Click near annotation line & drag | Scale annotation                                        |
+| Key or mouse operation                        | Effect                                         |
+|-----------------------------------------------|------------------------------------------------|
+| `Left-Click` on annotation line               | Add annotation point                           |
+| `Right-Click` on point then `Delete`          | Delete currently selected annotation point     |
+| `Ctrl + Left-Click` on annotation line        | Insert annotation point                        |
+| `Alt + Left-Click` on annotation line & drag  | Rotate annotation                              |
+| `Alt + Right-Click` on annotation line & drag | Scale annotation                               |
+| `Middle-Click` on annotation line & drag      | Translate annotation                           |
 
 
 

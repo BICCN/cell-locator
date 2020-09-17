@@ -36,6 +36,7 @@ Fixes:
 Documentation:
 
 * Add [MAINTAINERS.md](MAINTAINERS.md) with `Making a release` section.
+* Update `Keyboard Accelerators and Mouse Operations / Annotation` section in `README.md`.
 
 Testing:
 
