@@ -1502,7 +1502,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.setInteractionState(old)
 
   def onOntologyChanged(self, ontology):
-    annotation = slicer.mrmlScene.GetFirstNodeByName("annotation_%s_contiguous" % Config.CCF_ANNOTATION_RESOLUTION)
+    annotation = slicer.mrmlScene.GetFirstNodeByName(
+      os.path.splitext(os.path.basename(HomeLogic.annotationFilePath()))[0])
     if ontology == "Structure":
       colorNodeID = slicer.mrmlScene.GetFirstNodeByName("allen").GetID()
     elif ontology == "Layer":
@@ -1552,6 +1553,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
 class HomeLogic(object):
 
+  CCF_ATLAS = 'ccf'
   def __init__(self):
     self.AllenStructurePaths = {}
     self.AllenLayerStructurePaths = {}
@@ -1587,44 +1589,48 @@ class HomeLogic(object):
     return os.path.join(os.path.dirname(slicer.util.modulePath('Home')), 'CellLocatorData')
 
   @staticmethod
-  def averageTemplateFilePath():
+  def averageTemplateFilePath(atlas_type=CCF_ATLAS):
     """Average template file path"""
-    return os.path.join(HomeLogic.dataPath(), 'average_template_%s.nrrd' % Config.CCF_ANNOTATION_RESOLUTION)
+    return os.path.join(HomeLogic.dataPath(), {
+      HomeLogic.CCF_ATLAS: 'ccf_average_template_%s.nrrd' % Config.CCF_ANNOTATION_RESOLUTION,
+    }[atlas_type])
 
   @staticmethod
-  def annotationFilePath():
+  def annotationFilePath(atlas_type=CCF_ATLAS):
     """Annotation file path"""
-    return os.path.join(HomeLogic.dataPath(), 'annotation_%s_contiguous.nrrd' % Config.CCF_ANNOTATION_RESOLUTION)
+    return os.path.join(HomeLogic.dataPath(), {
+      HomeLogic.CCF_ATLAS: 'ccf_annotation_%s_contiguous.nrrd' % Config.CCF_ANNOTATION_RESOLUTION,
+    }[atlas_type])
 
   @staticmethod
-  def colorTableFilePath():
+  def colorTableFilePath(atlas_type=CCF_ATLAS):
     """Color table for structures"""
-    return os.path.join(HomeLogic.dataPath(), 'annotation_color_table.txt')
+    return os.path.join(HomeLogic.dataPath(), '%s_annotation_color_table.txt' % atlas_type)
 
   @staticmethod
-  def layerColorTableFilePath():
+  def layerColorTableFilePath(atlas_type=CCF_ATLAS):
     """Color table for layers"""
-    return os.path.join(HomeLogic.dataPath(), 'annotation_layer_color_table.txt')
+    return os.path.join(HomeLogic.dataPath(), '%s_annotation_layer_color_table.txt' % atlas_type)
 
   @staticmethod
-  def ontologyFilePath():
+  def ontologyFilePath(atlas_type=CCF_ATLAS):
     """Ontology for structures"""
-    return os.path.join(HomeLogic.dataPath(), 'ontology-formatted.json')
+    return os.path.join(HomeLogic.dataPath(), '%s-ontology-formatted.json' % atlas_type)
 
   @staticmethod
-  def layerOntologyFilePath():
+  def layerOntologyFilePath(atlas_type=CCF_ATLAS):
     """Ontology for layers"""
-    return os.path.join(HomeLogic.dataPath(), 'layer-ontology-formatted.json')
+    return os.path.join(HomeLogic.dataPath(), '%s-layer-ontology-formatted.json' % atlas_type)
 
   @staticmethod
-  def slicerToAllenMappingFilePath():
+  def slicerToAllenMappingFilePath(atlas_type=CCF_ATLAS):
     """Mapping of Slicer color labels to Allen color labels"""
-    return os.path.join(HomeLogic.dataPath(), 'annotation_color_slicer2allen_mapping.json')
+    return os.path.join(HomeLogic.dataPath(), '%s_annotation_color_slicer2allen_mapping.json' % atlas_type)
 
   @staticmethod
-  def allenToSlicerMappingFilePath():
+  def allenToSlicerMappingFilePath(atlas_type=CCF_ATLAS):
     """Mapping of Allen color labels to Slicer color labels"""
-    return os.path.join(HomeLogic.dataPath(), 'annotation_color_allen2slicer_mapping.json')
+    return os.path.join(HomeLogic.dataPath(), '%s_annotation_color_allen2slicer_mapping.json' % atlas_type)
 
   def loadData(self):
     """Load average template, annotation and associated color tables
