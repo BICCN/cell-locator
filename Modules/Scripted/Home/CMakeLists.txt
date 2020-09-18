@@ -87,8 +87,8 @@ set(CellLocator_DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/${Slicer_QTSCRIPTEDMODULES_LIB_
 message(STATUS "--------------------------")
 message(STATUS "Downloading CCF data files [resolution: ${ccf_annotation_resolution}]")
 
-set(ccf_average_template_file "${CellLocator_DOWNLOAD_DIR}/average_template_${ccf_annotation_resolution}.nrrd")
-set(ccf_annotation_file "${CellLocator_DOWNLOAD_DIR}/annotation_${ccf_annotation_resolution}.nrrd")
+set(ccf_average_template_file "${CellLocator_DOWNLOAD_DIR}/ccf_average_template_${ccf_annotation_resolution}.nrrd")
+set(ccf_annotation_file "${CellLocator_DOWNLOAD_DIR}/ccf_annotation_${ccf_annotation_resolution}.nrrd")
 
 if(ccf_annotation_resolution STREQUAL "50")
   CellLocator_download_datafile(${ccf_average_template_file}
@@ -204,7 +204,7 @@ endfunction()
 #-----------------------------------------------------------------------------
 # Download Ontology
 
-set(ccf_ontology_original_file "${CellLocator_DOWNLOAD_DIR}/ontology-original.json")
+set(ccf_ontology_original_file "${CellLocator_DOWNLOAD_DIR}/ccf-ontology-original.json")
 CellLocator_download_ontology("ccf"
   "http://api.brain-map.org/api/v2/data/Structure/query.json?criteria=%5Bgraph_id$eq1%5D&num_rows=2000"
   ${ccf_ontology_original_file}
@@ -213,23 +213,24 @@ CellLocator_download_ontology("ccf"
 #-----------------------------------------------------------------------------
 # Format ontology file (filename hardcoded in Home.py)
 
-set(ccf_ontology_file "${CellLocator_DOWNLOAD_DIR}/ontology-formatted.json")
+set(ccf_ontology_file "${CellLocator_DOWNLOAD_DIR}/ccf-ontology-formatted.json")
 CellLocator_prettify_ontology("ccf"
   ${ccf_ontology_original_file}
   ${ccf_ontology_file}
   )
 
 #-----------------------------------------------------------------------------
-# Generate contiguous annotation and color table
+# Generate CCF contiguous annotation and color tables
+
 set(script ${CellLocator_SOURCE_DIR}/Scripts/GenerateContiguousAnnotation.py)
 
 # Outputs: These filenames are hardcoded in Home.py
-set(ccf_annotation_contiguous_file "${CellLocator_DOWNLOAD_DIR}/annotation_${ccf_annotation_resolution}_contiguous.nrrd")
-set(ccf_color_table "${CellLocator_DOWNLOAD_DIR}/annotation_color_table.txt")
+set(ccf_annotation_contiguous_file "${CellLocator_DOWNLOAD_DIR}/ccf_annotation_${ccf_annotation_resolution}_contiguous.nrrd")
+set(ccf_color_table "${CellLocator_DOWNLOAD_DIR}/ccf_annotation_color_table.txt")
 
 # Outputs: These filenames are hardcoded in Home.py
-set(ccf_annotation_color_allen2slicer_mapping_file "${CellLocator_DOWNLOAD_DIR}/annotation_color_allen2slicer_mapping.json")
-set(ccf_annotation_color_slicer2allen_mapping_file "${CellLocator_DOWNLOAD_DIR}/annotation_color_slicer2allen_mapping.json")
+set(ccf_annotation_color_allen2slicer_mapping_file "${CellLocator_DOWNLOAD_DIR}/ccf_annotation_color_allen2slicer_mapping.json")
+set(ccf_annotation_color_slicer2allen_mapping_file "${CellLocator_DOWNLOAD_DIR}/ccf_annotation_color_slicer2allen_mapping.json")
 
 get_property(module_targets GLOBAL PROPERTY SLICER_MODULE_TARGETS)
 
@@ -258,10 +259,10 @@ add_custom_command(
     --no-main-window
     --no-splash
   WORKING_DIRECTORY ${CellLocator_DOWNLOAD_DIR}
-  COMMENT "Pre-processing structure ontology and annotation volume"
+  COMMENT "Pre-processing CCF structure ontology and annotation volume"
   )
 
-add_custom_target(CellLocatorGenerateContiguousAnnotation ALL
+add_custom_target(CellLocatorGenerateCCFContiguousAnnotation ALL
   DEPENDS
     ${ccf_annotation_contiguous_file}
     ${ccf_color_table}
@@ -282,7 +283,7 @@ CellLocator_install_datafiles(
   )
 
 #-----------------------------------------------------------------------------
-# Prepare layer ontology file
+# Prepare CCF layer ontology file
 
 # File generated doing:
 #
@@ -290,20 +291,20 @@ CellLocator_install_datafiles(
 #  python /path/to/Scripts/GenerateLayerOntology.py --output /path/to/layer-ontology-formatted.json
 #
 
-set(ccf_layer_ontology_file "${CellLocator_DOWNLOAD_DIR}/layer-ontology-formatted.json")
+set(ccf_layer_ontology_file "${CellLocator_DOWNLOAD_DIR}/ccf-layer-ontology-formatted.json")
 
 configure_file(
-  ${CellLocator_SOURCE_DIR}/Scripts/data/layer-ontology-formatted.json
+  ${CellLocator_SOURCE_DIR}/Scripts/data/ccf-layer-ontology-formatted.json
   ${ccf_layer_ontology_file}
   COPYONLY
   )
 
 #-----------------------------------------------------------------------------
-# Generate layer color table
+# Generate CCF layer color table
 set(script ${CellLocator_SOURCE_DIR}/Scripts/CreateColorTable.py)
 
 # Outputs: These filenames are hardcoded in Home.py
-set(ccf_layer_color_table "${CellLocator_DOWNLOAD_DIR}/annotation_layer_color_table.txt")
+set(ccf_layer_color_table "${CellLocator_DOWNLOAD_DIR}/ccf_annotation_layer_color_table.txt")
 
 add_custom_command(
   DEPENDS
