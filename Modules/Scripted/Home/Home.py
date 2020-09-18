@@ -1586,32 +1586,48 @@ class HomeLogic(object):
   def dataPath():
     return os.path.join(os.path.dirname(slicer.util.modulePath('Home')), 'CellLocatorData')
 
-  def averageTemplateFilePath(self):
-    return os.path.join(self.dataPath(), 'average_template_%s.nrrd' % Config.ANNOTATION_RESOLUTION)
+  @staticmethod
+  def averageTemplateFilePath():
+    """Average template file path"""
+    return os.path.join(HomeLogic.dataPath(), 'average_template_%s.nrrd' % Config.ANNOTATION_RESOLUTION)
 
-  def annotationFilePath(self):
-    return os.path.join(self.dataPath(), 'annotation_%s_contiguous.nrrd' % Config.ANNOTATION_RESOLUTION)
+  @staticmethod
+  def annotationFilePath():
+    """Annotation file path"""
+    return os.path.join(HomeLogic.dataPath(), 'annotation_%s_contiguous.nrrd' % Config.ANNOTATION_RESOLUTION)
 
-  def colorTableFilePath(self):
-    return os.path.join(self.dataPath(), 'annotation_color_table.txt')
+  @staticmethod
+  def colorTableFilePath():
+    """Color table for structures"""
+    return os.path.join(HomeLogic.dataPath(), 'annotation_color_table.txt')
 
-  def layerColorTableFilePath(self):
-    return os.path.join(self.dataPath(), 'annotation_layer_color_table.txt')
+  @staticmethod
+  def layerColorTableFilePath():
+    """Color table for layers"""
+    return os.path.join(HomeLogic.dataPath(), 'annotation_layer_color_table.txt')
 
-  def ontologyFilePath(self):
-    return os.path.join(self.dataPath(), 'ontology-formatted.json')
+  @staticmethod
+  def ontologyFilePath():
+    """Ontology for structures"""
+    return os.path.join(HomeLogic.dataPath(), 'ontology-formatted.json')
 
-  def layerOntologyFilePath(self):
-    return os.path.join(self.dataPath(), 'layer-ontology-formatted.json')
+  @staticmethod
+  def layerOntologyFilePath():
+    """Ontology for layers"""
+    return os.path.join(HomeLogic.dataPath(), 'layer-ontology-formatted.json')
 
-  def slicerToAllenMappingFilePath(self):
-    return os.path.join(self.dataPath(), 'annotation_color_slicer2allen_mapping.json')
+  @staticmethod
+  def slicerToAllenMappingFilePath():
+    """Mapping of Slicer color labels to Allen color labels"""
+    return os.path.join(HomeLogic.dataPath(), 'annotation_color_slicer2allen_mapping.json')
 
-  def allenToSlicerMappingFilePath(self):
-    return os.path.join(self.dataPath(), 'annotation_color_allen2slicer_mapping.json')
+  @staticmethod
+  def allenToSlicerMappingFilePath():
+    """Mapping of Allen color labels to Slicer color labels"""
+    return os.path.join(HomeLogic.dataPath(), 'annotation_color_allen2slicer_mapping.json')
 
   def loadData(self):
-    """Load average template, annotation and associated color table.
+    """Load average template, annotation and associated color tables
     """
 
     # Load template
