@@ -10,7 +10,8 @@ from CreateColorTable import main as create_color_table
 
 def generate_contiguous_annotation(
         annotation_input_filepath, ontology_input_filepath,
-        annotation_output_filepath, colortable_output_filepath):
+        annotation_output_filepath, colortable_output_filepath,
+        annotation_color_a2s_mapping_output_filepath, annotation_color_s2a_mapping_output_filepath):
   """Pre-process structure ontology and annotation volume.
 
   This function takes care of the following steps:
@@ -29,9 +30,6 @@ def generate_contiguous_annotation(
   data_dir = os.path.dirname(annotation_output_filepath)
   print("data_dir: %s" % data_dir)
 
-  s2a_mapping_output_filepath = data_dir + "/annotation_color_slicer2allen_mapping.json"
-  a2s_mapping_output_filepath = data_dir + "/annotation_color_allen2slicer_mapping.json"
-
   node = slicer.util.loadLabelVolume(annotation_input_filepath, returnNode=True)[1]
 
   data = slicer.util.arrayFromVolume(node)
@@ -39,11 +37,11 @@ def generate_contiguous_annotation(
   labels = np.unique(df)
 
   a2s_mapping = {str(value): str(idx) for idx, value in enumerate(labels)}
-  with open(a2s_mapping_output_filepath, 'w') as fileContents:
+  with open(annotation_color_a2s_mapping_output_filepath, 'w') as fileContents:
     fileContents.write(json.dumps(a2s_mapping, sort_keys=True, indent=4))
 
   s2a_mapping = {str(idx): str(value) for idx, value in enumerate(labels)}
-  with open(s2a_mapping_output_filepath, 'w') as fileContents:
+  with open(annotation_color_s2a_mapping_output_filepath, 'w') as fileContents:
     fileContents.write(json.dumps(s2a_mapping, sort_keys=True, indent=4))
 
   # Update annotation data
@@ -61,7 +59,7 @@ def generate_contiguous_annotation(
   # Generate color table
   create_color_table([
     "--input", ontology_input_filepath,
-    "--allen2slicer", a2s_mapping_output_filepath,
+    "--allen2slicer", annotation_color_a2s_mapping_output_filepath,
     "--output", colortable_output_filepath,
   ])
 
@@ -73,7 +71,8 @@ def generate_contiguous_annotation(
 
 def main(argv):
   parser = argparse.ArgumentParser(
-    description='Create a color table from the brain map json.'
+    description='Create contiguous annotation label map, color table and color mapping files'
+                'from the original annotation label map and brain map json ontology.'
     )
   parser.add_argument(
     '--annotation-input',
@@ -99,6 +98,18 @@ def main(argv):
     required=True,
     help='Path to the output Slicer color table file'
     )
+  parser.add_argument(
+    '--annotation-color-allen2slicer-mapping-output',
+    metavar='/path/to/annotation_color_allen2slicer_mapping.json',
+    required=True,
+    help='Path to the output Allen to Slicer annotation color file'
+  )
+  parser.add_argument(
+    '--annotation-color-slicer2allen-mapping-output',
+    metavar='/path/to/annotation_color_slicer2allen_mapping.json',
+    required=True,
+    help='Path to the output Slicer to Allen annotation color file'
+  )
 
   args = parser.parse_args(argv)
 
@@ -109,7 +120,9 @@ def main(argv):
     _path(args.annotation_input),
     _path(args.ontology_input),
     _path(args.annotation_output),
-    _path(args.colortable_output)
+    _path(args.colortable_output),
+    _path(args.annotation_color_allen2slicer_mapping_output),
+    _path(args.annotation_color_slicer2allen_mapping_output)
     )
 
 

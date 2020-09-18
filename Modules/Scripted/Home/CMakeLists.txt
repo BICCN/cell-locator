@@ -227,7 +227,7 @@ set(script ${CellLocator_SOURCE_DIR}/Scripts/GenerateContiguousAnnotation.py)
 set(ccf_annotation_contiguous_file "${CellLocator_DOWNLOAD_DIR}/annotation_${ccf_annotation_resolution}_contiguous.nrrd")
 set(ccf_color_table "${CellLocator_DOWNLOAD_DIR}/annotation_color_table.txt")
 
-# Outputs: These filenames are hardcoded in Home.py and GenerateContiguousAnnotation.py
+# Outputs: These filenames are hardcoded in Home.py
 set(ccf_annotation_color_allen2slicer_mapping_file "${CellLocator_DOWNLOAD_DIR}/annotation_color_allen2slicer_mapping.json")
 set(ccf_annotation_color_slicer2allen_mapping_file "${CellLocator_DOWNLOAD_DIR}/annotation_color_slicer2allen_mapping.json")
 
@@ -251,6 +251,8 @@ add_custom_command(
     --ontology-input ${ccf_ontology_file}
     --annotation-output ${ccf_annotation_contiguous_file}
     --colortable-output ${ccf_color_table}
+    --annotation-color-allen2slicer-mapping-output ${ccf_annotation_color_allen2slicer_mapping_file}
+    --annotation-color-slicer2allen-mapping-output ${ccf_annotation_color_slicer2allen_mapping_file}
     --exit-after-startup
     --modules-to-ignore Home
     --no-main-window
