@@ -1,4 +1,4 @@
 
-ANNOTATION_RESOLUTION = @annotation_resolution@
+CCF_ANNOTATION_RESOLUTION = @ccf_annotation_resolution@
 
 MNI_AVERAGE_TEMPLATE_FILENAME = "@mni_average_template_filename@"

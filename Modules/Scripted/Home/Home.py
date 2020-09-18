@@ -1502,7 +1502,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.setInteractionState(old)
 
   def onOntologyChanged(self, ontology):
-    annotation = slicer.mrmlScene.GetFirstNodeByName("annotation_%s_contiguous" % Config.ANNOTATION_RESOLUTION)
+    annotation = slicer.mrmlScene.GetFirstNodeByName("annotation_%s_contiguous" % Config.CCF_ANNOTATION_RESOLUTION)
     if ontology == "Structure":
       colorNodeID = slicer.mrmlScene.GetFirstNodeByName("allen").GetID()
     elif ontology == "Layer":
@@ -1589,12 +1589,12 @@ class HomeLogic(object):
   @staticmethod
   def averageTemplateFilePath():
     """Average template file path"""
-    return os.path.join(HomeLogic.dataPath(), 'average_template_%s.nrrd' % Config.ANNOTATION_RESOLUTION)
+    return os.path.join(HomeLogic.dataPath(), 'average_template_%s.nrrd' % Config.CCF_ANNOTATION_RESOLUTION)
 
   @staticmethod
   def annotationFilePath():
     """Annotation file path"""
-    return os.path.join(HomeLogic.dataPath(), 'annotation_%s_contiguous.nrrd' % Config.ANNOTATION_RESOLUTION)
+    return os.path.join(HomeLogic.dataPath(), 'annotation_%s_contiguous.nrrd' % Config.CCF_ANNOTATION_RESOLUTION)
 
   @staticmethod
   def colorTableFilePath():
