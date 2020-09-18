@@ -1160,7 +1160,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     # Configure UI
     self.get('AdjustViewPushButton').enabled = False
 
-    averageTemplate, annotation = self.logic.loadData()
+    averageTemplate, annotation = self.logic.loadData(HomeLogic.atlasType())
 
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
 
@@ -1169,6 +1169,15 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     initialSpacing = sliceLogic.GetLowestVolumeSliceSpacing()
     sliceNode.SetPrescribedSliceSpacing(initialSpacing)
     self.DefaultStepSize = initialSpacing[2]
+
+    # Ontology
+    ontologyComboBox = self.get('OntologyComboBox')
+    with SignalBlocker(ontologyComboBox):
+      ontologyComboBox.clear()
+      if HomeLogic.atlasType() == HomeLogic.CCF_ATLAS:
+        ontologyComboBox.addItems(['Structure', 'Layer', 'None'])
+      else:
+        ontologyComboBox.addItems(['Structure', 'None'])
 
     # Configure slice view
     sliceNode.SetSliceSpacingModeToPrescribed()
@@ -1503,7 +1512,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
   def onOntologyChanged(self, ontology):
     annotation = slicer.mrmlScene.GetFirstNodeByName(
-      os.path.splitext(os.path.basename(HomeLogic.annotationFilePath()))[0])
+      os.path.splitext(os.path.basename(HomeLogic.annotationFilePath(HomeLogic.atlasType())))[0])
     if ontology == "Structure":
       colorNodeID = slicer.mrmlScene.GetFirstNodeByName("allen").GetID()
     elif ontology == "Layer":
@@ -1554,6 +1563,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 class HomeLogic(object):
 
   CCF_ATLAS = 'ccf'
+  MNI_ATLAS = 'mni'
+
   def __init__(self):
     self.AllenStructurePaths = {}
     self.AllenLayerStructurePaths = {}
@@ -1593,6 +1604,7 @@ class HomeLogic(object):
     """Average template file path"""
     return os.path.join(HomeLogic.dataPath(), {
       HomeLogic.CCF_ATLAS: 'ccf_average_template_%s.nrrd' % Config.CCF_ANNOTATION_RESOLUTION,
+      HomeLogic.MNI_ATLAS: Config.MNI_AVERAGE_TEMPLATE_FILENAME
     }[atlas_type])
 
   @staticmethod
@@ -1600,6 +1612,7 @@ class HomeLogic(object):
     """Annotation file path"""
     return os.path.join(HomeLogic.dataPath(), {
       HomeLogic.CCF_ATLAS: 'ccf_annotation_%s_contiguous.nrrd' % Config.CCF_ANNOTATION_RESOLUTION,
+      HomeLogic.MNI_ATLAS: 'mni_annotation_contiguous.nrrd'
     }[atlas_type])
 
   @staticmethod
@@ -1632,15 +1645,15 @@ class HomeLogic(object):
     """Mapping of Allen color labels to Slicer color labels"""
     return os.path.join(HomeLogic.dataPath(), '%s_annotation_color_allen2slicer_mapping.json' % atlas_type)
 
-  def loadData(self):
-    """Load average template, annotation and associated color tables
+  def loadData(self, atlas_type):
+    """Load average template, annotation and associated color tables for the selected atlas
     """
 
     # Load template
     try:
-      averageTemplate = slicer.util.loadVolume(self.averageTemplateFilePath())
+      averageTemplate = slicer.util.loadVolume(self.averageTemplateFilePath(atlas_type=atlas_type))
     except RuntimeError:
-      logging.error('Average template [%s] does not exists' % self.averageTemplateFilePath())
+      logging.error('Average template [%s] does not exists' % self.averageTemplateFilePath(atlas_type=atlas_type))
 
     # Set the min/max window level
     scalarRange = averageTemplate.GetImageData().GetScalarRange()
@@ -1662,30 +1675,31 @@ class HomeLogic(object):
     # Load Allen color table
     colorLogic = slicer.modules.colors.logic()
     colorNodeID = None
-    if os.path.exists(self.colorTableFilePath()):
-      colorNode = colorLogic.LoadColorFile(self.colorTableFilePath(), "allen")
+    if os.path.exists(self.colorTableFilePath(atlas_type=atlas_type)):
+      colorNode = colorLogic.LoadColorFile(self.colorTableFilePath(atlas_type=atlas_type), "allen")
       colorNodeID = colorNode.GetID()
     else:
-      logging.error("Color table [%s] does not exist" % self.colorTableFilePath())
+      logging.error("Color table [%s] does not exist" % self.colorTableFilePath(atlas_type=atlas_type))
 
-    # Load Allen "layer" color table
-    if os.path.exists(self.layerColorTableFilePath()):
-      colorLogic.LoadColorFile(self.layerColorTableFilePath(), "allen_layer")
-    else:
-      logging.error("Color table [%s] does not exist" % self.layerColorTableFilePath())
+    # Load Allen "layer" color table (only available for the CCF atlas type)
+    if atlas_type == HomeLogic.CCF_ATLAS:
+      if os.path.exists(self.layerColorTableFilePath()):
+        colorLogic.LoadColorFile(self.layerColorTableFilePath(), "allen_layer")
+      else:
+        logging.error("Color table [%s] does not exist" % self.layerColorTableFilePath())
 
     # Load slicer2allen mapping
-    with open(self.slicerToAllenMappingFilePath()) as content:
+    with open(self.slicerToAllenMappingFilePath(atlas_type=atlas_type)) as content:
       mapping = json.load(content)
       self.SlicerToAllenMapping = {int(key): int(value) for (key, value) in mapping.items()}
 
     # Load allen2slicer mapping
-    with open(self.allenToSlicerMappingFilePath()) as content:
+    with open(self.allenToSlicerMappingFilePath(atlas_type=atlas_type)) as content:
       mapping = json.load(content)
       self.AllenToSlicerMapping = {int(key): int(value) for (key, value) in mapping.items()}
 
     # Load ontology
-    with open(self.ontologyFilePath()) as content:
+    with open(self.ontologyFilePath(atlas_type=atlas_type)) as content:
       msg = json.load(content)["msg"]
 
     allenStructureNames = {}
@@ -1697,23 +1711,24 @@ class HomeLogic(object):
       self.AllenStructurePaths[structure["id"]] = " > ".join(
         [allenStructureNames[int(structure_id)] for structure_id in structure["structure_id_path"][1:-1].split("/")])
 
-    # Load "layer" ontology
-    with open(self.layerOntologyFilePath()) as content:
-      msg = json.load(content)["msg"]
+    # Load "layer" ontology (only available for the CCF atlas type)
+    if atlas_type == HomeLogic.CCF_ATLAS:
+      with open(self.layerOntologyFilePath()) as content:
+        msg = json.load(content)["msg"]
 
-    allenStructureNames = {997: "root"}
-    for structure in msg:
-      allenStructureNames[structure["id"]] = structure["acronym"]
+      allenStructureNames = {997: "root"}
+      for structure in msg:
+        allenStructureNames[structure["id"]] = structure["acronym"]
 
-    self.AllenLayerStructurePaths = {}
-    for structure in msg:
-      self.AllenLayerStructurePaths[structure["id"]] = " > ".join(
-        [allenStructureNames[int(structure_id)] for structure_id in structure["structure_id_path"][1:-1].split("/")])
+      self.AllenLayerStructurePaths = {}
+      for structure in msg:
+        self.AllenLayerStructurePaths[structure["id"]] = " > ".join(
+          [allenStructureNames[int(structure_id)] for structure_id in structure["structure_id_path"][1:-1].split("/")])
 
     # Load annotation
     try:
       annotation = slicer.util.loadVolume(
-        self.annotationFilePath(),
+        self.annotationFilePath(atlas_type=atlas_type),
         properties={
           "labelmap": "1",
           "colorNodeID": colorNodeID
@@ -1721,7 +1736,7 @@ class HomeLogic(object):
       )
     except RuntimeError:
       annotation = None
-      logging.error("Annotation file [%s] does not exist" % self.annotationFilePath())
+      logging.error("Annotation file [%s] does not exist" % self.annotationFilePath(atlas_type=atlas_type))
 
     return averageTemplate, annotation
 
@@ -1789,6 +1804,13 @@ class HomeLogic(object):
   @staticmethod
   def limsBaseURL():
     return slicer.app.commandOptions().limsBaseURL or 'http://localhost:5000/'
+
+  @staticmethod
+  def atlasType():
+    if not slicer.app.commandOptions().atlasType:
+      return HomeLogic.CCF_ATLAS
+    else:
+      return slicer.app.commandOptions().atlasType
 
 
 class HomeTest(ScriptedLoadableModuleTest):

@@ -165,6 +165,12 @@ if(result MATCHES "^(nonexistent|expired)$")
   endif()
 endif()
 
+set(mni_annotation_file "${CellLocator_DOWNLOAD_DIR}/mni_annotation.nii.gz")
+CellLocator_download_datafile(${mni_annotation_file}
+  "http://download.alleninstitute.org/informatics-archive/allen_human_reference_atlas_3d_2020/version_1/annotation.nii.gz"
+  "be23763c15386f2f211105f1e8144a6887e7615571229090e209b1c78355d378"
+  )
+
 message(STATUS "--------------------------")
 
 #-----------------------------------------------------------------------------
@@ -210,6 +216,12 @@ CellLocator_download_ontology("ccf"
   ${ccf_ontology_original_file}
   )
 
+set(mni_ontology_original_file "${CellLocator_DOWNLOAD_DIR}/mni-ontology-original.json")
+CellLocator_download_ontology("mni"
+  "http://api.brain-map.org/api/v2/data/query.json?criteria=model::Structure,rma::criteria,%5Bgraph_id$eq16%5D,rma::options%5Border$eq'structures.graph_order'%5D%5Bnum_rows$eqall%5D"
+  ${mni_ontology_original_file}
+  )
+
 #-----------------------------------------------------------------------------
 # Format ontology file (filename hardcoded in Home.py)
 
@@ -217,6 +229,12 @@ set(ccf_ontology_file "${CellLocator_DOWNLOAD_DIR}/ccf-ontology-formatted.json")
 CellLocator_prettify_ontology("ccf"
   ${ccf_ontology_original_file}
   ${ccf_ontology_file}
+  )
+
+set(mni_ontology_file "${CellLocator_DOWNLOAD_DIR}/mni-ontology-formatted.json")
+CellLocator_prettify_ontology("mni"
+  ${mni_ontology_original_file}
+  ${mni_ontology_file}
   )
 
 #-----------------------------------------------------------------------------
@@ -271,15 +289,70 @@ add_custom_target(CellLocatorGenerateCCFContiguousAnnotation ALL
   )
 
 CellLocator_install_datafiles(
-  # CCF
   ${ccf_average_template_file}
   ${ccf_annotation_contiguous_file}
   ${ccf_color_table}
   ${ccf_annotation_color_allen2slicer_mapping_file}
   ${ccf_annotation_color_slicer2allen_mapping_file}
   ${ccf_ontology_file}
-  # MNI
+  )
+
+#-----------------------------------------------------------------------------
+# Generate MNI contiguous annotation and color tables
+
+set(script ${CellLocator_SOURCE_DIR}/Scripts/GenerateContiguousAnnotation.py)
+
+# Outputs: These filenames are hardcoded in Home.py
+set(mni_annotation_contiguous_file "${CellLocator_DOWNLOAD_DIR}/mni_annotation_contiguous.nrrd")
+set(mni_color_table "${CellLocator_DOWNLOAD_DIR}/mni_annotation_color_table.txt")
+
+# Outputs: These filenames are hardcoded in Home.py
+set(mni_annotation_color_allen2slicer_mapping_file "${CellLocator_DOWNLOAD_DIR}/mni_annotation_color_allen2slicer_mapping.json")
+set(mni_annotation_color_slicer2allen_mapping_file "${CellLocator_DOWNLOAD_DIR}/mni_annotation_color_slicer2allen_mapping.json")
+
+add_custom_command(
+  DEPENDS
+    ${mni_annotation_file}
+    ${mni_ontology_file}
+    ${script}
+    CellLocatorConfigureLauncher
+    ${module_targets}
+  OUTPUT
+    ${mni_annotation_contiguous_file}
+    ${mni_color_table}
+    ${mni_annotation_color_allen2slicer_mapping_file}
+    ${mni_annotation_color_slicer2allen_mapping_file}
+  COMMAND ${Slicer_LAUNCH_COMMAND} $<TARGET_FILE:CellLocatorApp>
+    --python-script ${script}
+    --annotation-input ${mni_annotation_file}
+    --ontology-input ${mni_ontology_file}
+    --annotation-output ${mni_annotation_contiguous_file}
+    --colortable-output ${mni_color_table}
+    --annotation-color-allen2slicer-mapping-output ${mni_annotation_color_allen2slicer_mapping_file}
+    --annotation-color-slicer2allen-mapping-output ${mni_annotation_color_slicer2allen_mapping_file}
+    --exit-after-startup
+    --modules-to-ignore Home
+    --no-main-window
+    --no-splash
+  WORKING_DIRECTORY ${CellLocator_DOWNLOAD_DIR}
+  COMMENT "Pre-processing MNI structure ontology and annotation volume"
+  )
+
+add_custom_target(CellLocatorGenerateMNIContiguousAnnotation ALL
+  DEPENDS
+    ${mni_annotation_contiguous_file}
+    ${mni_color_table}
+    ${mni_annotation_color_allen2slicer_mapping_file}
+    ${mni_annotation_color_slicer2allen_mapping_file}
+  )
+
+CellLocator_install_datafiles(
   ${mni_average_template_file}
+  ${mni_annotation_contiguous_file}
+  ${mni_color_table}
+  ${mni_annotation_color_allen2slicer_mapping_file}
+  ${mni_annotation_color_slicer2allen_mapping_file}
+  ${mni_ontology_file}
   )
 
 #-----------------------------------------------------------------------------

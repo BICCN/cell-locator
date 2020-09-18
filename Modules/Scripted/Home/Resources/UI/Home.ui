@@ -368,16 +368,9 @@
       </property>
       <item>
        <widget class="QComboBox" name="OntologyComboBox">
-        <item>
-         <property name="text">
-          <string>Structure</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Layer</string>
-         </property>
-        </item>
+        <property name="sizeAdjustPolicy">
+         <enum>QComboBox::AdjustToContents</enum>
+        </property>
         <item>
          <property name="text">
           <string>None</string>

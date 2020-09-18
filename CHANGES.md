@@ -16,6 +16,10 @@ Features:
 
 * Display error dialog when LIMS connection failed to be established.
 
+* Add support for loading MNI atlas. See [#99](https://github.com/BICCN/cell-locator/issues/99)
+  * Accept `--atlas-type` command line argument.
+  * Supported value for atlas type are `mni` and `ccf`.
+
 File format:
 
 * Simplify annotation format removing unneeded keys. See [#150](https://github.com/BICCN/cell-locator/issues/150)
