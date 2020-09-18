@@ -796,11 +796,12 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sliceLogic.GetLowestVolumeSliceBounds(bounds)
     spacingRange = bounds[5] - bounds[4]
     if spacingRange > 0:
-      self.get('StepSizeSliderWidget').minimum = 1
-      self.get('StepSizeSliderWidget').maximum = spacingRange / 10
+      stepSize = {'minimum': 0.1, 'maximum': spacingRange / 10}
     else:
-      self.get('StepSizeSliderWidget').minimum = 1
-      self.get('StepSizeSliderWidget').maximum = 100
+      stepSize = {'minimum': 0.1, 'maximum': 100}
+    with SignalBlocker(self.get('StepSizeSliderWidget')):
+      self.get('StepSizeSliderWidget').minimum = stepSize['minimum']
+      self.get('StepSizeSliderWidget').maximum = stepSize['maximum']
 
     if self.Annotations.current is None or self.Annotations.current.markup.GetNumberOfMarkups() == 0:
       sliceSpacing = sliceNode.GetPrescribedSliceSpacing()
