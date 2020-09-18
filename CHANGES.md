@@ -37,6 +37,7 @@ Fixes:
 * Hide irrelevant annotation control point right click menu entries.
 * Handle annotation payload with missing `data` key.
 * Fix annotation scaling. See [#156](https://github.com/BICCN/cell-locator/issues/156)
+* Spline polygons do not save, but also do not disappear in a session involving multiple files. See [#112](https://github.com/BICCN/cell-locator/issues/112)
 
 Documentation:
 
