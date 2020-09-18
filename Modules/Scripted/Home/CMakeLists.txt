@@ -168,41 +168,55 @@ endif()
 message(STATUS "--------------------------")
 
 #-----------------------------------------------------------------------------
-# Download CCF Ontology
+function(CellLocator_download_ontology atlas_name ontology_download_url ontology_original_file)
+  set(script "${CMAKE_BINARY_DIR}/${atlas_name}_ontology_download.cmake")
 
-set(script "${CMAKE_BINARY_DIR}/ontology_download.cmake")
-set(ccf_ontology_download_url "http://api.brain-map.org/api/v2/data/Structure/query.json?criteria=%5Bgraph_id$eq1%5D&num_rows=2000")
+  file(WRITE ${script} "
+  set(url \"${ontology_download_url}\")
+  set(dest_file \"${ontology_original_file}\")
+  get_filename_component(filename \${dest_file} NAME)
+  message(STATUS \"Downloading \${filename}\")
+  file(DOWNLOAD \${url} \${dest_file})
+  message(STATUS \"Downloading \${filename} - done\")
+  ")
+
+  add_custom_command(
+    OUTPUT
+      ${ontology_original_file}
+    COMMAND ${CMAKE_COMMAND} -P ${script}
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    COMMENT "Downloading ${atlas_name} ontology"
+    )
+endfunction()
+
+function(CellLocator_prettify_ontology atlas_name ontology_original_file ontology_file)
+  add_custom_command(
+    OUTPUT
+      ${ontology_file}
+    DEPENDS
+      ${ontology_original_file}
+    COMMAND ${PYTHON_EXECUTABLE} -m json.tool ${ontology_original_file} ${ontology_file}
+    WORKING_DIRECTORY ${CellLocator_BINARY_DIR}
+    COMMENT "Prettifying ${atlas_name} ontology file"
+    )
+endfunction()
+
+#-----------------------------------------------------------------------------
+# Download Ontology
+
 set(ccf_ontology_original_file "${CellLocator_DOWNLOAD_DIR}/ontology-original.json")
-
-file(WRITE ${script} "
-set(url \"${ccf_ontology_download_url}\")
-set(dest_file \"${ccf_ontology_original_file}\")
-get_filename_component(filename \${dest_file} NAME)
-message(STATUS \"Downloading \${filename}\")
-file(DOWNLOAD \${url} \${dest_file})
-message(STATUS \"Downloading \${filename} - done\")
-")
-
-add_custom_command(
-  OUTPUT
-    ${ccf_ontology_original_file}
-  COMMAND ${CMAKE_COMMAND} -P ${script}
-  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-  COMMENT "Downloading ontology"
+CellLocator_download_ontology("ccf"
+  "http://api.brain-map.org/api/v2/data/Structure/query.json?criteria=%5Bgraph_id$eq1%5D&num_rows=2000"
+  ${ccf_ontology_original_file}
   )
 
 #-----------------------------------------------------------------------------
 # Format ontology file (filename hardcoded in Home.py)
-set(ccf_ontology_file "${CellLocator_DOWNLOAD_DIR}/ontology-formatted.json")
 
-add_custom_command(
-  OUTPUT
-    ${ccf_ontology_file}
-  DEPENDS
-    ${ccf_ontology_original_file}
-  COMMAND ${PYTHON_EXECUTABLE} -m json.tool ${ccf_ontology_original_file} ${ccf_ontology_file}
-  WORKING_DIRECTORY ${CellLocator_BINARY_DIR}
-  COMMENT "Prettifying ontology file"
+set(ccf_ontology_file "${CellLocator_DOWNLOAD_DIR}/ontology-formatted.json")
+CellLocator_prettify_ontology("ccf"
+  ${ccf_ontology_original_file}
+  ${ccf_ontology_file}
   )
 
 #-----------------------------------------------------------------------------
