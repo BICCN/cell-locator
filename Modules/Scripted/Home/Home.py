@@ -1179,6 +1179,17 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       else:
         ontologyComboBox.addItems(['Structure', 'None'])
 
+    # Configure unit
+    selectionNode = slicer.app.applicationLogic().GetSelectionNode()
+    unitNode = selectionNode.GetUnitNode("length")
+    with NodeModify(unitNode):
+      unitNode.SetSuffix({
+        HomeLogic.CCF_ATLAS: "um",
+        HomeLogic.MNI_ATLAS: "mm"
+      }[HomeLogic.atlasType()])
+    # HACK Since modifying the unit node is not sufficient, force update calling SetUnitNodeID
+    selectionNode.SetUnitNodeID(unitNode.GetID(), "length")
+
     # Configure slice view
     sliceNode.SetSliceSpacingModeToPrescribed()
     sliceNode.SetSliceVisible(True)
