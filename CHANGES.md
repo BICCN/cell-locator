@@ -19,6 +19,7 @@ Features:
 * Add support for loading MNI atlas. See [#99](https://github.com/BICCN/cell-locator/issues/99)
   * Accept `--atlas-type` command line argument.
   * Supported value for atlas type are `mni` and `ccf`.
+  * Display `mm` unit suffix for `mni` atlas and `um` for `ccf` atlas.
 
 File format:
 
