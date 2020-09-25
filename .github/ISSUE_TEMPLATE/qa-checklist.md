@@ -27,7 +27,6 @@ Start application, and check:
 
 Reset view using CTRL+W, restart the application and check:
 * [ ] Unit displayed in Annotation Thickness, Slice Step Size and Slice offset boxes is `um`
-  **Known Issues:** [#89](https://github.com/BICCN/cell-locator/issues/89)
 
 ## Ontology combo box
 
