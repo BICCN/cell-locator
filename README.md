@@ -1,9 +1,53 @@
 CellLocator by Allen Institute
 ==============================
 
-Manually align specimens to annotated 3D spaces
+Manually aligning specimens to annotated 3D spaces.
 
-![CellLocator by Allen Institute](Documentation/Images/cell-locator-ui.png?raw=true)
+Desktop  application based on 3D Slicer that displays the AIBS CCF or MNI atlas, color segmented
+by structure of the brain, and allows a user to create a planar polyline annotation to
+facilitate mapping samples into the corresponding atlas.
+
+## Features
+
+* Create, save, and load spline or polyline based annotation.
+* Manage and save multiple annotations per file.
+* Save annotations as JSON containing Spline or Polyline points as well
+  as orientation and thickness.
+* Download from / Upload to a LIMS system. See [LIMS integration](#lims-integration)
+* 3 interaction modes: Explore, Edit or Place point.
+* Reslicing in arbitrary directions.
+* Ontology selection: layer vs area.
+* Input of Roll/Pitch/Yaw.
+* Load CCF or MNI atlas. See [command-line arguments](#command-line-arguments).
+
+## Table of content
+
+* [Features](#features)
+* [Screenshots](#screenshots)
+* [Command-line arguments](#command-line-arguments)
+* [Keyboard Accelerators and Mouse Operations](#keyboard-accelerators-and-mouse-operations)
+* [LIMS integration](#lims-integration)
+* [Known Issues](#known-issues)
+* [Maintainers](#maintainers)
+
+## Screenshots
+
+Example of annotations mapped into the CCF:
+
+![CellLocator by Allen Institute](Documentation/Images/cell-locator-ccf-ui.png?raw=true)
+
+## Command-line arguments
+
+List of command-line arguments specific to CellLocator
+
+| Argument             | Description                                                            |
+|----------------------|------------------------------------------------------------------------|
+| `--reference-view`   | Accepted value: `Axial`, `Coronal` or `Sagittal`. Default is `Coronal` |                       |
+| `--view-angle`       | Angle in degree                                                        |
+| `--annotation-file`  | Path to an existing annotation file                                    |
+| `--lims-specimen-id` | LIMS specimen id to retrieve and load                                  |
+| `--lims-base-url`    | LIMS base url                                                          |
+| `--atlas-type`       | Specify the atlas type to load: `ccf` or `mni`. Default is `ccf`       |
 
 ## Keyboard Accelerators and Mouse Operations
 
@@ -95,3 +139,8 @@ are available here: https://github.com/KitwareMedical/AllenInstituteMockLIMS
 ## Known Issues
 
 * For Roll, pitch and yaw, the angle mappings differ from the coordinate system the lab uses. See [#81](https://github.com/BICCN/cell-locator/issues/81)
+
+## Maintainers
+
+* [Contributing](CONTRIBUTING.md)
+* [Making a release](MAINTAINERS.md#making-a-release)
