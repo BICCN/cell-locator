@@ -37,6 +37,10 @@ Example of annotations mapped into the CCF:
 
 ![CellLocator by Allen Institute](Documentation/Images/cell-locator-ccf-ui.png?raw=true)
 
+Example of annotations mapped into the MNI:
+
+![CellLocator by Allen Institute](Documentation/Images/cell-locator-mni-ui.png?raw=true)
+
 ## Command-line arguments
 
 List of command-line arguments specific to CellLocator
