@@ -4,7 +4,7 @@ Cell Locator Annotation
 # Disclaimer
 
 The Cell Locator annotation format is non-standard and exists purely as
-an implementation detail. While strucural changes will be documented below,
+an implementation detail. While structural changes will be documented below,
 the file organization may change from version to version without notice.
 
 We mean it.

@@ -26,6 +26,7 @@ facilitate mapping samples into the corresponding atlas.
 * [Screenshots](#screenshots)
 * [Command-line arguments](#command-line-arguments)
 * [Keyboard Accelerators and Mouse Operations](#keyboard-accelerators-and-mouse-operations)
+* [Annotation file format](#annotation-file-format)
 * [LIMS integration](#lims-integration)
 * [Known Issues](#known-issues)
 * [Maintainers](#maintainers)
@@ -118,6 +119,16 @@ or loading a annotation._
 | Annotation Thickness  | 1                    | 10                       |
 | Slice Step Size       | 1                    | 10                       |
 | Slice Offset          | `<slice step size>`  | `<slice step size> * 10` |
+
+## Annotation file format
+
+The Cell Locator annotation format is non-standard and exists purely as an implementation detail.
+While structural changes will be documented, the file organization may change from version
+to version without notice.
+
+We mean it.
+
+See [Cell Locator Annotation file format](Documentation/AnnotationFileFormat.md)
 
 ## LIMS integration
 
