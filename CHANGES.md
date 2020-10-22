@@ -39,6 +39,7 @@ Fixes:
 * Fix annotation scaling. See [#156](https://github.com/BICCN/cell-locator/issues/156)
 * Spline polygons do not save, but also do not disappear in a session involving multiple files. See [#112](https://github.com/BICCN/cell-locator/issues/112)
 * After using Ctrl+w and restarting the application, `mm` unit prefix is displayed instead of `um`. See [#89](https://github.com/BICCN/cell-locator/issues/89)
+* Support loading annotation from network path. See [#103](https://github.com/BICCN/cell-locator/issues/103)
 
 Documentation:
 
