@@ -13,7 +13,7 @@ if(NOT DEFINED slicersources_SOURCE_DIR)
   # Download Slicer sources and set variables slicersources_SOURCE_DIR and slicersources_BINARY_DIR
   FetchContent_Populate(slicersources
     GIT_REPOSITORY git://github.com/KitwareMedical/Slicer
-    GIT_TAG        436f32ad818dcf6708a32b3250d148d312910d7f # cell-locator-v4.11.0-2020-08-14-376d405c2b
+    GIT_TAG        7fde09a0168d0b2e6f2a12ad01a18ac2889da7a1 # cell-locator-v4.11.0-2021-04-01-0d7f7bad74
     GIT_PROGRESS   1
     )
 else()
@@ -115,7 +115,7 @@ set(Slicer_EXTENSION_SOURCE_DIRS
 
 # Custom CTK
 set(Slicer_CTK_GIT_REPOSITORY "${EP_GIT_PROTOCOL}://github.com/KitwareMedical/CTK.git")
-set(Slicer_CTK_GIT_TAG "13ce3d6d99a27c2d7d98cee656fb9c72e2f4e8fc") # cell-locator-2020-07-10-f0bb5d78
+set(Slicer_CTK_GIT_TAG "22d47a7cfe5b2c2c9bc354da31040deadb45ad25") # cell-locator-2021-03-29-7a515ccf
 
 set(Slicer_ADDITIONAL_DEPENDENCIES
   python-requests-requirements

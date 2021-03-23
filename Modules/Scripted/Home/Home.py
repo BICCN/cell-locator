@@ -1281,7 +1281,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     #
     sliceNode.DisableModifiedEventOn()
     orientationMatrix = vtk.vtkMatrix3x3()
-    slicer.vtkMRMLSliceNode.InitializeCoronalMatrix(orientationMatrix)
+    slicer.vtkMRMLSliceNode.GetCoronalSliceToRASMatrix(orientationMatrix)
     orientationMatrix.SetElement(0, 0, 1.0)
     orientationMatrix.SetElement(1, 2, 1.0)
     orientationMatrix.SetElement(2, 1, 1.0)
