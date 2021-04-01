@@ -1,7 +1,7 @@
-Cell Locator Annotation
-=======================
+Annotation File Format
+======================
 
-# Disclaimer
+## Disclaimer
 
 The Cell Locator annotation format is non-standard and exists purely as
 an implementation detail. While structural changes will be documented below,
@@ -9,9 +9,9 @@ the file organization may change from version to version without notice.
 
 We mean it.
 
-# Versions
+## Versions
 
-## 2020-09-18
+### 2020-09-18
 
 ```json
 {
@@ -158,7 +158,7 @@ We mean it.
 }
 ```
 
-## 2020-08-26
+### 2020-08-26
 
 ```json
 {
@@ -378,7 +378,7 @@ We mean it.
 }
 ```
 
-## 2019-01-26
+### 2019-01-26
 
 ```json
 {

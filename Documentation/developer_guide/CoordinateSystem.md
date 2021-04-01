@@ -1,22 +1,24 @@
 Coordinate System
 =================
 
-The common reference space is in PIR orientation where x axis = Anterior-to-Posterior, y axis = Superior-to-Inferior and z axis = Left-to-Right.
+## Overview
+
+The common reference space is in PIR orientation where `x axis = Anterior-to-Posterior`, `y axis = Superior-to-Inferior` and `z axis = Left-to-Right`.
 
 ![](https://help.brain-map.org/download/attachments/5308472/3DOrientation.png?version=1&modificationDate=1368132564812&api=v2)
 
-# Updates
+## Updates
 
-## Axial View
+### Axial View
 
 | Date | Axial | Offset |
 |------|-------|--------|
-| 2019-01-26 | ![](./Images/cell_locator_2019-01-26-axial_-1400.png?raw=true) | -1400 |
-| 2020-04-16 | ![](./Images/cell_locator_2020-04-16-axial_-1400.png?raw=true) | -1400 |
-| 2020-04-30 | ![](./Images/cell_locator_2020-04-30-axial_-1400.png?raw=true) | -1400 |
-| 2020-07-30 | ![](./Images/cell_locator_2020-07-30-axial_-1400.png?raw=true) | -1400 |
-| 2020-08-26 | ![](./Images/cell_locator_2020-08-26-axial_-1400.png?raw=true) | -1400 |
-| 2020-09-18 | ![](./Images/cell_locator_2020-09-18-axial_-1400.png?raw=true) | -1400 |
+| 2019-01-26 | ![](https://github.com/BICCN/cell-locator/releases/download/docs-resources/cell_locator_2019-01-26-axial_-1400.png) | -1400 |
+| 2020-04-16 | ![](https://github.com/BICCN/cell-locator/releases/download/docs-resources/cell_locator_2020-04-16-axial_-1400.png) | -1400 |
+| 2020-04-30 | ![](https://github.com/BICCN/cell-locator/releases/download/docs-resources/cell_locator_2020-04-30-axial_-1400.png) | -1400 |
+| 2020-07-30 | ![](https://github.com/BICCN/cell-locator/releases/download/docs-resources/cell_locator_2020-07-30-axial_-1400.png) | -1400 |
+| 2020-08-26 | ![](https://github.com/BICCN/cell-locator/releases/download/docs-resources/cell_locator_2020-08-26-axial_-1400.png) | -1400 |
+| 2020-09-18 | ![](https://github.com/BICCN/cell-locator/releases/download/docs-resources/cell_locator_2020-09-18-axial_-1400.png) | -1400 |
 
 | Date | Spline Orientation |
 |------|--------------------|
@@ -54,16 +56,16 @@ The common reference space is in PIR orientation where x axis = Anterior-to-Post
 | 2020-08-26 | -8253.166666666664, 4631.944444444443, -1399.9999999999998 |
 | 2020-09-18 | -8253.166666666664, 4631.944444444443, -1399.9999999999998 |
 
-## Sagittal View
+### Sagittal View
 
 | Date | Sagittal | Offset |
 |------|----------|--------|
-| 2019-01-26 | ![](./Images/cell_locator_2019-01-26-sagittal_+9500.png?raw=true) | +9500 |
-| 2020-04-16 | ![](./Images/cell_locator_2020-04-16-sagittal_+9000.png?raw=true) | +9000 |
-| 2020-04-30 | ![](./Images/cell_locator_2020-04-30-sagittal_+9000.png?raw=true) | +9000 |
-| 2020-07-30 | ![](./Images/cell_locator_2020-07-30-sagittal_+9000.png?raw=true) | +9000 |
-| 2020-08-26 | ![](./Images/cell_locator_2020-08-26-sagittal_+9000.png?raw=true) | +9000 |
-| 2020-09-18 | ![](./Images/cell_locator_2020-09-18-sagittal_+9000.png?raw=true) | +9000 |
+| 2019-01-26 | ![](https://github.com/BICCN/cell-locator/releases/download/docs-resources/cell_locator_2019-01-26-sagittal_+9500.png) | +9500 |
+| 2020-04-16 | ![](https://github.com/BICCN/cell-locator/releases/download/docs-resources/cell_locator_2020-04-16-sagittal_+9000.png) | +9000 |
+| 2020-04-30 | ![](https://github.com/BICCN/cell-locator/releases/download/docs-resources/cell_locator_2020-04-30-sagittal_+9000.png) | +9000 |
+| 2020-07-30 | ![](https://github.com/BICCN/cell-locator/releases/download/docs-resources/cell_locator_2020-07-30-sagittal_+9000.png) | +9000 |
+| 2020-08-26 | ![](https://github.com/BICCN/cell-locator/releases/download/docs-resources/cell_locator_2020-08-26-sagittal_+9000.png) | +9000 |
+| 2020-09-18 | ![](https://github.com/BICCN/cell-locator/releases/download/docs-resources/cell_locator_2020-09-18-sagittal_+9000.png) | +9000 |
 
 | Date | Spline Orientation |
 |------|--------------------|
@@ -101,16 +103,16 @@ The common reference space is in PIR orientation where x axis = Anterior-to-Post
 | 2020-08-26 | -9000, 10318.494152046782, -2381.2621832358673 |
 | 2020-09-18 | -9000.0, 10318.494152046782, -2381.2621832358673 |
 
-## Coronal View
+### Coronal View
 
 | Date | Coronal | Offset |
 |------|---------|--------|
-| 2019-01-26 | ![](./Images/cell_locator_2019-01-26-coronal_+11000.png?raw=true) | +11000 |
-| 2020-04-16 | ![](./Images/cell_locator_2020-04-16-coronal_+11000.png?raw=true) | +11000 |
-| 2020-04-30 | ![](./Images/cell_locator_2020-04-30-coronal_-11000.png?raw=true) | -11000 |
-| 2020-07-30 | ![](./Images/cell_locator_2020-07-30-coronal_-11000.png?raw=true) | -11000 |
-| 2020-08-26 | ![](./Images/cell_locator_2020-08-26-coronal_-11000.png?raw=true) | -11000 |
-| 2020-09-18 | ![](./Images/cell_locator_2020-09-18-coronal_-11000.png?raw=true) | -11000 |
+| 2019-01-26 | ![](https://github.com/BICCN/cell-locator/releases/download/docs-resources/cell_locator_2019-01-26-coronal_+11000.png) | +11000 |
+| 2020-04-16 | ![](https://github.com/BICCN/cell-locator/releases/download/docs-resources/cell_locator_2020-04-16-coronal_+11000.png) | +11000 |
+| 2020-04-30 | ![](https://github.com/BICCN/cell-locator/releases/download/docs-resources/cell_locator_2020-04-30-coronal_-11000.png) | -11000 |
+| 2020-07-30 | ![](https://github.com/BICCN/cell-locator/releases/download/docs-resources/cell_locator_2020-07-30-coronal_-11000.png) | -11000 |
+| 2020-08-26 | ![](https://github.com/BICCN/cell-locator/releases/download/docs-resources/cell_locator_2020-08-26-coronal_-11000.png) | -11000 |
+| 2020-09-18 | ![](https://github.com/BICCN/cell-locator/releases/download/docs-resources/cell_locator_2020-09-18-coronal_-11000.png) | -11000 |
 
 
 | Date | Spline Orientation |

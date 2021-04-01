@@ -1,8 +1,11 @@
+Release Notes
+=============
+
 ## Next Release
 
 Documentation:
 
-* Add [Documentation/CoordinateSystem.md](Documentation/CoordinateSystem.md) with `Updates` section.
+* Add [Documentation/CoordinateSystem.md](https://github.com/BICCN/cell-locator/blob/master/Documentation/CoordinateSystem.md) with `Updates` section.
 
 ## Cell Locator 0.1.0 2020-09-18
   
@@ -49,7 +52,7 @@ Fixes:
 
 Documentation:
 
-* Add [MAINTAINERS.md](MAINTAINERS.md) with `Making a release` section.
+* Add [MAINTAINERS.md](https://github.com/BICCN/cell-locator/blob/master/MAINTAINERS.md) with `Making a release` section.
 * Update `Keyboard Accelerators and Mouse Operations / Annotation` section in `README.md`.
 
 Testing:
