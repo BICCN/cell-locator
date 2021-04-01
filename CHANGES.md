@@ -1,3 +1,6 @@
+Release Notes
+=============
+
 ## Next Release
 
 Features:
@@ -24,7 +27,7 @@ Fixes:
 
 Documentation:
 
-* Add [Documentation/CoordinateSystem.md](Documentation/CoordinateSystem.md) with `Updates` section.
+* Add [Documentation/CoordinateSystem.md](https://github.com/BICCN/cell-locator/blob/master/Documentation/CoordinateSystem.md) with `Updates` section.
 
 * Add versioning history to [Documentation/AnnotationFileFormat.md](Documentation/AnnotationFileFormat.md). The current version is `0.1.0+2020.09.18`
 
@@ -73,7 +76,7 @@ Fixes:
 
 Documentation:
 
-* Add [MAINTAINERS.md](MAINTAINERS.md) with `Making a release` section.
+* Add [MAINTAINERS.md](https://github.com/BICCN/cell-locator/blob/master/MAINTAINERS.md) with `Making a release` section.
 * Update `Keyboard Accelerators and Mouse Operations / Annotation` section in `README.md`.
 
 Testing:
