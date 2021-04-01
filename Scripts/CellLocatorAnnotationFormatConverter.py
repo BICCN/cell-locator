@@ -7,16 +7,47 @@ def from_20190126_to_20200918(input_content):
 
     markups = []
 
+    referenceView = input_content["DefaultReferenceView"]
+    ontology = input_content["DefaultOntology"]
+    stepSize = input_content["DefaultStepSize"]
+    cameraPosition = input_content["DefaultCameraPosition"]
+    cameraViewUp = input_content["DefaultCameraViewUp"]
+
     for idx_markup, input_markup in enumerate(input_content["Markups"], start=1):
         control_points = []
+
+        referenceView = input_markup["ReferenceView"]
+        ontology = input_markup["Ontology"]
+        stepSize = input_markup["StepSize"]
+        cameraPosition = input_markup["CameraPosition"]
+        cameraViewUp = input_markup["CameraViewUp"]
+
+        transform_point = {
+            "x": -1,
+            "y": -1,
+            "z": 1,
+        }
+
+        transform_orientation = {
+            "Axial": [1] * 4 * 4,
+            "Sagittal": [1] * 4 * 4,
+            "Coronal": [
+                -1, 1, 1, 1,
+                1, 1, -1, 1,
+                1, 1, 1, 1,
+                1, 1, 1, 1
+            ],
+        }
+
+        splineOrientation = [a * b  for a, b in zip(input_markup["SplineOrientation"], transform_orientation[referenceView])]
 
         for idx_control_point, intput_control_point in enumerate(input_markup["Points"], start=1):
             control_points.append({
                 "id": "%d" % idx_control_point,
                 "position": [
-                    intput_control_point["x"],
-                    intput_control_point["y"],
-                    intput_control_point["z"],
+                    intput_control_point["x"] * transform_point["x"],
+                    intput_control_point["y"] * transform_point["y"],
+                    intput_control_point["z"] * transform_point["z"],
                 ],
                 "orientation": [-1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 1.0]
             })
@@ -28,7 +59,7 @@ def from_20190126_to_20200918(input_content):
                 "controlPoints": control_points
             },
             "name": "Annotation-%d" % idx_markup,
-            "orientation": input_markup["SplineOrientation"],
+            "orientation": splineOrientation,
             "representationType": input_markup["RepresentationType"],
             "thickness": input_markup["Thickness"]
         })
@@ -36,11 +67,11 @@ def from_20190126_to_20200918(input_content):
     output_content = {
         "markups": markups,
         "currentId": 0,
-        "referenceView": input_content["DefaultReferenceView"],
-        "ontology": input_content["DefaultOntology"],
-        "stepSize": input_content["DefaultStepSize"],
-        "cameraPosition": input_content["DefaultCameraPosition"],
-        "cameraViewUp": input_content["DefaultCameraViewUp"]
+        "referenceView": referenceView,
+        "ontology": ontology,
+        "stepSize": stepSize,
+        "cameraPosition": cameraPosition,
+        "cameraViewUp": cameraViewUp
     }
     return output_content
 
