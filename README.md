@@ -132,7 +132,9 @@ to version without notice.
 
 We mean it.
 
-See [Cell Locator Annotation file format](Documentation/AnnotationFileFormat.md)
+Documents:
+* [Annotation file format](Documentation/AnnotationFileFormat.md)
+* [Coordinate system updates](Documentation/CoordinateSystem.md#updates)
 
 ## LIMS integration
 

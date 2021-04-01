@@ -1,6 +1,10 @@
 Coordinate System
 =================
 
+The common reference space is in PIR orientation where x axis = Anterior-to-Posterior, y axis = Superior-to-Inferior and z axis = Left-to-Right.
+
+![](https://help.brain-map.org/download/attachments/5308472/3DOrientation.png?version=1&modificationDate=1368132564812&api=v2)
+
 # Updates
 
 ## Axial View

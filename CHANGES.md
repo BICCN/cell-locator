@@ -1,3 +1,9 @@
+## Next Release
+
+Documentation:
+
+* Add [Documentation/CoordinateSystem.md](Documentation/CoordinateSystem.md) with `Updates` section.
+
 ## Cell Locator 0.1.0 2020-09-18
   
 Features:
