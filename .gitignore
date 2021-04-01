@@ -8,3 +8,6 @@ __pycache__/
 
 ### QtCreator ###
 CMakeLists.txt.user
+
+### Documentation ###
+Documentation/_build
