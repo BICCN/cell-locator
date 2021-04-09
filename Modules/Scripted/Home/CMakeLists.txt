@@ -3,6 +3,14 @@ set(MODULE_NAME Home)
 
 #-----------------------------------------------------------------------------
 set(ccf_annotation_resolution 25) # Possible values are 25 or 50 (Used in CellLocatorConfig.py)
+set(mni_average_template_filename "mni_icbm152_t1_tal_nlin_sym_09b_hires.nii") # Used in CellLocatorConfig.py
+
+#-----------------------------------------------------------------------------
+configure_file(
+  ${MODULE_NAME}Lib/CellLocatorConfig.py.in
+  ${CMAKE_CURRENT_BINARY_DIR}/${MODULE_NAME}Lib/CellLocatorConfig.py
+  @ONLY
+  )
 
 #-----------------------------------------------------------------------------
 set(MODULE_PYTHON_SCRIPTS
@@ -117,8 +125,6 @@ endif()
 
 message(STATUS "--------------------------")
 message(STATUS "Downloading MNI data files")
-
-set(mni_average_template_filename "mni_icbm152_t1_tal_nlin_sym_09b_hires.nii") # Used in CellLocatorConfig.py
 
 set(mni_average_template_extract_directory ${CellLocator_DOWNLOAD_DIR}/mni_icbm152_nlin_sym_09b_nifti)
 
@@ -410,13 +416,6 @@ add_custom_target(CellLocatorGenerateLayerColorTable ALL
 CellLocator_install_datafiles(
   ${ccf_layer_color_table}
   ${ccf_layer_ontology_file}
-  )
-
-#-----------------------------------------------------------------------------
-configure_file(
-  ${MODULE_NAME}Lib/CellLocatorConfig.py.in
-  ${CMAKE_CURRENT_BINARY_DIR}/${MODULE_NAME}Lib/CellLocatorConfig.py
-  @ONLY
   )
 
 #-----------------------------------------------------------------------------
