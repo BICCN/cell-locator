@@ -9,6 +9,22 @@ the file organization may change from version to version without notice.
 
 We mean it.
 
+# Converting between versions
+
+The script [CellLocatorAnnotationFormatConverter.py](../Scripts/CellLocatorAnnotationFormatConverter.py)
+allows to convert annotations represented using an older version to the latest version of the format.
+
+For example:
+
+```bash
+C:/Python38-x64/python.exe ^
+  C:/P/cell-locator/Scripts/CellLocatorAnnotationFormatConverter.py ^
+    --from 20190126 ^
+    --to 20200918 ^
+    --input C:/Users/jchris.fillionr/Desktop/annotation-20190126.json ^
+    --output C:/Users/jchris.fillionr/Desktop/annotation-20200918.json
+```
+
 # Versions
 
 ## 2020-09-18

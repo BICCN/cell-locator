@@ -4,6 +4,11 @@ Documentation:
 
 * Add [Documentation/CoordinateSystem.md](Documentation/CoordinateSystem.md) with `Updates` section.
 
+File format:
+
+* Add convenience script for converting between versions of the annotation format.
+  See [#158](https://github.com/BICCN/cell-locator/issues/158)
+
 ## Cell Locator 0.1.0 2020-09-18
   
 Features:
