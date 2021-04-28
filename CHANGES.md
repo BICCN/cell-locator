@@ -4,6 +4,8 @@ Documentation:
 
 * Add [Documentation/CoordinateSystem.md](Documentation/CoordinateSystem.md) with `Updates` section.
 
+* Add support for user selection of atlas through the UI at startup if no atlas is specified on the command line. See [#165](https://github.com/BICCN/cell-locator/issues/165)
+
 ## Cell Locator 0.1.0 2020-09-18
   
 Features:
