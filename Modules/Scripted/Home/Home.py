@@ -477,9 +477,24 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     key = "%s-%s" % (parent, widget.objectName)
     self._widget_cache[key] = widget
 
+  def promptForAtlasSelection(self):
+    """Prompt the user to select an atlas type.
+    """
+    dialog = slicer.util.loadUI(self.resourcePath('UI/AtlasSelection.ui'))
+    dialog.setWindowFlags(qt.Qt.CustomizeWindowHint | qt.Qt.WindowCloseButtonHint)
+    dialogUi = slicer.util.childWidgetVariables(dialog)
+    dialog.setWindowIcon(qt.QIcon(self.resourcePath('Icons/Home.png')))
+    dialogUi.CCFButton.clicked.connect(lambda: self.logic.setUserSelectedAtlasType(HomeLogic.CCF_ATLAS))
+    dialogUi.MNIButton.clicked.connect(lambda: self.logic.setUserSelectedAtlasType(HomeLogic.MNI_ATLAS))
+    dialog.exec()
+
   def onStartupCompleted(self, *unused):
 
     def postStartupInitialization():
+
+      if not slicer.app.commandOptions().atlasType:
+        self.promptForAtlasSelection()
+
       self.onSceneEndCloseEvent(slicer.mrmlScene)
 
       if slicer.app.commandOptions().argumentParsed("view-angle"):
@@ -1161,7 +1176,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     # Configure UI
     self.get('AdjustViewPushButton').enabled = False
 
-    averageTemplate, annotation = self.logic.loadData(HomeLogic.atlasType())
+    averageTemplate, annotation = self.logic.loadData(self.logic.atlasType())
 
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
 
@@ -1175,7 +1190,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     ontologyComboBox = self.get('OntologyComboBox')
     with SignalBlocker(ontologyComboBox):
       ontologyComboBox.clear()
-      if HomeLogic.atlasType() == HomeLogic.CCF_ATLAS:
+      if self.logic.atlasType() == HomeLogic.CCF_ATLAS:
         ontologyComboBox.addItems(['Structure', 'Layer', 'None'])
       else:
         ontologyComboBox.addItems(['Structure', 'None'])
@@ -1187,7 +1202,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       unitNode.SetSuffix({
         HomeLogic.CCF_ATLAS: "um",
         HomeLogic.MNI_ATLAS: "mm"
-      }[HomeLogic.atlasType()])
+      }[self.logic.atlasType()])
     # HACK Since modifying the unit node is not sufficient, force update calling SetUnitNodeID
     selectionNode.SetUnitNodeID(unitNode.GetID(), "length")
 
@@ -1524,7 +1539,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
   def onOntologyChanged(self, ontology):
     annotation = slicer.mrmlScene.GetFirstNodeByName(
-      os.path.splitext(os.path.basename(HomeLogic.annotationFilePath(HomeLogic.atlasType())))[0])
+      os.path.splitext(os.path.basename(HomeLogic.annotationFilePath(self.logic.atlasType())))[0])
     if ontology == "Structure":
       colorNodeID = slicer.mrmlScene.GetFirstNodeByName("allen").GetID()
     elif ontology == "Layer":
@@ -1585,6 +1600,8 @@ class HomeLogic(object):
 
     self.DefaultWindowLevelMin = 0.
     self.DefaultWindowLevelMax = 0.
+
+    self.userSelectedAtlasType = None
 
   @staticmethod
   def registerCustomLayouts(layoutLogic, defaultReferenceView):
@@ -1817,12 +1834,16 @@ class HomeLogic(object):
   def limsBaseURL():
     return slicer.app.commandOptions().limsBaseURL or 'http://localhost:5000/'
 
-  @staticmethod
-  def atlasType():
-    if not slicer.app.commandOptions().atlasType:
+  def atlasType(self):
+    if self.userSelectedAtlasType:
+      return self.userSelectedAtlasType
+    elif not slicer.app.commandOptions().atlasType: # This case should no longer occur during normal UI usage
       return HomeLogic.CCF_ATLAS
     else:
       return slicer.app.commandOptions().atlasType
+
+  def setUserSelectedAtlasType(self, atlasType):
+    self.userSelectedAtlasType = atlasType
 
 
 class HomeTest(ScriptedLoadableModuleTest):
