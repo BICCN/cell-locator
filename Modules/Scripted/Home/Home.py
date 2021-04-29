@@ -486,7 +486,13 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     dialog.setWindowIcon(qt.QIcon(self.resourcePath('Icons/Home.png')))
     dialogUi.CCFButton.clicked.connect(lambda: self.logic.setUserSelectedAtlasType(HomeLogic.CCF_ATLAS))
     dialogUi.MNIButton.clicked.connect(lambda: self.logic.setUserSelectedAtlasType(HomeLogic.MNI_ATLAS))
-    dialog.exec()
+    # Comment copied from function "messageBox()" in Slicer/Base/Python/slicer/util.py
+    # Windows 10 peek feature in taskbar shows all hidden but not destroyed windows
+    # (after creating and closing a messagebox, hovering over the mouse on Slicer icon, moving up the
+    # mouse to the peek thumbnail would show it again).
+    # By calling deleteLater, the dialog is permanently deleted when the current call is completed.
+    dialog.deleteLater()
+    dialog.exec_()
 
   def onStartupCompleted(self, *unused):
 
