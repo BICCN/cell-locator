@@ -6,6 +6,8 @@ Documentation:
 
 * Add support for user selection of atlas through the UI at startup if no atlas is specified on the command line. See [#165](https://github.com/BICCN/cell-locator/issues/165)
 
+* Fix orientation of MNI atlas. See [#163](https://github.com/BICCN/cell-locator/issues/163)
+
 ## Cell Locator 0.1.0 2020-09-18
   
 Features:

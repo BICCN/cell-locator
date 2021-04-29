@@ -1237,12 +1237,14 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     threeDWidget = self.LayoutManager.threeDWidget(0)
     threeDNode = threeDWidget.mrmlViewNode()
     threeDNode.SetBoxVisible(False)
+    
     threeDNode.SetAxisLabel(4, "V") # I -> V
     threeDNode.SetAxisLabel(5, "D") # S -> D
 
-    # Flip coronal axis to match PIR convention
-    threeDNode.SetAxisLabel(2, "A")  # P -> A
-    threeDNode.SetAxisLabel(3, "P")  # A -> P
+    if self.logic.atlasType() == HomeLogic.CCF_ATLAS:
+      # Flip coronal axis to match PIR convention
+      threeDNode.SetAxisLabel(2, "A")  # P -> A
+      threeDNode.SetAxisLabel(3, "P")  # A -> P
 
     # Configure annotation list
     #   Since the viewport is managed elsewhere, we need to insert the sidebar
@@ -1263,48 +1265,50 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     cameraNode = slicer.modules.cameras.logic().GetViewActiveCameraNode(threeDWidget.threeDView().mrmlViewNode())
     self.addObserver(cameraNode, vtk.vtkCommand.ModifiedEvent, self.onCameraNodeModifiedEvent)
 
-    # Create RAStoPIR transform - See https://github.com/BICCN/cell-locator/issues/48#issuecomment-443412860
-    # 0 0 1 -1
-    # 1 0 0 0
-    # 0 1 0 0
-    # 0 0 0 1
-    ras2pirTransform = slicer.vtkMRMLTransformNode()
-    ras2pirTransform.SetName("RAStoPIR")
-    slicer.mrmlScene.AddNode(ras2pirTransform)
-    transformMatrix = vtk.vtkMatrix4x4()
-    transformMatrix.SetElement(0, 0,  0.0)
-    transformMatrix.SetElement(1, 0,  1.0)
-    transformMatrix.SetElement(2, 0,  0.0)
-    transformMatrix.SetElement(3, 0,  0.0)
-    transformMatrix.SetElement(0, 1,  0.0)
-    transformMatrix.SetElement(1, 1,  0.0)
-    transformMatrix.SetElement(2, 1,  1.0)
-    transformMatrix.SetElement(3, 1,  0.0)
-    transformMatrix.SetElement(0, 2,  1.0)
-    transformMatrix.SetElement(1, 2,  0.0)
-    transformMatrix.SetElement(2, 2,  0.0)
-    transformMatrix.SetElement(3, 2,  0.0)
-    transformMatrix.SetElement(0, 3, -1.0)
-    transformMatrix.SetElement(1, 3,  0.0)
-    transformMatrix.SetElement(2, 3,  0.0)
-    transformMatrix.SetElement(3, 3,  1.0)
-    ras2pirTransform.SetMatrixTransformToParent(transformMatrix)
+    if self.logic.atlasType() == HomeLogic.CCF_ATLAS:
+      # Create RAStoPIR transform - See https://github.com/BICCN/cell-locator/issues/48#issuecomment-443412860
+      # 0 0 1 -1
+      # 1 0 0 0
+      # 0 1 0 0
+      # 0 0 0 1
+      ras2pirTransform = slicer.vtkMRMLTransformNode()
+      ras2pirTransform.SetName("RAStoPIR")
+      slicer.mrmlScene.AddNode(ras2pirTransform)
+      transformMatrix = vtk.vtkMatrix4x4()
+      transformMatrix.SetElement(0, 0,  0.0)
+      transformMatrix.SetElement(1, 0,  1.0)
+      transformMatrix.SetElement(2, 0,  0.0)
+      transformMatrix.SetElement(3, 0,  0.0)
+      transformMatrix.SetElement(0, 1,  0.0)
+      transformMatrix.SetElement(1, 1,  0.0)
+      transformMatrix.SetElement(2, 1,  1.0)
+      transformMatrix.SetElement(3, 1,  0.0)
+      transformMatrix.SetElement(0, 2,  1.0)
+      transformMatrix.SetElement(1, 2,  0.0)
+      transformMatrix.SetElement(2, 2,  0.0)
+      transformMatrix.SetElement(3, 2,  0.0)
+      transformMatrix.SetElement(0, 3, -1.0)
+      transformMatrix.SetElement(1, 3,  0.0)
+      transformMatrix.SetElement(2, 3,  0.0)
+      transformMatrix.SetElement(3, 3,  1.0)
+      ras2pirTransform.SetMatrixTransformToParent(transformMatrix)
 
-    # Apply transform
-    averageTemplate.SetAndObserveTransformNodeID(ras2pirTransform.GetID())
-    annotation.SetAndObserveTransformNodeID(ras2pirTransform.GetID())
+      # Apply transform
+      averageTemplate.SetAndObserveTransformNodeID(ras2pirTransform.GetID())
+      annotation.SetAndObserveTransformNodeID(ras2pirTransform.GetID())
 
-    # Update Coronal preset so that +x is +P - See https://github.com/BICCN/cell-locator/issues/48#issuecomment-443423073
-    # Original matrix:
-    #  -1  0  0
-    #   0  0  1
-    #   0  1  0
-    #
-    # Updated matrix:
-    #   1  0  0
-    #   0  0  1
-    #   0  1  0
-    #
+      # Update Coronal preset so that +x is +P - See https://github.com/BICCN/cell-locator/issues/48#issuecomment-443423073
+      # Original matrix:
+      #  -1  0  0
+      #   0  0  1
+      #   0  1  0
+      #
+      # Updated matrix:
+      #   1  0  0
+      #   0  0  1
+      #   0  1  0
+      #
+
     sliceNode.DisableModifiedEventOn()
     orientationMatrix = vtk.vtkMatrix3x3()
     slicer.vtkMRMLSliceNode.GetCoronalSliceToRASMatrix(orientationMatrix)
