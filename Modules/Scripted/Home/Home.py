@@ -484,8 +484,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     dialog.setWindowFlags(qt.Qt.CustomizeWindowHint | qt.Qt.WindowCloseButtonHint)
     dialogUi = slicer.util.childWidgetVariables(dialog)
     dialog.setWindowIcon(qt.QIcon(self.resourcePath('Icons/Home.png')))
-    dialogUi.CCFButton.clicked.connect(lambda: self.logic.setUserSelectedAtlasType(HomeLogic.CCF_ATLAS))
-    dialogUi.MNIButton.clicked.connect(lambda: self.logic.setUserSelectedAtlasType(HomeLogic.MNI_ATLAS))
+    dialogUi.CCFButton.clicked.connect(lambda: self.logic.setAtlasType(HomeLogic.CCF_ATLAS))
+    dialogUi.MNIButton.clicked.connect(lambda: self.logic.setAtlasType(HomeLogic.MNI_ATLAS))
     # Comment copied from function "messageBox()" in Slicer/Base/Python/slicer/util.py
     # Windows 10 peek feature in taskbar shows all hidden but not destroyed windows
     # (after creating and closing a messagebox, hovering over the mouse on Slicer icon, moving up the
@@ -499,7 +499,12 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     def postStartupInitialization():
 
       if not slicer.app.commandOptions().atlasType:
-        self.promptForAtlasSelection()
+        if slicer.app.commandOptions().testingEnabled:
+          self.logic.setAtlasType(HomeLogic.CCF_ATLAS)
+        else:
+          self.promptForAtlasSelection()
+      else:
+        self.logic.setAtlasType(slicer.app.commandOptions().atlasType)
 
       self.onSceneEndCloseEvent(slicer.mrmlScene)
 
@@ -1607,7 +1612,7 @@ class HomeLogic(object):
     self.DefaultWindowLevelMin = 0.
     self.DefaultWindowLevelMax = 0.
 
-    self.userSelectedAtlasType = None
+    self._atlasType = None
 
   @staticmethod
   def registerCustomLayouts(layoutLogic, defaultReferenceView):
@@ -1841,15 +1846,10 @@ class HomeLogic(object):
     return slicer.app.commandOptions().limsBaseURL or 'http://localhost:5000/'
 
   def atlasType(self):
-    if self.userSelectedAtlasType:
-      return self.userSelectedAtlasType
-    elif not slicer.app.commandOptions().atlasType: # This case should no longer occur during normal UI usage
-      return HomeLogic.CCF_ATLAS
-    else:
-      return slicer.app.commandOptions().atlasType
+    return self._atlasType
 
-  def setUserSelectedAtlasType(self, atlasType):
-    self.userSelectedAtlasType = atlasType
+  def setAtlasType(self, atlasType):
+    self._atlasType = atlasType
 
 
 class HomeTest(ScriptedLoadableModuleTest):
