@@ -172,10 +172,10 @@ if(result MATCHES "^(nonexistent|expired)$")
   endif()
 endif()
 
-set(mni_annotation_file "${CellLocator_DOWNLOAD_DIR}/mni_annotation.nii.gz")
+set(mni_annotation_file "${CellLocator_DOWNLOAD_DIR}/mni_annotation_full.nii.gz")
 CellLocator_download_datafile(${mni_annotation_file}
-  "http://download.alleninstitute.org/informatics-archive/allen_human_reference_atlas_3d_2020/version_1/annotation.nii.gz"
-  "be23763c15386f2f211105f1e8144a6887e7615571229090e209b1c78355d378"
+  "http://download.alleninstitute.org/informatics-archive/allen_human_reference_atlas_3d_2020/version_1/annotation_full.nii.gz"
+  "2b05581e39c44f2623d9b0a69f64e3df0823c20d054abef92973812313335dc3"
   )
 
 message(STATUS "--------------------------")
