@@ -2,7 +2,6 @@ import os
 import json
 import logging
 import textwrap
-import shutil
 import urllib.parse
 import requests
 import typing
@@ -59,12 +58,10 @@ def listToMat(lst: list) -> vtk.vtkMatrix4x4:
 
 
 class Annotation(VTKObservationMixin):
-  """Manage serialization of a single annotation, and keep that annotation's
-  slice model synchronized with its markup.
-  """
+  """Manage serialization of a single annotation."""
 
-  DefaultRepresentationType = 'spline'
-  DefaultThickness = 50
+  DisplayName = 'Annotation'
+  MarkupType = ''
 
   def __init__(self, markup=None):
     """Setup the annotation markup and model, and add each to the scene."""
@@ -76,27 +73,15 @@ class Annotation(VTKObservationMixin):
     if markup is not None:
       self.markup = markup
     else:
-      self.markup = slicer.mrmlScene.AddNode(slicer.vtkMRMLMarkupsClosedCurveNode())
+      self.markup = slicer.mrmlScene.AddNewNodeByClass(self.MarkupType)
       self.markup.AddDefaultStorageNode()
-      self.markup.SetName(
-        self.markup.GetName().replace(self.markup.GetNodeTagName(), "Annotation"))
-
-    generator = self.markup.GetCurveGenerator()
-    generator.SetNumberOfPointsPerInterpolatingSegment(20)
-
-    self.model = slicer.mrmlScene.AddNode(slicer.vtkMRMLModelNode())
-    self.model.CreateDefaultDisplayNodes()
-    displayNode = self.model.GetDisplayNode()
-    displayNode.SetColor(0.4, 0.4, 0.4)
-    displayNode.EdgeVisibilityOff()
-    displayNode.SetOpacity(0.6)
+      markupName = self.markup.GetName()
+      markupTag = self.markup.GetNodeTagName()
+      self.markup.SetName(markupName.replace(markupTag, self.DisplayName))
 
     sliceNode = slicer.mrmlScene.GetNodeByID('vtkMRMLSliceNodeSlice')
     self.orientation = vtk.vtkMatrix4x4()
     self.orientation.DeepCopy(sliceNode.GetSliceToRAS())
-
-    self.representationType = self.DefaultRepresentationType
-    self.thickness = self.DefaultThickness
 
     self.addObserver(self.markup, self.markup.PointAddedEvent, self.onMarkupModified)
     self.addObserver(self.markup, self.markup.PointModifiedEvent, self.onMarkupModified)
@@ -107,41 +92,23 @@ class Annotation(VTKObservationMixin):
     self.removeObserver(self.markup, self.markup.PointAddedEvent, self.onMarkupModified)
     self.removeObserver(self.markup, self.markup.PointModifiedEvent, self.onMarkupModified)
 
-    slicer.mrmlScene.RemoveNode(self.markup)
-    slicer.mrmlScene.RemoveNode(self.model)
-
-  def updateModel(self):
-    """Update the annotation model to match the annotation markup and orientation."""
-
-    markup = self.markup
-    model = self.model
-
-    if markup.GetNumberOfControlPoints() < 3:
-      model.SetAndObserveMesh(vtk.vtkPolyData())  # clear mesh
-      return
-
-    if self.representationType == 'spline':
-      self.markup.GetCurveGenerator().SetCurveTypeToCardinalSpline()
-    else:
-      self.markup.GetCurveGenerator().SetCurveTypeToLinearSpline()
-
-    # orientation = sliceNode.GetSliceToRAS()
-    orientation = self.orientation
-    normal = orientation.MultiplyPoint([0, 0, 1, 0])[:3]
-    normal = vtk.vtkVector3d(normal)
-    normal.Normalize()
-
-    contour = markup.GetCurve()
-    thickness = self.thickness
-
-    self.logic.BuildSplineModel(model, contour, normal, thickness)
-
   def onMarkupModified(self, caller, event):
     """Event handler to update the annotation model when the markup is modified."""
+    self.update()
 
-    self.updateModel()
+  def update(self):
+    """Do any necessary updates when the annotation is initialized, markup is modified, etc."""
+    pass
 
-  def toDict(self):
+  def metadata(self) -> dict:
+    """Create a dict of any additional values needed for serialization."""
+    return {}
+
+  def setMetadata(self, data: dict):
+    """Set any additional values needed for deserialization."""
+    pass
+
+  def toDict(self) -> dict:
     """Convert this annotation to a dict representation, suitable for json serialization."""
 
     with tempfile('json/annotation.json') as filename:
@@ -168,9 +135,29 @@ class Annotation(VTKObservationMixin):
       'markup': markup,
       'name': self.markup.GetName(),
       'orientation': matToList(self.orientation),
-      'representationType': self.representationType,
-      'thickness': self.thickness,
+      **self.metadata()
     }
+
+  @classmethod
+  def fromMarkup(cls, markup):
+    """Initialize an Annotation given an existing markup. Selects from subclasses based on that class's MarkupType.
+
+    For example, FiducialsAnnotation is a subclass of Annotation, so it is queried. FiducialsAnnotation.MarkupType is
+    'vtkMRMLMarkupsFiducialNode', so if markup is a fiducial node, a FiducialsAnnotation would be created.
+    """
+
+    # could also create an explicit mapping from markup type to annotation type, but this
+    # way is DRY and ensures a new type could never be missed as long as it inherits Annotation.
+
+    # downside is there would be no way to have multiple annotation types use the same markup
+    # type... we might need to store extra info in the file in that case.
+
+    for icls in cls.__subclasses__():
+      if markup.IsA(icls.MarkupType):
+        return icls(markup=markup)
+
+    logging.error('Unsupported markup type %r', markup.GetClassName())
+    return None
 
   @classmethod
   def fromDict(cls, data):
@@ -178,10 +165,9 @@ class Annotation(VTKObservationMixin):
 
     with tempfile('json/annotation.json') as filename:
       with open(filename, 'w') as f:
-
         # Initialize Slicer specific properties
         for controlPoint in data['markup']['controlPoints']:
-          controlPoint['associatedNodeID'] = 'vtkMRMLScalarVolumeNode1';
+          controlPoint['associatedNodeID'] = 'vtkMRMLScalarVolumeNode1'
 
         json.dump({
           '@schema': 'https://raw.githubusercontent.com/slicer/slicer/master/Modules/Loadable/Markups/Resources/Schema/markups-schema-v1.0.0.json#',
@@ -191,22 +177,98 @@ class Annotation(VTKObservationMixin):
         }, f)
       markup = slicer.util.loadMarkups(filename)
 
-    annotation = Annotation(markup)
+    # we want to use fromMarkup so the correct behavior (annotation type) is used for the given markup type.
+    # since each annotation type may have extra parameters, we should use setMetadata
+
+    annotation = cls.fromMarkup(markup)
+    annotation.setMetadata(data)
     annotation.orientation.DeepCopy(listToMat(data['orientation']))
-    annotation.representationType = data['representationType']
-    annotation.thickness = data['thickness']
 
     if 'name' in data:
       annotationName = data['name']
     else:
       annotationName = 'Annotation'
-      logging.warning("Annotation data is missing the 'name' key. Defaulting to '%s'." %  annotationName)
+      logging.warning("Annotation data is missing the 'name' key. Defaulting to '%s'." % annotationName)
     annotation.markup.SetName(annotationName)
-
-    annotation.updateModel()
 
     return annotation
 
+
+class FiducialAnnotation(Annotation):
+  DisplayName = 'Point'
+  MarkupType = 'vtkMRMLMarkupsFiducialNode'
+
+  def __init__(self, markup=None):
+    super().__init__(markup=markup)
+
+
+class ClosedCurveAnnotation(Annotation):
+  DisplayName = 'Curve'
+  MarkupType = 'vtkMRMLMarkupsClosedCurveNode'
+
+  DefaultRepresentationType = 'spline'
+  DefaultThickness = 50
+
+  def __init__(self, markup=None):
+    self.representationType = self.DefaultRepresentationType
+    self.thickness = self.DefaultThickness
+
+    self.model = slicer.mrmlScene.AddNode(slicer.vtkMRMLModelNode())
+    self.model.CreateDefaultDisplayNodes()
+
+    # need to have representationType, thickness, model, etc when the markup is created.
+    super().__init__(markup=markup)
+
+    generator = self.markup.GetCurveGenerator()
+    generator.SetNumberOfPointsPerInterpolatingSegment(20)
+
+    displayNode = self.model.GetDisplayNode()
+    displayNode.SetColor(0.4, 0.4, 0.4)
+    displayNode.EdgeVisibilityOff()
+    displayNode.SetOpacity(0.6)
+
+  def clear(self):
+    super().clear()
+
+    slicer.mrmlScene.RemoveNode(self.markup)
+    slicer.mrmlScene.RemoveNode(self.model)
+
+  def update(self):
+    """Update the annotation model to match the annotation markup and orientation."""
+
+    if self.markup.GetNumberOfControlPoints() < 3:
+      self.model.SetAndObserveMesh(vtk.vtkPolyData())  # clear mesh
+      return
+
+    if self.representationType == 'spline':
+      self.markup.GetCurveGenerator().SetCurveTypeToCardinalSpline()
+    else:
+      self.markup.GetCurveGenerator().SetCurveTypeToLinearSpline()
+
+    orientation = self.orientation
+    normal = orientation.MultiplyPoint([0, 0, 1, 0])[:3]
+    normal = vtk.vtkVector3d(normal)
+    normal.Normalize()
+
+    contour = self.markup.GetCurve()
+    thickness = self.thickness
+
+    self.logic.BuildSplineModel(
+      self.model,
+      contour,
+      normal,
+      thickness
+    )
+
+  def metadata(self):
+    return {
+      'representationType': self.representationType,
+      'thickness': self.thickness
+    }
+
+  def setMetadata(self, data):
+    self.representationType = data['representationType']
+    self.thickness = data['thickness']
 
 class AnnotationManager:
   """Manage serialization and bookkeeping for a collection of annotations."""
@@ -268,11 +330,8 @@ class AnnotationManager:
   def currentIdx(self, idx):
     self.current = self.annotations[idx]
 
-  def add(self, setCurrent=True, annotation=None):
-    """Create a blank annotation. If setCurrent is True, then also make this the current annotation."""
-    if annotation is None:
-      annotation = Annotation()
-
+  def add(self, annotation, setCurrent=True):
+    """Add an annotation to the list. If setCurrent is True, then also make this the current annotation."""
     self.annotations.append(annotation)
 
     if setCurrent:
@@ -542,7 +601,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       return False
 
     storableNodes = slicer.mrmlScene.GetStorableNodesModifiedSinceReadByClass(
-      "vtkMRMLMarkupsClosedCurveNode"
+      "vtkMRMLMarkupsNode"
     )
 
     modified = slicer.mrmlScene.GetModifiedSinceRead()
@@ -605,10 +664,15 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     return True
 
-  def onAddAnnotationButtonClicked(self):
-    """Add an annotation to the tree view."""
+  def onAddCurveAnnotationButtonClicked(self):
+    """Add a curve annotation to the tree view."""
 
-    self.Annotations.add(setCurrent=True)
+    self.Annotations.add(ClosedCurveAnnotation())
+
+  def onAddPointAnnotationButtonClicked(self):
+    """Add a point annotation to the tree view."""
+
+    self.Annotations.add(FiducialAnnotation())
 
   def onCloneAnnotationButtonClicked(self):
     """Clone the current annotation and add it to the tree view."""
@@ -618,7 +682,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     data = self.Annotations.current.toDict()
     annotation = Annotation.fromDict(data)
 
-    self.Annotations.add(setCurrent=True, annotation=annotation)
+    self.Annotations.add(annotation=annotation)
 
   def onRemoveAnnotationButtonClicked(self):
     """Remove an annotation from the tree view."""
@@ -632,7 +696,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.setInteractionState('explore')
     self.Annotations.fileName = None
     self.Annotations.clear()
-    self.Annotations.add()
+    self.Annotations.add(ClosedCurveAnnotation())
     self.annotationStored()
 
   def onSaveAnnotationButtonClicked(self):
@@ -960,7 +1024,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
   def onThicknessChanged(self, value):
     self.Annotations.current.thickness = value
-    self.Annotations.current.updateModel()
+    self.Annotations.current.update()
 
   def onAnnotationTypeChanged(self):
     if self.get('SplineRadioButton').checked:
@@ -969,7 +1033,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       representationType = 'polyline'
 
     self.Annotations.current.representationType = representationType
-    self.Annotations.current.updateModel()
+    self.Annotations.current.update()
 
   def onSliceNodeModifiedEvent(self, caller=None, event=None):
     sliceNode = caller
@@ -1099,10 +1163,15 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     # Configure sideebar for multi-annotation support
 
     #  tool buttons
-    addButton = qt.QPushButton('Add')
-    addButton.objectName = 'AddAnnotationButton'
-    self.set(addButton)
-    addButton.setIcon(qt.QIcon(":/Icons/add_icon.svg.png"))
+    addCurveButton = qt.QPushButton('Add Curve')
+    addCurveButton.objectName = 'AddCurveAnnotationButton'
+    self.set(addCurveButton)
+    addCurveButton.setIcon(qt.QIcon(":/Icons/add_icon.svg.png"))
+
+    addPointButton = qt.QPushButton('Add Point')
+    addPointButton.objectName = 'AddPointAnnotationButton'
+    self.set(addPointButton)
+    addPointButton.setIcon(qt.QIcon(":/Icons/add_icon.svg.png"))
 
     cloneButton = qt.QPushButton('Clone')
     cloneButton.objectName = 'CloneAnnotationButton'
@@ -1115,7 +1184,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     removeButton.setIcon(qt.QIcon(":/Icons/remove_icon.svg.png"))
 
     sideBarToolLayout = qt.QHBoxLayout()
-    sideBarToolLayout.addWidget(addButton)
+    sideBarToolLayout.addWidget(addCurveButton)
+    sideBarToolLayout.addWidget(addPointButton)
     sideBarToolLayout.addWidget(cloneButton)
     sideBarToolLayout.addWidget(removeButton)
 
@@ -1321,7 +1391,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     # Setup Annotations
     annotations = AnnotationManager()
-    annotations.add()
+    annotations.add(ClosedCurveAnnotation())
     self.setAnnotations(annotations)
     self.setDefaultSettings()
     self.annotationStored()
@@ -1423,19 +1493,24 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
   def updateGUIFromAnnotation(self):
     annotations = self.Annotations
+    current = self.Annotations.current
 
-    if annotations.current:
+    isClosedCurve = isinstance(current, ClosedCurveAnnotation)
+    if isClosedCurve:
       thickness = annotations.current.thickness
       representation = annotations.current.representationType.title()
     else:
-      thickness = Annotation.DefaultThickness
-      representation = Annotation.DefaultRepresentationType.title()
+      thickness = ClosedCurveAnnotation.DefaultThickness
+      representation = ClosedCurveAnnotation.DefaultRepresentationType.title()
+
+    self.get('ThicknessSliderWidget').value = thickness
+    self.get('%sRadioButton' % representation).setChecked(True)
 
     self.get('OntologyComboBox').currentText = annotations.ontology
     self.get('ReferenceViewComboBox').currentText = annotations.referenceView
     self.get('StepSizeSliderWidget').value = annotations.stepSize
-    self.get('ThicknessSliderWidget').value = thickness
-    self.get('%sRadioButton' % representation).setChecked(True)
+
+    self.setAttributeWidgetsEnabled()
 
   def getReferenceView(self):
     return self.get('ReferenceViewComboBox').currentText
@@ -1461,8 +1536,10 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       button.setChecked(True)
 
     # 1: update selection node
+    markup = self.Annotations.current.markup
     selectionNode = slicer.app.applicationLogic().GetSelectionNode()
-    selectionNode.SetActivePlaceNodeID(self.Annotations.current.markup.GetID())
+    selectionNode.SetActivePlaceNodeID(markup.GetID())
+    selectionNode.SetReferenceActivePlaceNodeClassName(markup.GetClassName())
 
     # 2: update interaction mode:
     interactionNode = slicer.app.applicationLogic().GetInteractionNode()
@@ -1522,7 +1599,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self.get('OntologyComboBox').connect("currentTextChanged(QString)", self.onOntologyChanged)
 
-    self.get('AddAnnotationButton').connect('clicked()', self.onAddAnnotationButtonClicked)
+    self.get('AddCurveAnnotationButton').connect('clicked()', self.onAddCurveAnnotationButtonClicked)
+    self.get('AddPointAnnotationButton').connect('clicked()', self.onAddPointAnnotationButtonClicked)
     self.get('RemoveAnnotationButton').connect('clicked()', self.onRemoveAnnotationButtonClicked)
     self.get('CloneAnnotationButton').connect('clicked()', self.onCloneAnnotationButtonClicked)
     self.get('SubjectHierarchyTreeView').connect('currentItemChanged(vtkIdType)', self.onCurrentItemChanged)
@@ -1539,6 +1617,16 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     interactionNode = slicer.app.applicationLogic().GetInteractionNode()
     self.addObserver(interactionNode, interactionNode.InteractionModeChangedEvent, self.onInteractionModeChanged)
 
+  def setAttributeWidgetsEnabled(self):
+    if not self.Annotations: 
+      return
+
+    current = self.Annotations.current
+    isClosedCurve = isinstance(current, ClosedCurveAnnotation)
+    self.get('ThicknessSliderWidget').enabled = isClosedCurve
+    self.get('PolylineRadioButton').enabled = isClosedCurve
+    self.get('SplineRadioButton').enabled = isClosedCurve
+
   def onCurrentItemChanged(self, vtkId):
     # If things aren't initialized yet then we shouldn't do anything. This will happen a few times during setup while
     # other nodes are added to the subject hierarchy.
@@ -1551,6 +1639,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     old = self.getInteractionState()
     self.setInteractionState('explore')
     self.setInteractionState(old)
+
+    self.setAttributeWidgetsEnabled()
 
   def onOntologyChanged(self, ontology):
     annotation = slicer.mrmlScene.GetFirstNodeByName(
