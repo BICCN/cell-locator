@@ -1,14 +1,20 @@
 ## Next Release
 
-Documentation:
+Features:
 
-* Add [Documentation/CoordinateSystem.md](Documentation/CoordinateSystem.md) with `Updates` section.
+* Add support for adding "point" annotations. See [#164](https://github.com/BICCN/cell-locator/issues/161) and [#164](https://github.com/BICCN/cell-locator/issues/169).
 
 * Add support for user selection of atlas through the UI at startup if no atlas is specified on the command line. See [#165](https://github.com/BICCN/cell-locator/issues/165)
+
+Fixes:
 
 * Fix orientation of MNI atlas. See [#163](https://github.com/BICCN/cell-locator/issues/163)
 
 * Use full annotations for MNI atlas, instead of single side annotation. See [#164](https://github.com/BICCN/cell-locator/issues/164)
+
+Documentation:
+
+* Add [Documentation/CoordinateSystem.md](Documentation/CoordinateSystem.md) with `Updates` section.
 
 ## Cell Locator 0.1.0 2020-09-18
   
