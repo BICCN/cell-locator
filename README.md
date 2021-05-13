@@ -11,8 +11,8 @@ facilitate mapping samples into the corresponding atlas.
 
 * Create, save, and load spline or polyline based annotation.
 * Manage and save multiple annotations per file.
-* Save annotations as JSON containing Spline or Polyline points as well
-  as orientation and thickness.
+* Save annotations as JSON
+* Support for multiple types of annotation: spline, polyline and standalone points.
 * Download from / Upload to a LIMS system. See [LIMS integration](#lims-integration)
 * 3 interaction modes: Explore, Edit or Place point.
 * Reslicing in arbitrary directions.
