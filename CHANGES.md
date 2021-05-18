@@ -6,17 +6,21 @@ Features:
 
 * Add support for user selection of atlas through the UI at startup if no atlas is specified on the command line. See [#165](https://github.com/BICCN/cell-locator/issues/165)
 
+* Add a version number to the file format using [semantic versioning](https://semver.org/). See [#170](https://github.com/BICCN/cell-locator/issues/170)
+
 Fixes:
 
 * Fix orientation of MNI atlas. See [#163](https://github.com/BICCN/cell-locator/issues/163)
 
 * Use full annotations for MNI atlas, instead of single side annotation. See [#164](https://github.com/BICCN/cell-locator/issues/164)
 
-* Fix errors when changing interaction mode while there are no annotations in the scene.
+* Fix errors when changing interaction mode while there are no annotations in the scene. See [#173](https://github.com/BICCN/cell-locator/issues/173)
 
 Documentation:
 
 * Add [Documentation/CoordinateSystem.md](Documentation/CoordinateSystem.md) with `Updates` section.
+
+* Add versioning history to [Documentation/AnnotationFileFormat.md](Documentation/AnnotationFileFormat.md). The current version is `0.1.0+2020.09.18`
 
 ## Cell Locator 0.1.0 2020-09-18
   

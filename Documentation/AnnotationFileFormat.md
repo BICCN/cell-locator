@@ -11,10 +11,12 @@ We mean it.
 
 # Versions
 
-## 2020-09-18
+## 0.1.0 (2020-09-18), Unversioned (2020-09-18)
 
+Annotation files generated with Cell-Locator [0.1.0-2020-09-18](https://github.com/BICCN/cell-locator/releases/tag/0.1.0-2020-09-18) do not include the `version` key.
 ```json
 {
+    "version": "0.1.0+2020.09.18",
     "markups": [
         {
             "markup": {
@@ -158,7 +160,7 @@ We mean it.
 }
 ```
 
-## 2020-08-26
+## Unversioned (2020-08-26)
 
 ```json
 {
@@ -378,7 +380,7 @@ We mean it.
 }
 ```
 
-## 2019-01-26
+## Unversioned (2019-01-26)
 
 ```json
 {
@@ -498,4 +500,3 @@ We mean it.
     "TextList_Count":0
  }
 ```
-
