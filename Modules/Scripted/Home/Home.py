@@ -273,6 +273,8 @@ class ClosedCurveAnnotation(Annotation):
 class AnnotationManager:
   """Manage serialization and bookkeeping for a collection of annotations."""
 
+  FORMAT_VERSION = '0.1.0+2020.09.18'
+
   DefaultReferenceView = 'Coronal'
   DefaultOntology = 'Structure'
   DefaultStepSize = 1
@@ -384,6 +386,7 @@ class AnnotationManager:
     """Convert this collection to dict representation, suitable for json serialization."""
 
     return {
+      'version': self.FORMAT_VERSION,
       'markups': [annotation.toDict() for annotation in self.annotations],
       'currentId': self.currentIdx,
 
