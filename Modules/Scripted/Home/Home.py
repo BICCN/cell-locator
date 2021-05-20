@@ -1535,6 +1535,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     with SignalBlocker(button):
       button.setChecked(True)
 
+    if not self.Annotations.current:
+      return
+
     # 1: update selection node
     markup = self.Annotations.current.markup
     selectionNode = slicer.app.applicationLogic().GetSelectionNode()
