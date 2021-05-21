@@ -12,6 +12,8 @@ Fixes:
 
 * Use full annotations for MNI atlas, instead of single side annotation. See [#164](https://github.com/BICCN/cell-locator/issues/164)
 
+* Fix errors when changing interaction mode while there are no annotations in the scene.
+
 Documentation:
 
 * Add [Documentation/CoordinateSystem.md](Documentation/CoordinateSystem.md) with `Updates` section.
