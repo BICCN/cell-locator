@@ -2,6 +2,12 @@
 
 Features:
 
+Fixes:
+
+## Cell Locator 0.1.0 2021-05-21
+
+Features:
+
 * Add support for adding "point" annotations. See [#164](https://github.com/BICCN/cell-locator/issues/161) and [#164](https://github.com/BICCN/cell-locator/issues/169).
 
 * Add support for user selection of atlas through the UI at startup if no atlas is specified on the command line. See [#165](https://github.com/BICCN/cell-locator/issues/165)
