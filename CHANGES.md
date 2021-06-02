@@ -7,6 +7,12 @@ Features:
 
 Fixes:
 
+Documentation:
+
+- Document the Annotation type hierarchy.
+- Provide documentation and example of how to create new Annotation types.
+- Document the mock LIMS server and LIMS API.
+
 ## Cell Locator 0.1.0 2021-05-21
 
 Features:
