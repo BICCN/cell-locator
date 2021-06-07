@@ -1,5 +1,4 @@
-Maintainers
-===========
+# Maintainers
 
 ## Making a release
 

@@ -14,7 +14,6 @@ import sphinx_rtd_theme
 import os
 import sys
 # sys.path.insert(0, os.path.abspath('.'))
-sys.path.append(os.path.abspath("./_sphinxext"))
 
 
 # -- Project information -----------------------------------------------------
@@ -31,10 +30,8 @@ author = 'Allen Institute for Brain Science, Kitware'
 # ones.
 extensions = [
     'notfound.extension',  # Show a better 404 page when an invlid address is entered
-    'recommonmark',
     'sphinx_rtd_theme',
-    'sphinx_markdown_tables',
-    'workaround_recommonmark_issue_191'
+    'myst_parser',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

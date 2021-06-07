@@ -1,5 +1,4 @@
-CellLocator by Allen Institute
-==============================
+# CellLocator by Allen Institute
 
 Cell Locator is a free, open source and multi-platform pinning tool to facilitate
 mapping samples into common 3D spaces.

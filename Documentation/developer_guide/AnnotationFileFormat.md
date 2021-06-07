@@ -1,5 +1,4 @@
-Annotation File Format
-======================
+# Annotation File Format
 
 ## Disclaimer
 
