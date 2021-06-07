@@ -1,12 +1,10 @@
-Build and Package CellLocator
-=============================
+# Build and Package CellLocator
 
 This document summarizes how to build and package CellLocator on Windows. Instructions for
 Linux and macOS are similar. For more details, see [3D Slicer Developer Wiki](http://wiki.slicer.org/slicerWiki/index.php/Documentation/Nightly/Developers).
 
 
-Prerequisites
--------------
+## Prerequisites
 
 * Microsoft Windows 7 or above recommended
 
@@ -30,8 +28,7 @@ Prerequisites
 
     * Setup [your git username](https://help.github.com/articles/setting-your-username-in-git) and [your git email](https://help.github.com/articles/setting-your-email-in-git).
 
-Checkout
---------
+## Checkout
 
 1. Start [Git Bash](https://help.github.com/articles/set-up-git#need-a-quick-lesson-about-terminalterminalgit-bashthe-command-line)
 2. Checkout the source code into a directory `C:\W\` by typing the following commands:
@@ -45,8 +42,8 @@ git clone https://github.com/BICCN/cell-locator.git cell-locator
 
 Note: use short source and build directory names to avoid the [maximum path length limitation](http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247%28v=vs.85%29.aspx#maxpath).
 
-Build
------
+## Build
+
 Note: The build process will take approximately 3 hours.
 
 <b>Option 1: CMake GUI and Visual Studio (Recommended)</b>
@@ -69,8 +66,7 @@ cmake -G "Visual Studio 14 2015 Win64" -DQT_QMAKE_EXECUTABLE:PATH=C:\Qt\5.9.1\ms
 cmake --build . --config Release
 ```
 
-Package
--------
+## Package
 
 Install [NSIS 2](http://sourceforge.net/projects/nsis/files/)
 

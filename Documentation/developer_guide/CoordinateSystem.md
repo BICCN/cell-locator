@@ -1,5 +1,4 @@
-Coordinate System
-=================
+# Coordinate System
 
 ## Overview
 

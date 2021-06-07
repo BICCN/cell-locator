@@ -1,15 +1,13 @@
-Contributing to CellLocator
-===============================
+# Contributing to CellLocator
 
 There are many ways to contribute to CellLocator.
 
   * Submit a feature request or bug, or add to the discussion on the [CellLocator issue tracker][is]
   * Submit a [Pull Request][pr] to improve CellLocator.
 
-The PR Process, and Related Gotchas
------------------------------------
+## The PR Process, and Related Gotchas
 
-#### How to submit a PR ?
+### How to submit a PR ?
 
 If you are new to CellLocator development and you don't have push access to the CellLocator
 repository, here are the steps:
