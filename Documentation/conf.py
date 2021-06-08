@@ -29,7 +29,7 @@ author = 'Allen Institute for Brain Science, Kitware'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'notfound.extension',  # Show a better 404 page when an invlid address is entered
+    'notfound.extension',  # Show a better 404 page when an invalid address is entered
     'sphinx_rtd_theme',
     'myst_parser',
 ]
