@@ -273,7 +273,7 @@ class ClosedCurveAnnotation(Annotation):
 class AnnotationManager:
   """Manage serialization and bookkeeping for a collection of annotations."""
 
-  FORMAT_VERSION = '0.1.0+2020.09.18'
+  FORMAT_VERSION = '0.1.1+2021.06.11'
 
   DefaultReferenceView = 'Coronal'
   DefaultOntology = 'Structure'
