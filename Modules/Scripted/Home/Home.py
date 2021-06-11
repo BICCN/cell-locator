@@ -57,6 +57,10 @@ def listToMat(lst: list) -> vtk.vtkMatrix4x4:
   return mat
 
 
+def dict_whitelist(data, keys):
+  return {key: data[key] for key in keys}
+
+
 class Annotation(VTKObservationMixin):
   """Manage serialization of a single annotation."""
 
@@ -118,18 +122,24 @@ class Annotation(VTKObservationMixin):
         markup = json.load(f)
         markup = markup['markups'][0]
 
-        # Remove optional keys
-        del markup['display']
-        del markup['locked']
-        del markup['labelFormat']
-        for controlPoint in markup['controlPoints']:
-          del controlPoint['associatedNodeID']
-          del controlPoint['description']
-          del controlPoint['label']
-          del controlPoint['locked']
-          del controlPoint['positionStatus']
-          del controlPoint['selected']
-          del controlPoint['visibility']
+        markup_whitelist = [
+          'type',
+          'coordinateSystem',
+          'controlPoints',
+        ]
+
+        control_whitelist = [
+          'id',
+          'position',
+          'orientation',
+        ]
+
+        markup = dict_whitelist(markup, markup_whitelist)
+
+        markup['controlPoints'] = [
+          dict_whitelist(control, control_whitelist)
+          for control in markup['controlPoints']
+        ]
 
     return {
       'markup': markup,
