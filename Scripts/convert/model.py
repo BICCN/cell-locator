@@ -13,15 +13,21 @@ Matrix4f = Tuple[float, float, float, float,
 
 @dataclass
 class Annotation:
+    """Store minimal information about a single annotation """
+
     name: str = ''
 
     markup_type: str = 'ClosedCurve'
     representation_type: str = 'spline'
+    """Type for a closed curve annotation; ex 'spline' or 'polyline'."""
     thickness: float = 50
+    """Thickness of the annotation model"""
 
     # coordinate system should always be LPS in these dataclasses
     coordinate_system: str = 'LPS'
+    """Should always be LPS here; older versions of Slicer use RAS."""
     coordinate_units: str = 'um'
+    """Should be um for CCF atlas, mm for MNI atlas."""
 
     orientation: Matrix4f = (
         1.0, 0.0, 0.0, 0.25,
@@ -29,19 +35,33 @@ class Annotation:
         0.0, 1.0, 0.0, 22.25,
         0.0, 0.0, 0.0, 1.0,
     )
+    """A transformation matrix storing the orientation of the slicing plane."""
 
     points: List[Vector3f] = dataclasses.field(default_factory=list)
+    """Control point positions for the annotation markup."""
 
 
 @dataclass
 class Document:
     annotations: List[Annotation] = dataclasses.field(default_factory=list)
+
     current_id: int = 0
+    """Index of the currently-selected annotation."""
+
     reference_view: str = 'Coronal'
+    """Initial reference view. Ex. 'Coronal', 'Axial', or 'Sagittal'."""
     ontology: str = 'Structure'
+    """Initial atlas ontology. Ex. 'Structure', 'Layer', or 'None'"""
+
     stepSize: float = 0.5
+    """Distance in :py:attr:`Annotation.coordinate_units` to move slice plane in 
+    Explore mode.
+    """
+
     camera_position: Vector3f = (51.6226, -631.3969, -605.9925)
+    """Initial camera position."""
     camera_view_up: Vector3f = (-.5686, -.6042, .5582)
+    """Initial camera 'up' vector."""
 
 
 class Converter(abc.ABC):
@@ -52,6 +72,18 @@ class Converter(abc.ABC):
 
     "Normalized" -- a dataclass representation common to all versions of
     cell locator. An intermediate representation during the conversion process.
+
+    For example, the flow to update a file to a different version would be:
+
+    >>> doc = old_converter.normalize(data)
+    >>> new_data = new_converter.specialize(doc)
+
+    It is also easier to perform manipulations on a ``Document``. For example:
+
+    >>> doc = converter.normalize(data)
+    >>> for annotation in doc.annotations:
+    ...     annotation.name = annotation.name.lower()
+    >>> data = converter.specialize(data)
     """
 
     @classmethod
@@ -63,5 +95,7 @@ class Converter(abc.ABC):
     @classmethod
     @abc.abstractmethod
     def specialize(cls, doc: Document):
-        """Convert a normalized Document to a specialized dict."""
+        """Convert a normalized Document to a specialized dict; specific to this
+        version.
+        """
         pass

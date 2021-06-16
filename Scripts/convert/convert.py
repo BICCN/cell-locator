@@ -56,8 +56,7 @@ def infer(args):
 
     print(v)
 
-
-def main():
+def make_parser():
     parser = argparse.ArgumentParser(
         prog='convert',
         description=f'Convert Cell Locator annotation files between versions.',
@@ -111,6 +110,10 @@ def main():
     )
     sub_infer.set_defaults(func=infer)
 
+    return parser
+
+def main():
+    parser = make_parser()
     args = parser.parse_args()
     args.func(args)
 

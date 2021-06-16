@@ -3,5 +3,6 @@ pygments
 sphinx
 sphinx-issues
 sphinx-notfound-page
-sphinx_rtd_theme
+sphinx-rtd-theme
+sphinx-argparse
 myst-parser

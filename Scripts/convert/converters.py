@@ -56,19 +56,21 @@ def infer_normalize(data: dict) -> Tuple[str, model.Document]:
 def match(target: str = '') -> Generator[str, None, None]:
     """Find the most-recent versions matching the target.
 
-    If target begins with 'd', then interpret the target as a date
+    Prefix with ``d`` to interpret as a date. Prefix with ``v``, or no prefix,
+    to interpret as a literal version.
 
-    If target begins with a 'v', or has no prefix, interpret the target as a version
-    directly.
+    ===================== ========= ========= ===========
+    Example Versions      ``v1.1``  ``v1.1.`` ``d2020.``
+    ===================== ========= ========= ===========
+    ``1.1.0+2019.02.01``  yes       yes       no
+    ``1.1.1+2020.02.07``  yes       yes       yes
+    ``1.2.0+2020.05.01``  no        no        yes
+    ``1.10.1+2021.03.01`` yes       no        no
+    ===================== ========= ========= ===========
 
-    Substring matching is used for all cases; if the version or date begins with the
-    target, then that version is matched. The most-recent matching version is chosen
-    as defined in version_order.
+    :param target: String describing target versions.
 
-    Since all versions would match the empty string, the most-recent available
-    version is returned if target is empty or would otherwise match all versions.
-
-    :returns: List of matching versions, in order of precedence (most-recent first)
+    :returns: Matching versions, in order of precedence (most-recent first)
     """
 
     key = target.lstrip('vd')
@@ -84,12 +86,10 @@ def match(target: str = '') -> Generator[str, None, None]:
 
 
 def find_latest(target: str = '') -> Tuple[str, model.Converter]:
-    """ Find the most-recent version and converter matching the target.
+    """Find the most-recent matching version and converter.
 
-    See match() for details on matching logic.
-
-    :returns: (version, converter) — The inferred version and the corresponding
-    converter.
+    :param target: The target version string. See match() for details on matching logic.
+    :return: The inferred version and the corresponding converter.
     """
 
     for version in match(target):
