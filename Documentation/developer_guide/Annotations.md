@@ -93,5 +93,7 @@ organization may change from version to version without notice.
 We mean it.
 
 ```{toctree}
+:maxdepth: 2
+Converter Script <AnnotationFileConverter>
 Version History <AnnotationFileFormat>
 ```
