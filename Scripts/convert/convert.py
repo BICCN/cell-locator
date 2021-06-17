@@ -85,8 +85,8 @@ def make_parser():
         help='Target file version. Defaults to the latest version.',
     )
     sub_convert.add_argument(
-        '-i', '--indent', action='store_true',
-        help='Indent output JSON.',
+        '--no-indent', dest='indent', action='store_false', default=True,
+        help='Do not indent output JSON.',
     )
     sub_convert.set_defaults(func=convert)
 

@@ -8,5 +8,5 @@ mkdir -p $d_out
 
 for sample in $d_in/*.json; do
   result="${d_out}/${sample##*/}"
-  python convert.py convert "$sample" "$result" -v? -i 2> /dev/null
+  python convert.py convert "$sample" "$result" -v? 2> /dev/null
 done
