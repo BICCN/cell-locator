@@ -12,7 +12,7 @@ rm $d_out/*
 for sample in $d_in/*.json; do
   result="${d_out}/${sample##*/}"
   version=$(python convert.py infer "$sample")
-  python convert.py convert "$sample" "$result" -v "$version" -t "$version" -i
+  python convert.py convert "$sample" "$result" -v "$version" -t "$version"
 done
 
 meld "$d_in" "$d_out" 2> /dev/null
