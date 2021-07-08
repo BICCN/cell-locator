@@ -53,6 +53,8 @@ Show inferred version of file and exit.
 .. autoclass:: model.Converter
     :members:
 
+.. autodecorator:: model.versioned
+
 .. autoclass:: model.Document
     :members:
     :undoc-members:

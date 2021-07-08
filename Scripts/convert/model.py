@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Tuple
 
-__all__ = ['Annotation', 'Document', 'Converter']
+__all__ = ['Annotation', 'Document', 'Converter', 'versioned']
 
 Vector3f = Tuple[float, float, float]
 Matrix4f = Tuple[float, float, float, float,
@@ -67,9 +67,33 @@ class Document:
     """Initial camera 'up' vector."""
 
 
-class classproperty(property):
-    def __get__(self, object, owner):
-        return self.fget(owner)
+def versioned(func):
+    """Automatically infer version string from calling filename.
+
+    When the caller's filename is formatted ``'v{version}.py'``, extract
+    ``{version}`` from that filename and set the ``"version"`` key in the result.
+
+    For example, in the file ``v1.0.0.py``::
+
+        @versioned
+        def specialize():
+            return {}
+
+        data = specialize()
+        assert data['version'] == '1.0.0'
+    """
+
+    # get the calling frame's filename; extract the version
+    frame = inspect.stack()[1]
+    file = frame[0].f_code.co_filename
+    version = Path(file).stem.lstrip('v')
+
+    def wrap(*arg, **kwarg):
+        data = func(*arg, **kwarg)
+        data['version'] = version
+        return data
+
+    return wrap
 
 
 class Converter(abc.ABC):
@@ -93,12 +117,6 @@ class Converter(abc.ABC):
     ...     annotation.name = annotation.name.lower()
     >>> data = converter.specialize(data)
     """
-
-    @classproperty
-    def version(cls):
-        file = inspect.getfile(cls)
-        version = Path(file).stem.lstrip('v')
-        return version
 
     @classmethod
     @abc.abstractmethod
