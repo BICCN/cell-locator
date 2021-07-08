@@ -36,7 +36,7 @@ class Converter(model.Converter):
     @classmethod
     def specialize(cls, doc: model.Document):
         data = dict()
-        data['version'] = '0.1.0+2020.09.18'
+        data['version'] = cls.version
         data['markups'] = [
             {
                 'markup': {

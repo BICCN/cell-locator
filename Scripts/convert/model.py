@@ -1,8 +1,11 @@
 import abc
 import dataclasses
+import inspect
 from dataclasses import dataclass
-
+from pathlib import Path
 from typing import List, Tuple
+
+__all__ = ['Annotation', 'Document', 'Converter']
 
 Vector3f = Tuple[float, float, float]
 Matrix4f = Tuple[float, float, float, float,
@@ -64,6 +67,11 @@ class Document:
     """Initial camera 'up' vector."""
 
 
+class classproperty(property):
+    def __get__(self, object, owner):
+        return self.fget(owner)
+
+
 class Converter(abc.ABC):
     """ Utility to aid in conversion of Cell Locator files.
 
@@ -85,6 +93,12 @@ class Converter(abc.ABC):
     ...     annotation.name = annotation.name.lower()
     >>> data = converter.specialize(data)
     """
+
+    @classproperty
+    def version(cls):
+        file = inspect.getfile(cls)
+        version = Path(file).stem.lstrip('v')
+        return version
 
     @classmethod
     @abc.abstractmethod

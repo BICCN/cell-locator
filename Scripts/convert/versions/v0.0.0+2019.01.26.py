@@ -1,5 +1,6 @@
 import model
 
+
 class Converter(model.Converter):
     @classmethod
     def normalize(cls, data: dict):
@@ -41,7 +42,7 @@ class Converter(model.Converter):
     @classmethod
     def specialize(cls, doc: model.Document):
         data = dict()
-        data['version'] = '0.0.0+2019.01.26'
+        data['version'] = cls.version
 
         data["Locked"] = 0
         data["MarkupLabelFormat"] = "%N-%d"

@@ -1,4 +1,5 @@
 import importlib.util
+import sys
 from pathlib import Path
 from typing import Dict, Tuple, Generator
 
@@ -24,9 +25,10 @@ latest_version = version_order[0]
 def load_converter(version: str) -> model.Converter:
     path = version_root.joinpath(version + '.py')
     spec = importlib.util.spec_from_file_location(
-        'versions', str(path),
+        version, path,
     )
     module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     converter = module.Converter
     return converter
