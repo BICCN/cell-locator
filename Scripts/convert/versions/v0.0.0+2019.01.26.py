@@ -40,9 +40,9 @@ class Converter(model.Converter):
         return doc
 
     @classmethod
+    @model.versioned
     def specialize(cls, doc: model.Document):
         data = dict()
-        data['version'] = cls.version
 
         data["Locked"] = 0
         data["MarkupLabelFormat"] = "%N-%d"

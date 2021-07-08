@@ -52,9 +52,9 @@ class Converter(model.Converter):
         return doc
 
     @classmethod
+    @model.versioned
     def specialize(cls, doc: model.Document):
         data = dict()
-        data['version'] = cls.version
 
         data["DefaultCameraPosition"] = doc.camera_position
         data["DefaultCameraViewUp"] = doc.camera_view_up
