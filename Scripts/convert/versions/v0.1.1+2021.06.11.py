@@ -36,14 +36,13 @@ class Converter(model.Converter):
     @classmethod
     def specialize(cls, doc: model.Document):
         data = dict()
-        data['version'] = '0.1.0+2020.09.18'
+        data['version'] = '0.1.1+2021.06.11'
         data['markups'] = [
             {
                 'markup': {
                     'type': ann.markup_type,
                     'coordinateSystem': ann.coordinate_system,
                     'coordinateUnits': ann.coordinate_units,
-                    'measurements': [],  # included to avoid `null` value
                     'controlPoints': [
                         {
                             'id': str(i),
