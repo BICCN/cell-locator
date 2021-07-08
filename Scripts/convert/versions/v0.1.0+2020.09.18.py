@@ -18,10 +18,12 @@ class Converter(model.Converter):
             ann = model.Annotation()
             ann.name = dann['name']
             ann.orientation = dann['orientation']
-            ann.representation_type = dann['representationType']
-            ann.thickness = dann['thickness']
-
             ann.markup_type = dmark['type']
+
+            if ann.markup_type == 'ClosedCurve':
+                ann.representation_type = dann['representationType']
+                ann.thickness = dann['thickness']
+
             ann.coordinate_system = dmark['coordinateSystem']
             if 'coordinateUnits' in dmark:
                 ann.coordinate_units = dmark['coordinateUnits']
