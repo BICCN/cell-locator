@@ -97,3 +97,13 @@ We mean it.
 Converter Script <AnnotationFileConverter>
 Version History <AnnotationFileFormat>
 ```
+
+### Modifying the File Format
+
+When a change is made to the file format (e.g. a new type of Annotation is added), be sure to update the conversion script and documentation
+
+- Follow [semantic versioning](https://semver.org/) to increment `AnnotationManager.FORMAT_VERSION` in `Home.py`. Use the date of the release as the build metadata.
+- Update the conversion script
+  - Create a converter in `Scripts/convert/versions`. It's easiest to copy the most-recent converter and modify the `specialize` and `normalize` methods accordingly. See the [Converter API](./AnnotationFileConverter.html#converter-api)
+  - Update `version_order` in `Scripts/convert/converters.py`. Add the new version number at the top of the list; this way `latest_version` will point to the new converter.
+- Update the version history at `Documentation/developer_guide/AnnotationFileFormat.md`.
