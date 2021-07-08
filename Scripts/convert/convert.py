@@ -56,6 +56,7 @@ def infer(args):
 
     print(v)
 
+
 def make_parser():
     parser = argparse.ArgumentParser(
         prog='convert',
@@ -111,6 +112,7 @@ def make_parser():
     sub_infer.set_defaults(func=infer)
 
     return parser
+
 
 def main():
     parser = make_parser()

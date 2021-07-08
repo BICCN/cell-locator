@@ -12,6 +12,7 @@ version_root = Path(__file__).parent.joinpath('versions')
 
 # most-recent versions first
 version_order = [
+    'v0.1.1+2021.06.11',
     'v0.1.0+2020.09.18',
     'v0.0.0+2020.08.26',
     'v0.0.0+2020.04.16',
