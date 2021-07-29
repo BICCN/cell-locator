@@ -1036,8 +1036,11 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.get('ContrastSlider').setValues(self.logic.DefaultWindowLevelMin, self.logic.DefaultWindowLevelMax)
 
   def onThicknessChanged(self, value):
-    self.Annotations.current.thickness = value
-    self.Annotations.current.update()
+    if self.Annotations.current:
+      self.Annotations.current.thickness = value
+      self.Annotations.current.update()
+
+    ClosedCurveAnnotation.DefaultThickness = value
 
   def onAnnotationTypeChanged(self):
     if self.get('SplineRadioButton').checked:
@@ -1045,8 +1048,11 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     else:
       representationType = 'polyline'
 
-    self.Annotations.current.representationType = representationType
-    self.Annotations.current.update()
+    if self.Annotations.current:
+      self.Annotations.current.representationType = representationType
+      self.Annotations.current.update()
+
+    ClosedCurveAnnotation.DefaultRepresentationType = representationType
 
   def onSliceNodeModifiedEvent(self, caller=None, event=None):
     sliceNode = caller
@@ -1648,6 +1654,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     # other nodes are added to the subject hierarchy.
     if not self.Annotations or not self.Annotations.current:
       return
+
+    self.updateGUIFromAnnotation()
 
     # We need to re-initialize the interaction mode for the current markup. The easiest way is to go to explore, then
     # back to the original mode. If the mode already is explore, then nothing will happen. That's okay, since explore
