@@ -96,6 +96,8 @@ class Annotation(VTKObservationMixin):
     self.removeObserver(self.markup, self.markup.PointAddedEvent, self.onMarkupModified)
     self.removeObserver(self.markup, self.markup.PointModifiedEvent, self.onMarkupModified)
 
+    slicer.mrmlScene.RemoveNode(self.markup)
+
   def onMarkupModified(self, caller, event):
     """Event handler to update the annotation model when the markup is modified."""
     self.update()
@@ -240,7 +242,6 @@ class ClosedCurveAnnotation(Annotation):
   def clear(self):
     super().clear()
 
-    slicer.mrmlScene.RemoveNode(self.markup)
     slicer.mrmlScene.RemoveNode(self.model)
 
   def update(self):
