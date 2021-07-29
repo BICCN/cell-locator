@@ -1675,6 +1675,11 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       annotation.GetDisplayNode().SetAndObserveColorNodeID(colorNodeID)
       visible = 1
 
+    # this is the only way to disable view resetting short of reimplementing
+    # qSlicerSubjectHierarchyLabelMapsPlugin::showLabelMapInAllViews. see Slicer/Slicer
+    # Volumes/SubjectHierarchyPlugins/qSlicerSubjectHierarchyVolumesPlugin.cxx#L448-L472
+    qt.QSettings().setValue('SubjectHierarchy/ResetViewOrientationOnShowVolume', False)
+
     # Hide or show label map
     shPluginHandler = slicer.qSlicerSubjectHierarchyPluginHandler.instance()
     shItemID = shPluginHandler.subjectHierarchyNode().GetItemByDataNode(annotation)
