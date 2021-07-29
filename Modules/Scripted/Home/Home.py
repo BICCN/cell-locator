@@ -329,6 +329,8 @@ class AnnotationManager:
     itemId = sh.GetItemByDataNode(annotation.markup)
     tv.setCurrentItem(itemId)
 
+    annotation.update()
+
   @property
   def currentIdx(self):
     """The index of the current annotation in self.annotations"""
@@ -630,6 +632,11 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.updateGUIFromMRML()
     self.updateCameraFromAnnotations()
     self.updateSliceFromAnnotations()
+
+    # now that the annotations are loaded and added to the scene, update each one to
+    # ensure synchronization.
+    for annotation in annotations.annotations:
+      annotation.update()
 
     self.setInteractionState('explore')
 
