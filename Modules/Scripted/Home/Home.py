@@ -990,6 +990,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     sliceWidget = self.LayoutManager.sliceWidget("Slice")
     self.get("SliceOffsetSlider", sliceWidget).singleStep = spacing
 
+    AnnotationManager.DefaultStepSize = spacing
     self.Annotations.stepSize = spacing
 
   def onMarkupsAnnotationStorageNodeModifiedEvent(self):
@@ -1020,6 +1021,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self.resetCamera()
 
+    AnnotationManager.DefaultReferenceView = orientation
     self.Annotations.referenceView = orientation
 
   def onContrastValuesChanged(self, minValue, maxValue):
@@ -1688,6 +1690,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     shItemID = shPluginHandler.subjectHierarchyNode().GetItemByDataNode(annotation)
     shPluginHandler.getOwnerPluginForSubjectHierarchyItem(shItemID).setDisplayVisibility(shItemID, visible)
 
+    AnnotationManager.DefaultOntology = ontology
     self.Annotations.ontology = ontology
 
   def onCursorPositionModifiedEvent(self, caller=None, event=None):
