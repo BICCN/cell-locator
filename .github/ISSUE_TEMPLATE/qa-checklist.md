@@ -142,11 +142,15 @@ See https://github.com/BICCN/cell-locator#keyboard-accelerators-and-mouse-operat
 * [ ] Select Edit mode -> Create an annotation
 * [ ] Select PolyLine -> Annotation type is updated in 2D and 3D views
 * [ ] Add annotation point -> annotation type should remain the same
+* [ ] Create another annotation -> polyline is still selected
+* [ ] Add annotation points (for new annotation) -> annotation type should remain polyline
 
 ## Annotation Thickness
 
 * [ ] Select Edit mode -> Add at least 3 points -> Update thickness
       -> 3D view annotation thickness is updated
+* [ ] Create another annotation -> thickness should be preserved
+* [ ] Add annotation points (for new annotation) -> thickness should be preserved
 
 ## Confirm Exit Dialog
 
