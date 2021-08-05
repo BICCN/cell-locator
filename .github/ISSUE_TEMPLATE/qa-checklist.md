@@ -35,6 +35,9 @@ _located in the lower left corner_
 * [ ] Check that Ontology is visible in 2D and 3D views
 * [ ] Select Layer -> Check that 2D and 3D views are updated
 * [ ] Select None  -> idem
+* [ ] Use the 3D view to modify the orientation of the slice
+* [ ] Select Layer -> Check that the slice orientation is preserved
+* [ ] Select None  -> idem
 
 ## DataProbe
 
