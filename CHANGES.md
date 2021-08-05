@@ -9,6 +9,10 @@ Features:
 Fixes:
 
 - Fixed new `"measurements"` key being incorrectly included in serialization. [#182](https://github.com/BICCN/cell-locator/issues/182)
+- Fixed changing ontology resetting slice view. [#178](https://github.com/BICCN/cell-locator/issues/178)
+- Fixed GUI desync when editing multiple annotations. [#179](https://github.com/BICCN/cell-locator/issues/179), [#180](https://github.com/BICCN/cell-locator/issues/180)
+- Fixed polyline annotations incorrectly loading as splines. [#184](https://github.com/BICCN/cell-locator/issues/184)
+- Fixed point annotations persisting after scene clear. [#185](https://github.com/BICCN/cell-locator/issues/185)
 
 Documentation:
 
