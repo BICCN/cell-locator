@@ -211,6 +211,38 @@ Check that file `annotation.json` and `annotation3.json` are:
       **Known issues:** [#78](https://github.com/BICCN/cell-locator/issues/78)
 * [ ] quasi-identical expect numerical precisions
 
+## Test serialization of multiple annotations
+
+Create annotations:
+
+* [ ] Start application
+* [ ] Delete the default annotation.
+* [ ] Add a Curve annotation
+    * [ ] Enter "edit" mode
+    * [ ] Verify "Spline" type is selected by default
+    * [ ] Place 3+ points
+* [ ] Add a Curve annotation
+    * [ ] Enter "edit" mode
+    * [ ] Select "Polyline" type
+    * [ ] Place 3+ points
+* [ ] Add a Point annotation
+    * [ ] Enter "edit" mode
+    * [ ] Place 3+ points
+* [ ] Enter "explore" mode
+* [ ] Click Save -> popup -> Enter `annotation.json` -> Click Save
+
+Clear scene:
+
+* [ ] Click "New" (don't save if prompt appears)
+* [ ] Verify the scene contains _only_ the default annotation.
+
+Load scene:
+
+* [ ] Click "Load" (don't save if prompt appears) -> select file -> Click "Open"
+* [ ] Verify the Spline annotation appears
+* [ ] Verify the Polyline annotation appears
+* [ ] Verify the Point annotation appears
+
 ## Remembering directory used for last saving
 
 * [ ] Start application -> Click Save -> Choose a different directory -> Choose Save -> Close application
