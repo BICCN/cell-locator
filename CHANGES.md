@@ -28,7 +28,7 @@ Documentation:
 - Provide documentation and example of how to create new Annotation types.
 - Document the mock LIMS server and LIMS API.
 - Switch from recommonmark to [MyST](https://myst-parser.readthedocs.io/en/latest/); so that reStructuredText may be avoided entirely. See [Slicer#5662](https://github.com/Slicer/Slicer/pull/5662).
-- File Format Version bumped to `0.1.1+2021-06-11` [#183](https://github.com/BICCN/cell-locator/pull/183)
+- File Format Version bumped to `0.2.0+2021-08-12` [#198](https://github.com/BICCN/cell-locator/pull/198)
 
 ## Cell Locator 0.1.0 2021-05-21
 
