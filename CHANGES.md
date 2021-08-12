@@ -4,6 +4,14 @@
 
 Features:
 
+Fixes:
+
+Documentation:
+
+## Cell Locator 0.2.0 2021-08-12
+
+Features:
+
 - Created script to convert between Cell Locator file formats. [#181](https://github.com/BICCN/cell-locator/pull/181), [#182](https://github.com/BICCN/cell-locator/pull/182)
 
 Fixes:

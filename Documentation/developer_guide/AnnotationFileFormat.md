@@ -10,6 +10,10 @@ We mean it.
 
 ## Versions
 
+## 0.2.0 (2021-08-11)
+
+Unchanged from 0.1.1; this version synchronizes the file format and cell locator release.
+
 ## 0.1.1 (2021-06-11)
 
 Removed the `"measurements"` key from markups.
