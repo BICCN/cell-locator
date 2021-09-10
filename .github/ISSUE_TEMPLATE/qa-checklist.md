@@ -58,11 +58,13 @@ _located in status bar, right of Ontology combo box_
 
 ## "Adjust Slice Viewer FOV" button
 
+**Known issues**: [#139 (comment)](https://github.com/BICCN/cell-locator/issues/139#issuecomment-916986725)
+
 _located on the left of the Reference View combo box_
 
-* [ ] Select "Coronal"  -> Move slider -> Click on button -> expected offset is  `6600` -> 2D and 3D views are updated
-* [ ] Select "Axial"    -> idem                                                 `-3975` -> idem
-* [ ] Select "Sagittal" -> idem                                                  `5699` -> idem
+* [ ] Select "Coronal"  -> Move slider -> Click on button -> expected offset is  `-6575` -> 2D and 3D views are updated
+* [ ] Select "Axial"    -> idem                                                 `4000` -> idem
+* [ ] Select "Sagittal" -> idem                                                  `5674` -> idem
 
 ## Slice offset slider
 
@@ -89,7 +91,7 @@ _located on the left of the Reference View combo box_
 
 * [ ] Move Roll, Pitch and Yaw sliders -> Apply button is enabled -> wait few seconds, no update should happen -> click Apply -> 2D and 3D views should be updated
 * [ ] Click Reset -> Raw/Pitch/Yaw reset to 0 -> Apply button disabled, slice offset set to `6600`
-* [ ] Update Roll, Pitch, Yaw spin boxes with 25, 35 and 50 -> wait few seconds, nothing should happen -> click Apply -> 2D and 3D views should be updated, slice offset is set to `9478.087`
+* [ ] Update Roll, Pitch, Yaw spin boxes with 25, 35 and 50 -> wait few seconds, nothing should happen -> click Apply -> 2D and 3D views should be updated, slice offset is set to `-9476.047`
 * [ ] Click Reset
 * [ ] Move Roll slider  -> wait few seconds, no update should happen -> press Enter or Return -> 2D and 3D views should be updated
 * [ ] Move Pitch slider -> idem
