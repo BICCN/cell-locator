@@ -119,6 +119,7 @@ class Annotation(VTKObservationMixin):
 
     with tempfile('json/annotation.json') as filename:
       slicer.util.saveNode(self.markup, filename)
+      self.markup.GetStorageNode().StoredModified()
 
       with open(filename) as f:
         markup = json.load(f)
@@ -639,6 +640,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       annotation.update()
 
     self.setInteractionState('explore')
+    self.annotationStored()
 
   def resetFieldOfView(self):
     # Reset 2D
@@ -1423,9 +1425,8 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     annotations.add(ClosedCurveAnnotation())
     self.setAnnotations(annotations)
     self.setDefaultSettings()
-    self.annotationStored()
-
     self.Annotations.current.orientation.DeepCopy(sliceNode.GetSliceToRAS())
+    self.annotationStored()
 
     self.setInteractionState('explore')
 
