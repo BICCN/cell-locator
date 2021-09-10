@@ -83,6 +83,12 @@ or loading a annotation._
 | Slice Step Size       | 1                    | 10                       |
 | Slice Offset          | `<slice step size>`  | `<slice step size> * 10` |
 
+### Annotation List
+
+| Action                       | Effect               |
+|------------------------------|----------------------|
+| Double-click annotation name | Edit annotation name |
+
 ## LIMS integration
 
 Support is enabled specifying command-line flags `--lims-specimen-id` and `--lims-base-url`.
