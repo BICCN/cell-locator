@@ -6,7 +6,12 @@ Features:
 
 Fixes:
 
+- Don't show exit confirmation when file (or LIMS specimen) is unchanged. [#204](https://github.com/BICCN/cell-locator/pull/204)
+
 Documentation:
+
+- Document double-click action to rename annotations. [#206](https://github.com/BICCN/cell-locator/pull/206)
+- Update expected Slice Offset values in QA template. [#203](https://github.com/BICCN/cell-locator/pull/204); see [#139 (comment)](https://github.com/BICCN/cell-locator/issues/139#issuecomment-916986725) for details.
 
 ## Cell Locator 0.2.0 2021-08-12
 
