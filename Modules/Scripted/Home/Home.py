@@ -67,11 +67,12 @@ class Annotation(VTKObservationMixin):
   DisplayName = 'Annotation'
   MarkupType = ''
 
-  def __init__(self, markup=None):
+  def __init__(self, homeLogic, markup=None):
     """Setup the annotation markup and model, and add each to the scene."""
 
     VTKObservationMixin.__init__(self)
 
+    self.homeLogic = homeLogic  # For structure information.
     self.logic = slicer.vtkSlicerSplinesLogic()
 
     if markup is not None:
@@ -144,6 +145,22 @@ class Annotation(VTKObservationMixin):
           for control in markup['controlPoints']
         ]
 
+        volumeNode = self.homeLogic.getAnnotation()
+        transform = self.homeLogic.getWorldRASToIJKTransform(volumeNode)
+        for i, point in enumerate(markup['controlPoints']):
+          ras = [0, 0, 0]
+          self.markup.GetNthControlPointPositionWorld(i, ras)
+          ijk = transform.TransformPoint(ras)
+          index = self.homeLogic.getAllenLabelIndex(ijk, volumeNode)
+
+          try:
+            point['structure'] = {
+              'id': index,
+              'acronym': self.homeLogic.AllenStructureNames[index],
+            }
+          except KeyError:
+            point['structure'] = None
+
     return {
       'markup': markup,
       'name': self.markup.GetName(),
@@ -152,7 +169,7 @@ class Annotation(VTKObservationMixin):
     }
 
   @classmethod
-  def fromMarkup(cls, markup):
+  def fromMarkup(cls, homeLogic, markup):
     """Initialize an Annotation given an existing markup. Selects from subclasses based on that class's MarkupType.
 
     For example, FiducialsAnnotation is a subclass of Annotation, so it is queried. FiducialsAnnotation.MarkupType is
@@ -167,13 +184,13 @@ class Annotation(VTKObservationMixin):
 
     for icls in cls.__subclasses__():
       if markup.IsA(icls.MarkupType):
-        return icls(markup=markup)
+        return icls(homeLogic, markup=markup)
 
     logging.error('Unsupported markup type %r', markup.GetClassName())
     return None
 
   @classmethod
-  def fromDict(cls, data):
+  def fromDict(cls, homeLogic, data):
     """Convert a dict representation to an annotation, suitable for json deserialization."""
 
     with tempfile('json/annotation.json') as filename:
@@ -193,7 +210,7 @@ class Annotation(VTKObservationMixin):
     # we want to use fromMarkup so the correct behavior (annotation type) is used for the given markup type.
     # since each annotation type may have extra parameters, we should use setMetadata
 
-    annotation = cls.fromMarkup(markup)
+    annotation = cls.fromMarkup(homeLogic, markup)
     annotation.setMetadata(data)
     annotation.orientation.DeepCopy(listToMat(data['orientation']))
 
@@ -211,8 +228,8 @@ class FiducialAnnotation(Annotation):
   DisplayName = 'Point'
   MarkupType = 'vtkMRMLMarkupsFiducialNode'
 
-  def __init__(self, markup=None):
-    super().__init__(markup=markup)
+  def __init__(self, homeLogic, markup=None):
+    super().__init__(homeLogic, markup=markup)
 
 
 class ClosedCurveAnnotation(Annotation):
@@ -222,7 +239,7 @@ class ClosedCurveAnnotation(Annotation):
   DefaultRepresentationType = 'spline'
   DefaultThickness = 50
 
-  def __init__(self, markup=None):
+  def __init__(self, homeLogic, markup=None):
     self.representationType = self.DefaultRepresentationType
     self.thickness = self.DefaultThickness
 
@@ -230,7 +247,7 @@ class ClosedCurveAnnotation(Annotation):
     self.model.CreateDefaultDisplayNodes()
 
     # need to have representationType, thickness, model, etc when the markup is created.
-    super().__init__(markup=markup)
+    super().__init__(homeLogic, markup=markup)
 
     generator = self.markup.GetCurveGenerator()
     generator.SetNumberOfPointsPerInterpolatingSegment(20)
@@ -285,7 +302,7 @@ class ClosedCurveAnnotation(Annotation):
 class AnnotationManager:
   """Manage serialization and bookkeeping for a collection of annotations."""
 
-  FORMAT_VERSION = '0.2.0+2021.08.12'
+  FORMAT_VERSION = '0.2.1+2022.03.04'
 
   DefaultReferenceView = 'Coronal'
   DefaultOntology = 'Structure'
@@ -413,12 +430,12 @@ class AnnotationManager:
     }
 
   @classmethod
-  def fromDict(cls, data):
+  def fromDict(cls, homeLogic, data):
     """Convert a dict representation to annotation collection, suitable for json deserialization."""
 
     manager = cls()
 
-    manager.annotations = [Annotation.fromDict(item) for item in data['markups']]
+    manager.annotations = [Annotation.fromDict(homeLogic, item) for item in data['markups']]
     manager.currentIdx = data['currentId']
 
     manager.referenceView = data['referenceView']
@@ -453,7 +470,7 @@ class AnnotationManager:
       json.dump(data, f, indent=indent)
 
   @classmethod
-  def fromFile(cls, fileName):
+  def fromFile(cls, homeLogic, fileName):
     """Load an annotation collection from a json file.
 
     Instance variable fileName is set, so that subsequent calls to toFile() will
@@ -463,7 +480,7 @@ class AnnotationManager:
     with open(fileName) as f:
       data = json.load(f)
 
-    manager = cls.fromDict(data)
+    manager = cls.fromDict(homeLogic, data)
     manager.fileName = fileName
 
     return manager
@@ -603,7 +620,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
       annotationFilePath = slicer.app.commandOptions().annotationFilePath
       if annotationFilePath:
-        annotations = AnnotationManager.fromFile(annotationFilePath)
+        annotations = AnnotationManager.fromFile(self.logic, annotationFilePath)
         self.setAnnotations(annotations)
         self.annotationStored()
 
@@ -690,12 +707,12 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   def onAddCurveAnnotationButtonClicked(self):
     """Add a curve annotation to the tree view."""
 
-    self.Annotations.add(ClosedCurveAnnotation())
+    self.Annotations.add(ClosedCurveAnnotation(self.logic))
 
   def onAddPointAnnotationButtonClicked(self):
     """Add a point annotation to the tree view."""
 
-    self.Annotations.add(FiducialAnnotation())
+    self.Annotations.add(FiducialAnnotation(self.logic))
 
   def onCloneAnnotationButtonClicked(self):
     """Clone the current annotation and add it to the tree view."""
@@ -703,7 +720,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     # copy all attributes of the annotation, reusing the existing serialization logic.
     # convert to dict and back.
     data = self.Annotations.current.toDict()
-    annotation = Annotation.fromDict(data)
+    annotation = Annotation.fromDict(self.logic, data)
 
     self.Annotations.add(annotation=annotation)
 
@@ -769,7 +786,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     self.setInteractionState('explore')
     self.Annotations.clear()
-    annotations = AnnotationManager.fromFile(fileName)
+    annotations = AnnotationManager.fromFile(self.logic, fileName)
     self.setAnnotations(annotations)
     self.annotationStored()
 
@@ -798,7 +815,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
       return
 
     if res.status_code == 200:
-      annotations = AnnotationManager.fromDict(res.json()['data'])
+      annotations = AnnotationManager.fromDict(self.logic, res.json()['data'])
       self.setAnnotations(annotations)
     else:
       try:
@@ -1422,7 +1439,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     # Setup Annotations
     annotations = AnnotationManager()
-    annotations.add(ClosedCurveAnnotation())
+    annotations.add(ClosedCurveAnnotation(self.logic))
     self.setAnnotations(annotations)
     self.setDefaultSettings()
     self.Annotations.current.orientation.DeepCopy(sliceNode.GetSliceToRAS())
