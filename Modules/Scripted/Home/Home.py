@@ -1678,8 +1678,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.setAttributeWidgetsEnabled()
 
   def onOntologyChanged(self, ontology):
-    annotation = slicer.mrmlScene.GetFirstNodeByName(
-      os.path.splitext(os.path.basename(HomeLogic.annotationFilePath(self.logic.atlasType())))[0])
+    annotation = self.logic.getAnnotation()
     if ontology == "Structure":
       colorNodeID = slicer.mrmlScene.GetFirstNodeByName("allen").GetID()
     elif ontology == "Layer":
@@ -1741,6 +1740,7 @@ class HomeLogic(object):
   def __init__(self):
     self.AllenStructurePaths = {}
     self.AllenLayerStructurePaths = {}
+    self.AllenStructureNames = {}
     self.SlicerToAllenMapping = {}
     self.AllenToSlicerMapping = {}
 
@@ -1877,28 +1877,30 @@ class HomeLogic(object):
     with open(self.ontologyFilePath(atlas_type=atlas_type)) as content:
       msg = json.load(content)["msg"]
 
-    allenStructureNames = {}
+    self.AllenStructureNames = {}
     for structure in msg:
-      allenStructureNames[structure["id"]] = structure["acronym"]
+      self.AllenStructureNames[structure["id"]] = structure["acronym"]
 
     self.AllenStructurePaths = {}
     for structure in msg:
       self.AllenStructurePaths[structure["id"]] = " > ".join(
-        [allenStructureNames[int(structure_id)] for structure_id in structure["structure_id_path"][1:-1].split("/")])
+        [self.AllenStructureNames[int(structure_id)] for structure_id in
+         structure["structure_id_path"][1:-1].split("/")])
 
     # Load "layer" ontology (only available for the CCF atlas type)
     if atlas_type == HomeLogic.CCF_ATLAS:
       with open(self.layerOntologyFilePath()) as content:
         msg = json.load(content)["msg"]
 
-      allenStructureNames = {997: "root"}
+      self.AllenStructureNames[997] = "root"
       for structure in msg:
-        allenStructureNames[structure["id"]] = structure["acronym"]
+        self.AllenStructureNames[structure["id"]] = structure["acronym"]
 
       self.AllenLayerStructurePaths = {}
       for structure in msg:
         self.AllenLayerStructurePaths[structure["id"]] = " > ".join(
-          [allenStructureNames[int(structure_id)] for structure_id in structure["structure_id_path"][1:-1].split("/")])
+          [self.AllenStructureNames[int(structure_id)] for structure_id in
+           structure["structure_id_path"][1:-1].split("/")])
 
     # Load annotation
     try:
@@ -1918,63 +1920,103 @@ class HomeLogic(object):
   def getCrosshairPixelString(self, crosshairNode):
     """Given a crosshair node, create a human readable string describing
     the contents associated with crosshair cursor position."""
-    ras = [0.0,0.0,0.0]
-    xyz = [0.0,0.0,0.0]
+
+    ras = [0.0, 0.0, 0.0]
+    xyz = [0.0, 0.0, 0.0]
     insideView = crosshairNode.GetCursorPositionRAS(ras)
     sliceNode = crosshairNode.GetCursorPositionXYZ(xyz)
+
     appLogic = slicer.app.applicationLogic()
     sliceLogic = appLogic.GetSliceLogic(sliceNode)
-    if not insideView or not sliceNode or not sliceLogic:
-      return
 
-    def _roundInt(value):
-      try:
-        return int(round(value))
-      except ValueError:
-        return 0
+    if not all((insideView, sliceNode, sliceLogic)):
+      return None
 
     layerLogic = sliceLogic.GetLabelLayer()
     volumeNode = layerLogic.GetVolumeNode()
-    ijk = [0, 0, 0]
-    if volumeNode:
-      xyToIJK = layerLogic.GetXYToIJKTransform()
-      ijkFloat = xyToIJK.TransformDoublePoint(xyz)
-      ijk = [_roundInt(value) for value in ijkFloat]
 
-    return self.getPixelString(volumeNode, ijk, ras)
+    if not volumeNode:
+      return None
 
-  def getPixelString(self,volumeNode,ijk,ras):
+    return self.getPixelString(ras, volumeNode)
+
+  def getPixelString(self, ras, volumeNode):
     """Given a volume node, create a human readable
     string describing the contents"""
-    if not volumeNode:
+    if not volumeNode or not volumeNode.IsA('vtkMRMLLabelMapVolumeNode'):
       return ""
+
+    RASToIJK = self.getWorldRASToIJKTransform(volumeNode)
+    ijk = RASToIJK.TransformPoint(ras)
+
+    allenLabelIndex = self.getAllenLabelIndex(ijk, volumeNode)
+    if allenLabelIndex is None:
+      return ""
+
+    rasStr = ' '.join(f'{coeff:3.1f}' for coeff in ras)
+
+    displayNode = volumeNode.GetDisplayNode()
+    if not displayNode:
+      return ""
+
+    colorNode = displayNode.GetColorNode()
+    if not colorNode:
+      return ""
+
+    try:
+      labelValue = "Unknown"
+      if colorNode.GetName() == "allen":
+        labelValue = self.AllenStructurePaths[allenLabelIndex]
+      elif colorNode.GetName() == "allen_layer":
+        labelValue = self.AllenLayerStructurePaths[allenLabelIndex]
+      return "%s | %s (%d)" % (rasStr, labelValue, allenLabelIndex)
+    except KeyError:
+      # print(allenLabelIndex)
+      return rasStr
+
+  def getWorldRASToIJKTransform(self, volumeNode):
+    if not volumeNode or not volumeNode.IsA('vtkMRMLLabelMapVolumeNode'):
+      return None
+
+    # World RAS -> Local RAS -> Local IJK
+
+    transform = vtk.vtkGeneralTransform()
+    transform.Identity()
+
+    # World RAS -> Local RAS
+    parent = volumeNode.GetParentTransformNode()
+    if parent:
+      parent.GetTransformFromWorld(transform)
+
+    # Local RAS -> Local IJK
+    matrix = vtk.vtkMatrix4x4()
+    volumeNode.GetRASToIJKMatrix(matrix)
+    transform.Concatenate(matrix)
+
+    return transform
+
+  def getAllenLabelIndex(self, ijk, volumeNode):
+    """Given a volume node, fetch the allen structure id at a point"""
+    if not volumeNode or not volumeNode.IsA('vtkMRMLLabelMapVolumeNode'):
+      print('bad volumeNode')
+      return None
+
     imageData = volumeNode.GetImageData()
     if not imageData:
-      return ""
-    dims = imageData.GetDimensions()
-    for ele in range(3):
-      if ijk[ele] < 0 or ijk[ele] >= dims[ele]:
-        return ""  # Out of frame
-    rasStr = "{ras_x:3.1f} {ras_y:3.1f} {ras_z:3.1f}".format(ras_x=abs(ras[0]), ras_y=abs(ras[1]), ras_z=abs(ras[2]))
-    if volumeNode.IsA("vtkMRMLLabelMapVolumeNode"):
-      labelIndex = int(imageData.GetScalarComponentAsDouble(ijk[0], ijk[1], ijk[2], 0))
-      labelValue = "Unknown"
-      displayNode = volumeNode.GetDisplayNode()
-      if displayNode:
-        colorNode = displayNode.GetColorNode()
-        if colorNode and labelIndex > 0:
-          allenLabelIndex = self.SlicerToAllenMapping[labelIndex]
-          try:
-            if colorNode.GetName() == "allen":
-              labelValue = self.AllenStructurePaths[allenLabelIndex]
-            elif colorNode.GetName() == "allen_layer":
-              labelValue = self.AllenLayerStructurePaths[allenLabelIndex]
-            return "%s | %s (%d)" % (rasStr, labelValue, allenLabelIndex)
-          except KeyError:
-            #print(allenLabelIndex)
-            return rasStr
+      print('bad imageData')
+      return None
 
-    return ""
+    ijk = [int(round(coeff)) for coeff in ijk]
+
+    dims = imageData.GetDimensions()
+    if not all(0 <= ele < bound for ele, bound in zip(ijk, dims)):
+      if hasattr(self, 'DEBUG'):
+        print('bad bounds', ijk, dims)
+      return None  # Out of frame
+
+    labelIndex = int(imageData.GetScalarComponentAsDouble(ijk[0], ijk[1], ijk[2], 0))
+    allenLabelIndex = self.SlicerToAllenMapping[labelIndex]
+    return allenLabelIndex
 
   @staticmethod
   def limsBaseURL():
@@ -1985,6 +2027,17 @@ class HomeLogic(object):
 
   def setAtlasType(self, atlasType):
     self._atlasType = atlasType
+
+  def getAnnotation(self):
+    annotation = slicer.mrmlScene.GetFirstNodeByName(
+      os.path.splitext(
+        os.path.basename(
+          HomeLogic.annotationFilePath(self.atlasType())
+        )
+      )[0]
+    )
+
+    return annotation
 
 
 class HomeTest(ScriptedLoadableModuleTest):
