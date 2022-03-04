@@ -39,7 +39,7 @@ class Converter(model.Converter):
 
             ann.coordinate_system = 'LPS'
             ann.points = [
-                (-p['x'], -p['y'], p['z'])  # RAS → LPS conversion
+                model.Point((-p['x'], -p['y'], p['z']))  # RAS → LPS conversion
                 for p in dmark['Points']
             ]
 

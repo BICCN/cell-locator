@@ -3,7 +3,7 @@ import dataclasses
 import inspect
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 __all__ = ['Annotation', 'Document', 'Converter', 'versioned']
 
@@ -13,6 +13,19 @@ Matrix4f = Tuple[float, float, float, float,
                  float, float, float, float,
                  float, float, float, float]
 
+@dataclass
+class Structure:
+    id: int
+    acronym: str
+
+@dataclass
+class Point:
+    position: Vector3f
+    structure: Optional[Structure] = None
+
+    def __iter__(self):
+        # enables unpacking like `x, y, z = point`
+        return iter(self.position)
 
 @dataclass
 class Annotation:
@@ -40,7 +53,7 @@ class Annotation:
     )
     """A transformation matrix storing the orientation of the slicing plane."""
 
-    points: List[Vector3f] = dataclasses.field(default_factory=list)
+    points: List[Point] = dataclasses.field(default_factory=list)
     """Control point positions for the annotation markup."""
 
 

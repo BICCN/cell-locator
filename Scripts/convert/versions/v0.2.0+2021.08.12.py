@@ -29,7 +29,7 @@ class Converter(model.Converter):
                 ann.coordinate_units = dmark['coordinateUnits']
 
             for point in dmark['controlPoints']:
-                ann.points.append(tuple(point['position']))
+                ann.points.append(model.Point(tuple(point['position'])))
 
             doc.annotations.append(ann)
 
@@ -48,7 +48,7 @@ class Converter(model.Converter):
                     'controlPoints': [
                         {
                             'id': str(i),
-                            'position': pt,
+                            'position': pt.position,
                             'orientation': [-1.0, -0.0, -0.0,
                                             -0.0, -1.0, -0.0,
                                             +0.0, +0.0, +1.0]
