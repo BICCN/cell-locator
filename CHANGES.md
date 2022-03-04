@@ -4,6 +4,8 @@
 
 Features:
 
+- Add structure ID and acronym to JSON format. [#208](https://github.com/BICCN/cell-locator/issues/208)
+
 Fixes:
 
 - Don't show exit confirmation when file (or LIMS specimen) is unchanged. [#204](https://github.com/BICCN/cell-locator/pull/204)
