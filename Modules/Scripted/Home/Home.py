@@ -626,7 +626,9 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
       limsSpecimenID = slicer.app.commandOptions().limsSpecimenID
       if limsSpecimenID:
-        self.loadLIMSSpecimen(limsSpecimenID)
+        limsSpecimenKind = slicer.app.commandOptions().limsSpecimenKind
+
+        self.loadLIMSSpecimen(limsSpecimenID, limsSpecimenKind)
 
     qt.QTimer.singleShot(0, lambda: postStartupInitialization())
 
@@ -790,7 +792,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.setAnnotations(annotations)
     self.annotationStored()
 
-  def loadLIMSSpecimen(self, specimenID):
+  def loadLIMSSpecimen(self, specimenID, kind=''):
     """Retrieve and load specimenID from LIMS.
 
     See :func:`HomeLogic.limsBaseURL()`:
@@ -800,10 +802,10 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     path = '/specimen_metadata/view'
     url = urllib.parse.urljoin(HomeLogic.limsBaseURL(), path)
 
-    query = {
-      'kind': 'IVSCC cell locations',
-      'specimen_id': specimenID
-    }
+    if not kind:
+      kind = 'IVSCC cell locations'
+
+    query = {'kind': kind, 'specimen_id': specimenID}
 
     try:
       res = requests.get(url, params=query)
@@ -834,9 +836,10 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     logging.info('Upload Annotation Button Clicked')
 
     limsSpecimenID = slicer.app.commandOptions().limsSpecimenID
-    self.saveLIMSSpecimen(limsSpecimenID)
+    limsSpecimenKind = slicer.app.commandOptions().limsSpecimenKind
+    self.saveLIMSSpecimen(limsSpecimenID, limsSpecimenKind)
 
-  def saveLIMSSpecimen(self, specimenID):
+  def saveLIMSSpecimen(self, specimenID, kind=''):
     """Publish annotations to LIMS as specimenID.
 
     See :func:`HomeLogic.limsBaseURL()`:
@@ -848,8 +851,11 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     path = '/specimen_metadata/store'
     url = urllib.parse.urljoin(HomeLogic.limsBaseURL(), path)
 
+    if not kind:
+      kind = 'IVSCC cell locations'
+
     body = {
-      'kind': 'IVSCC cell locations',
+      'kind': kind,
       'specimen_id': specimenID,
       'data': data
     }
