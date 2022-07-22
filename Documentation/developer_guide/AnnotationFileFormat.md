@@ -14,7 +14,7 @@ We mean it.
 
 Add the `structure` object to control point. `null` for values with missing structure (outside of atlas, converted from old file, etc.)
 
-## 0.2.0 (2021-08-11)
+## 0.2.0 (2021-08-12)
 
 Unchanged from 0.1.1; this version synchronizes the file format and cell locator release.
 
