@@ -14,7 +14,7 @@ _The latest version listed below should correspond to the version hard-coded in 
 
 [home-py]: https://github.com/BICCN/cell-locator/blob/master/Modules/Scripted/Home/Home.py
 
-## Next Release
+## 0.2.1 (2022-03-04)
 
 Add the `structure` object to control point. `null` for values with missing structure (outside of atlas, converted from old file, etc.)
 
