@@ -5,6 +5,7 @@
 Features:
 
 - Add structure ID and acronym to JSON format. [#208](https://github.com/BICCN/cell-locator/issues/208)
+- Add optional ``lims-specimen-kind`` command line parameter. [#213](https://github.com/BICCN/cell-locator/issues/213)
 
 Fixes:
 
