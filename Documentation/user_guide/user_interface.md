@@ -6,10 +6,11 @@ List of command-line arguments specific to CellLocator
 
 | Argument             | Description                                                            |
 |----------------------|------------------------------------------------------------------------|
-| `--reference-view`   | Accepted value: `Axial`, `Coronal` or `Sagittal`. Default is `Coronal` |                       |
+| `--reference-view`   | Accepted value: `Axial`, `Coronal` or `Sagittal`. Default is `Coronal` |
 | `--view-angle`       | Angle in degree                                                        |
 | `--annotation-file`  | Path to an existing annotation file                                    |
 | `--lims-specimen-id` | LIMS specimen id to retrieve and load                                  |
+| `--lims-specimen-kind` | LIMS specimen kind to load or save. Default is `IVSCC cell locations` |
 | `--lims-base-url`    | LIMS base url                                                          |
 | `--atlas-type`       | Specify the atlas type to load: `ccf` or `mni`. Default is `ccf`       |
 
