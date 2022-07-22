@@ -10,6 +10,10 @@ We mean it.
 
 ## Versions
 
+_The latest version listed below should correspond to the version hard-coded in the ``AnnotationManager.FORMAT_VERSION`` constant set in [Modules/Scripted/Home/Home.py][home-py].__
+
+[home-py]: https://github.com/BICCN/cell-locator/blob/master/Modules/Scripted/Home/Home.py
+
 ## Next Release
 
 Add the `structure` object to control point. `null` for values with missing structure (outside of atlas, converted from old file, etc.)
