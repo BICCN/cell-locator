@@ -124,3 +124,16 @@ Major Change
 ! markups[]
 -     measurements
 ```
+
+# 2021-06-11 -> 2021-08-12
+
+_Unchanged; this version synchronizes the file format and cell locator release._
+
+# 2021-08-12 -> 2022-03-04
+
+```diff
+! markups[]
+!     markup
+!         controlPoints
++             structure
+```
