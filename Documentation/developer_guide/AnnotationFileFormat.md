@@ -14,15 +14,15 @@ _The latest version listed below should correspond to the version hard-coded in 
 
 [home-py]: https://github.com/BICCN/cell-locator/blob/master/Modules/Scripted/Home/Home.py
 
-## 0.2.1 (2022-03-04)
+### 0.2.1 (2022-03-04)
 
 Add the `structure` object to control point. `null` for values with missing structure (outside of atlas, converted from old file, etc.)
 
-## 0.2.0 (2021-08-12)
+### 0.2.0 (2021-08-12)
 
 Unchanged from 0.1.1; this version synchronizes the file format and cell locator release.
 
-## 0.1.1 (2021-06-11)
+### 0.1.1 (2021-06-11)
 
 Removed the `"measurements"` key from markups.
 
@@ -172,7 +172,7 @@ Removed the `"measurements"` key from markups.
 }
 ```
 
-## 0.1.0 (2020-09-18), Unversioned (2020-09-18)
+### 0.1.0 (2020-09-18), Unversioned (2020-09-18)
 
 Annotation files generated with Cell-Locator [0.1.0-2020-09-18](https://github.com/BICCN/cell-locator/releases/tag/0.1.0-2020-09-18) do not include the `version` key.
 ```json
@@ -322,7 +322,7 @@ Annotation files generated with Cell-Locator [0.1.0-2020-09-18](https://github.c
 }
 ```
 
-## Unversioned (2020-08-26)
+### Unversioned (2020-08-26)
 
 ```json
 {
@@ -542,7 +542,7 @@ Annotation files generated with Cell-Locator [0.1.0-2020-09-18](https://github.c
 }
 ```
 
-## Unversioned (2019-01-26)
+### Unversioned (2019-01-26)
 
 ```json
 {
