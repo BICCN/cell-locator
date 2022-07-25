@@ -8,11 +8,33 @@ the file organization may change from version to version without notice.
 
 We mean it.
 
+## Versioning Guidelines
+
+This section provides hints for updating the ``AnnotationManager.FORMAT_VERSION`` constant set in [Modules/Scripted/Home/Home.py][home-py]._
+
+Based on the answer to the following question:
+
+> Since the last release of Cell Locator, were annotation format changes introduced ?
+
+If the answer is **No**, consider creating a _synchronization_ converter script:
+1. copy the most recent `vX.Y.Z+YYYY.MM.DD.py` script. This will ensure the annotation saved with the new release of cell locator will have a version string newer than the last release.
+2. add an entry to the `version_order` list in [converters.py][converters-py] script.
+3. add an entry in the [Versions](#versions) section below.
+4. add an entry in the [version-changlist.md][version-changlist] document.
+
+If the answer is **yes**, no changes are required.
+
+[converters-py]: https://github.com/BICCN/cell-locator/blob/master/Scripts/convert/converters.py
+
 ## Versions
 
-_The latest version listed below should correspond to the version hard-coded in the ``AnnotationManager.FORMAT_VERSION`` constant set in [Modules/Scripted/Home/Home.py][home-py].__
+_The latest version listed below should correspond to the version hard-coded in the ``AnnotationManager.FORMAT_VERSION`` constant set in [Modules/Scripted/Home/Home.py][home-py]._
+
+_Overview of differences between versions are documented in [version-changlist.md][version-changlist]._
 
 [home-py]: https://github.com/BICCN/cell-locator/blob/master/Modules/Scripted/Home/Home.py
+[version-changlist]: https://github.com/BICCN/cell-locator/blob/master/Scripts/convert/version-changlist.md
+
 
 ### 0.2.1 (2022-03-04)
 
