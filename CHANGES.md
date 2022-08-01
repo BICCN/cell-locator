@@ -2,6 +2,8 @@
 
 ## Next Release
 
+## Cell Locator 0.3.0-2022-07-25
+
 Features:
 
 - Add structure ID and acronym to JSON format. [#208](https://github.com/BICCN/cell-locator/issues/208)
