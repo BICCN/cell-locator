@@ -17,7 +17,7 @@ A core developer should use the following steps to create a release of **Cell Lo
 
 4. Run `D:\D\DashboardScripts\overload-vs2019-cell-locator_preview_experimental.bat` script
 
-    _Scripts are available at https://github.com/Slicer/DashboardScripts__
+    _Scripts are available at https://github.com/Slicer/DashboardScripts_
 
 5. From the developer workstation, tag the release:
 
@@ -37,7 +37,7 @@ A core developer should use the following steps to create a release of **Cell Lo
 6. From the developer workstation:
 
   * update [CHANGES.md][changes] replacing `Next Release` with `Cell Locator X.Y.Z-YYYY-MM-DD` and push.
-  * update `AnnotationFileFormat.md` based on the [Annotation File Format Versioning Guidelines]][annotation-file-format-versioning-guidelines] and push.
+  * update `AnnotationFileFormat.md` based on the [Annotation File Format Versioning Guidelines][annotation-file-format-versioning-guidelines] and push.
 
 7. Go to [https://github.com/BICCN/cell-locator/tags](https://github.com/BICCN/cell-locator/tags), then create a _release_ or _pre-release_ from the tag.
 

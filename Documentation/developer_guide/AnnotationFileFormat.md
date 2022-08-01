@@ -10,7 +10,7 @@ We mean it.
 
 ## Versioning Guidelines
 
-This section provides hints for updating the ``AnnotationManager.FORMAT_VERSION`` constant set in [Modules/Scripted/Home/Home.py][home-py]._
+This section provides hints for updating the ``AnnotationManager.FORMAT_VERSION`` constant set in [Modules/Scripted/Home/Home.py][home-py].
 
 Based on the answer to the following question:
 
