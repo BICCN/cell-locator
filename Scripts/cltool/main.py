@@ -72,7 +72,7 @@ from vtkmodules.vtkCommonCore import vtkMath
 from vtkmodules.vtkCommonCore import vtkPoints
 from vtkmodules.vtkCommonDataModel import vtkImageData
 from vtkmodules.vtkCommonExecutionModel import vtkPolyDataAlgorithm
-from vtkmodules.vtkCommonMath import vtkMatrix4x4
+from vtkmodules.vtkCommonMath import vtkMatrix4x4, vtkMatrix3x3
 from vtkmodules.vtkCommonTransforms import vtkTransform
 from vtkmodules.vtkFiltersCore import vtkAppendPolyData
 from vtkmodules.vtkFiltersGeneral import vtkContourTriangulator
@@ -127,13 +127,15 @@ def make_curve(
     return extrude
 
 
-RAS_TO_PIR_TF = vtkTransform()
-RAS_TO_PIR_TF.GetMatrix().DeepCopy([
+RAS_TO_PIR_MATRIX = vtkMatrix4x4()
+RAS_TO_PIR_MATRIX.DeepCopy([
     .0, +1, .0, .0,
     .0, .0, -1, .0,
     -1, .0, .0, -1,
     .0, .0, .0, +1,
 ])
+RAS_TO_PIR_TF = vtkTransform()
+RAS_TO_PIR_TF.SetMatrix(RAS_TO_PIR_MATRIX)
 
 
 def ras_to_pir(model: vtkPolyDataAlgorithm) -> vtkPolyDataAlgorithm:
@@ -173,8 +175,11 @@ def vtkImageData_like(filename):
     reader.LoadPrivateTagsOn()
     reader.ReadImageInformation()
 
+    direction = vtkMatrix3x3()
+    direction.DeepCopy(reader.GetDirection())
+
     image = vtkImageData()
-    image.GetDirectionMatrix().DeepCopy(reader.GetDirection())
+    image.SetDirectionMatrix(direction)
     image.SetOrigin(*reader.GetOrigin())
     image.SetSpacing(*reader.GetSpacing())
     image.SetDimensions(*reader.GetSize())
@@ -195,11 +200,15 @@ def apply_stencil(
 
     tform = vtkTransform()
     tform.Translate(image.GetOrigin())
+
+    matrix = vtkMatrix4x4()
+    matrix.DeepCopy(tform.GetMatrix())
+
     for i in range(3):
         for j in range(3):
-            tform.GetMatrix().SetElement(
-                i, j, image.GetDirectionMatrix().GetElement(i, j)
-            )
+            matrix.SetElement(i, j, image.GetDirectionMatrix().GetElement(i, j))
+
+    tform.SetMatrix(matrix)
     tform.Inverse()
 
     model_local = vtkTransformPolyDataFilter()
