@@ -1,4 +1,4 @@
-import model
+from cl_convert import model
 
 
 class Converter(model.Converter):
@@ -12,22 +12,32 @@ class Converter(model.Converter):
         doc.camera_position = tuple(data['cameraPosition'])
         doc.camera_view_up = tuple(data['cameraViewUp'])
 
-        for i, dann in enumerate(data['markups'], start=1):
+        for dann in data['markups']:
             dmark = dann['markup']
 
             ann = model.Annotation()
-            ann.name = f'Annotation {i}'
+            ann.name = dann['name']
             ann.orientation = dann['orientation']
-            ann.representation_type = dann['representationType']
-            ann.thickness = dann['thickness']
-
             ann.markup_type = dmark['type']
+
+            if ann.markup_type == 'ClosedCurve':
+                ann.representation_type = dann['representationType']
+                ann.thickness = dann['thickness']
+
             ann.coordinate_system = dmark['coordinateSystem']
             if 'coordinateUnits' in dmark:
                 ann.coordinate_units = dmark['coordinateUnits']
 
             for point in dmark['controlPoints']:
-                ann.points.append(model.Point(tuple(point['position'])))
+                position = tuple(point['position'])
+                structure = point.get('structure', None)
+                if structure:
+                    structure = model.Structure(
+                        structure['id'],
+                        structure['acronym'],
+                    )
+
+                ann.points.append(model.Point(position, structure))
 
             doc.annotations.append(ann)
 
@@ -42,51 +52,23 @@ class Converter(model.Converter):
                 'markup': {
                     'type': ann.markup_type,
                     'coordinateSystem': ann.coordinate_system,
-                    'locked': False,
-                    'labelFormat': '%N-%d',
+                    'coordinateUnits': ann.coordinate_units,
                     'controlPoints': [
                         {
                             'id': str(i),
-                            'label': f'MarkupsClosedCurve-{i}',
-                            'description': '',
-                            'associatedNodeID': 'vtkMRMLScalarVolumeNode1',
                             'position': pt.position,
                             'orientation': [-1.0, -0.0, -0.0,
                                             -0.0, -1.0, -0.0,
                                             +0.0, +0.0, +1.0],
-                            'selected': False,
-                            'locked': False,
-                            'visibility': True,
-                            'positionStatus': 'defined',
+                            'structure': {
+                                'id': pt.structure.id,
+                                'acronym': pt.structure.acronym
+                            } if pt.structure else None
                         }
                         for i, pt in enumerate(ann.points, start=1)
                     ],
-                    'display': {
-                        "visibility": True,
-                        "opacity": 1.0,
-                        "color": (0.4, 1.0, 1.0),
-                        "selectedColor": (1.0, 0.5, 0.5),
-                        "propertiesLabelVisibility": True,
-                        "pointLabelsVisibility": False,
-                        "textScale": 3.0,
-                        "glyphType": "Sphere3D",
-                        "glyphScale": 1.0,
-                        "glyphSize": 5.0,
-                        "useGlyphScale": True,
-                        "sliceProjection": False,
-                        "sliceProjectionUseFiducialColor": True,
-                        "sliceProjectionOutlinedBehindSlicePlane": False,
-                        "sliceProjectionColor": (1.0, 1.0, 1.0),
-                        "sliceProjectionOpacity": 0.6,
-                        "lineThickness": 0.2,
-                        "lineColorFadingStart": 1.0,
-                        "lineColorFadingEnd": 10.0,
-                        "lineColorFadingSaturation": 1.0,
-                        "lineColorFadingHueOffset": 0.0,
-                        "handlesInteractive": False,
-                        "snapMode": "toVisibleSurface"
-                    }
                 },
+                'name': ann.name,
                 'orientation': ann.orientation,
                 'representationType': ann.representation_type,
                 'thickness': ann.thickness

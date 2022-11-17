@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import SimpleITK as sitk
 import vtk
 import vtk.util.numpy_support as vtknp

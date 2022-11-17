@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 from typing import Dict, Tuple, Generator
 
-import model
+from cl_convert import model
 
 __all__ = [
     'version_order', 'latest_version', 'infer_normalize', 'match', 'find_latest'
