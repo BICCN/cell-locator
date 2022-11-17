@@ -1,65 +1,3 @@
-"""cltool export script. Convert Cell Locator annotation JSON to VTK model or segmentations.
-
-=======================================================================================================================
-
-usage: main.py [-h] [-m MODEL_PATH] [-l LABELMAP_PATH] [-a ATLAS_PATH] [--pir]
-               annotation
-
-positional arguments:
-  annotation            Input Cell Locator annotation file (JSON).
-
-options:
-  -h, --help            show this help message and exit
-  -m MODEL_PATH, --model MODEL_PATH
-                        Output path for annotation model. If not provided,
-                        model generation is skipped.
-  -l LABELMAP_PATH, --labelmap LABELMAP_PATH
-                        Output path for annotation labelmap. If not provided,
-                        labelmap generation is skipped. Requires --atlas for
-                        spacing information.
-  -a ATLAS_PATH, --atlas ATLAS_PATH
-                        Atlas volume or labelmap. Used to set
-                        spacing/direction on the output labelmap.
-  --pir                 If set, read the annotation in PIR format rather than
-                        RAS. This should only be necessary for old-style CCF
-                        annotations.
-
-Slicer is no longer required to execute the script, but pending vtkAddon PyPI package, this script requires access to a
-local vtk installation, and vtkAddon python bindings and is prone to linker/loader issues.
-
-=======================================================================================================================
- It is CRITICAL that vtkAddon and VTK be built together, against the same version of Python used to launch the script.
- These linker/loader issues will be resolved by using the VTK SDK to build a wheel for vtkAddon.
-=======================================================================================================================
-
-Basic commands to build VTK, vtkAddon, and add their artifacts to the PYTHONPATH:
-
-$ git clone https://gitlab.kitware.com/vtk/vtk.git --branch 9.2.2 vtk-src
-$ cmake -S vtk-src -B vtk-build -DPython3_EXECUTABLE=$(which python3) -DVTK_WRAP_PYTHON=ON
-$ cmake --build vtk-build
-
-$ git clone https://github.com/Slicer/vtkAddon.git --branch add-curve-generator vtkAddon-src
-$ cmake -S vtkAddon-src -B vtkAddon-build -DVTK_DIR=vtk-build -DvtkAddon_WRAP_PYTHON=ON
-$ cmake --build vtkAddon-build
-
-$ export PYTHONPATH="$PWD/vtk-build/lib/python3*/site-packages:$PWD/vtkAddon-build/:$PYTHONPATH"
-
-=======================================================================================================================
-
-Sample usage:
-
-$ python main.py samples/H18_30_002_cortex_annotation.json \
-    -a atlas/mni_annotation_contiguous.nii.gz \
-    -v H18_30_002_cortex_labelmap.seg.nrrd \
-    -m H18_30_002_cortex_model.vtk
-
-$ python main.py samples/20220406_61307.001.05.json \
-    -a ccf_annotation_25_contiguous.nii.gz \
-    -l 20220406_61307.001.05_labelmap.seg.nrrd \
-    -m 20220406_61307.001.05_model.vtk \
-    --pir
-"""
-
 import argparse
 import json
 import sys
@@ -67,12 +5,14 @@ import sys
 from pathlib import Path
 from typing import Iterator
 
-import vtk
+from vtkmodules.vtkAddon import vtkCurveGenerator
+from vtkmodules.vtkCommonCore import VTK_UNSIGNED_CHAR
 from vtkmodules.vtkCommonCore import vtkMath
 from vtkmodules.vtkCommonCore import vtkPoints
 from vtkmodules.vtkCommonDataModel import vtkImageData
 from vtkmodules.vtkCommonExecutionModel import vtkPolyDataAlgorithm
-from vtkmodules.vtkCommonMath import vtkMatrix4x4, vtkMatrix3x3
+from vtkmodules.vtkCommonMath import vtkMatrix3x3
+from vtkmodules.vtkCommonMath import vtkMatrix4x4
 from vtkmodules.vtkCommonTransforms import vtkTransform
 from vtkmodules.vtkFiltersCore import vtkAppendPolyData
 from vtkmodules.vtkFiltersGeneral import vtkContourTriangulator
@@ -83,10 +23,8 @@ from vtkmodules.vtkImagingStencil import vtkImageStencil
 from vtkmodules.vtkImagingStencil import vtkPolyDataToImageStencil
 
 import SimpleITK as sitk
-from vtk2sitk import vtk2sitk
 
-# must come after `import vtk` or else segfault. todo replace with wheel
-from vtkAddonPython import vtkCurveGenerator
+from cl_export.vtk2sitk import vtk2sitk
 
 
 def make_curve(
@@ -242,8 +180,9 @@ def apply_stencil(
 
 
 def _parser():
-    prog = Path(__file__).name
-    parser = argparse.ArgumentParser(prog=prog)
+    parser = argparse.ArgumentParser(
+        description='Export Cell Locator annotations to VTK model or labelmap.',
+    )
     parser.add_argument(
         metavar="annotation",
         dest="annotation_path",
@@ -319,7 +258,7 @@ def main():
 
     if args.labelmap_path:
         image = vtkImageData_like(args.atlas_path)
-        image.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, 1)
+        image.AllocateScalars(VTK_UNSIGNED_CHAR, 1)
         image.GetPointData().GetScalars().Fill(0)
 
         for i, model in enumerate(models, 1):

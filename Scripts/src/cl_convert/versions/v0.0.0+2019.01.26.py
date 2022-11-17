@@ -1,4 +1,4 @@
-import model
+from cl_convert import model
 
 
 class Converter(model.Converter):
