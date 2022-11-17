@@ -1,4 +1,4 @@
-import model
+from cl_convert import model
 
 
 class Converter(model.Converter):
@@ -45,6 +45,7 @@ class Converter(model.Converter):
                     'type': ann.markup_type,
                     'coordinateSystem': ann.coordinate_system,
                     'coordinateUnits': ann.coordinate_units,
+                    'measurements': [],  # included to avoid `null` value
                     'controlPoints': [
                         {
                             'id': str(i),

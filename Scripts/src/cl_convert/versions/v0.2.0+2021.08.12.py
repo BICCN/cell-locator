@@ -1,4 +1,4 @@
-import model
+from cl_convert import model
 
 
 class Converter(model.Converter):
@@ -29,15 +29,7 @@ class Converter(model.Converter):
                 ann.coordinate_units = dmark['coordinateUnits']
 
             for point in dmark['controlPoints']:
-                position = tuple(point['position'])
-                structure = point.get('structure', None)
-                if structure:
-                    structure = model.Structure(
-                        structure['id'],
-                        structure['acronym'],
-                    )
-
-                ann.points.append(model.Point(position, structure))
+                ann.points.append(model.Point(tuple(point['position'])))
 
             doc.annotations.append(ann)
 
@@ -59,11 +51,7 @@ class Converter(model.Converter):
                             'position': pt.position,
                             'orientation': [-1.0, -0.0, -0.0,
                                             -0.0, -1.0, -0.0,
-                                            +0.0, +0.0, +1.0],
-                            'structure': {
-                                'id': pt.structure.id,
-                                'acronym': pt.structure.acronym
-                            } if pt.structure else None
+                                            +0.0, +0.0, +1.0]
                         }
                         for i, pt in enumerate(ann.points, start=1)
                     ],

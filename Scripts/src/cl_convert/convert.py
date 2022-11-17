@@ -3,7 +3,7 @@ import json
 import sys
 from pathlib import Path
 
-import converters
+from cl_convert import converters
 
 
 def convert(args):
@@ -59,7 +59,6 @@ def infer(args):
 
 def make_parser():
     parser = argparse.ArgumentParser(
-        prog='convert',
         description=f'Convert Cell Locator annotation files between versions.',
     )
 
