@@ -1,3 +1,13 @@
+"""
+Convert a single version of the file format to the normalized model, or vice versa.
+
+For information on the file format update process, see:
+
+https://cell-locator.readthedocs.io/en/latest/developer_guide/AnnotationFileFormat.html#versioning-guidelines
+https://cell-locator.readthedocs.io/en/latest/developer_guide/Annotations.html#modifying-the-file-format
+https://cell-locator.readthedocs.io/en/latest/developer_guide/AnnotationFileConverter.html#converter-api
+"""
+
 from cl_convert import model
 
 
