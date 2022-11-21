@@ -1,18 +1,11 @@
 [project]
 name = "cell_locator_cli"
-version = "0.0.1"
-readme = "README.md"
-dependencies = [
-    "vtk-addon",
-    "SimpleITK",
-]
-
 description = "CLI Tools for Cell Locator"
+readme = "README.md"
 authors = [
     { name = "David Allemang", email = "david.allemang@kitware.com" },
     { name = "Jean-Christophe Fillion-Robin", email = "jcfr@kitware.com" },
 ]
-
 license = { text = "Slicer License" }
 keywords = []
 classifiers = [
@@ -20,6 +13,13 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Topic :: Scientific/Engineering :: Medical Science Apps.",
 ]
+
+dependencies = [
+    "vtk-addon",
+    "SimpleITK",
+]
+
+dynamic = ["version"]
 
 [project.scripts]
 cl-export = "cl_export.export:main"
@@ -29,3 +29,9 @@ cl-convert = "cl_convert.convert:main"
 repository = "https://github.com/BICCN/cell-locator"
 homepage = "https://github.com/BICCN/cell-locator/tree/master/Scripts"
 documentation = "https://cell-locator.rtfd.io"
+
+[build-system]
+requires = ["setuptools>=65", "setuptools_scm[toml]>=7"]
+
+[tool.setuptools_scm]
+root = '..'
