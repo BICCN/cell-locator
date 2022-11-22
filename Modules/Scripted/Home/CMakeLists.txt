@@ -247,7 +247,7 @@ CellLocator_prettify_ontology("mni"
 #-----------------------------------------------------------------------------
 # Generate CCF contiguous annotation and color tables
 
-set(script ${CellLocator_SOURCE_DIR}/Scripts/GenerateContiguousAnnotation.py)
+set(script ${CMAKE_CURRENT_SOURCE_DIR}/Data/GenerateContiguousAnnotation.py)
 
 # Outputs: These filenames are hardcoded in Home.py
 set(ccf_annotation_contiguous_file "${CellLocator_DOWNLOAD_DIR}/ccf_annotation_${ccf_annotation_resolution}_contiguous.nrrd")
@@ -307,7 +307,7 @@ CellLocator_install_datafiles(
 #-----------------------------------------------------------------------------
 # Generate MNI contiguous annotation and color tables
 
-set(script ${CellLocator_SOURCE_DIR}/Scripts/GenerateContiguousAnnotation.py)
+set(script ${CMAKE_CURRENT_SOURCE_DIR}/Data/GenerateContiguousAnnotation.py)
 
 # Outputs: These filenames are hardcoded in Home.py
 set(mni_annotation_contiguous_file "${CellLocator_DOWNLOAD_DIR}/mni_annotation_contiguous.nrrd")
@@ -374,14 +374,14 @@ CellLocator_install_datafiles(
 set(ccf_layer_ontology_file "${CellLocator_DOWNLOAD_DIR}/ccf-layer-ontology-formatted.json")
 
 configure_file(
-  ${CellLocator_SOURCE_DIR}/Scripts/data/ccf-layer-ontology-formatted.json
+  ${CMAKE_CURRENT_SOURCE_DIR}/Data/ccf-layer-ontology-formatted.json
   ${ccf_layer_ontology_file}
   COPYONLY
   )
 
 #-----------------------------------------------------------------------------
 # Generate CCF layer color table
-set(script ${CellLocator_SOURCE_DIR}/Scripts/CreateColorTable.py)
+set(script ${CMAKE_CURRENT_SOURCE_DIR}/Data/CreateColorTable.py)
 
 # Outputs: These filenames are hardcoded in Home.py
 set(ccf_layer_color_table "${CellLocator_DOWNLOAD_DIR}/ccf_annotation_layer_color_table.txt")

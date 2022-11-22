@@ -33,7 +33,7 @@ jobs:
         pip install build
 
     - name: Build package
-      run: python -m build Scripts -o dist
+      run: python -m build cell-locator-cli -o dist
 
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@release/v1.5
