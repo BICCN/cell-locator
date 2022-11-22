@@ -12,7 +12,7 @@ See {py:func}`converters.match()` about target version strings.
 
 ```{eval-rst}
 .. argparse::
-    :module: convert
+    :module: cl_convert.convert
     :func: make_parser
     :prog: cl-file
     :path: convert
@@ -25,7 +25,7 @@ Show all versions and exit.
 
 ```{eval-rst}
 .. argparse::
-    :module: convert
+    :module: cl_convert.convert
     :func: make_parser
     :prog: cl-file
     :path: versions
@@ -38,7 +38,7 @@ Show inferred version of file and exit.
 
 ```{eval-rst}
 .. argparse::
-    :module: convert
+    :module: cl_convert.convert
     :func: make_parser
     :prog: cl-file
     :path: infer
@@ -50,19 +50,19 @@ Show inferred version of file and exit.
 ### converters
 
 ```{eval-rst}
-.. autoclass:: model.Converter
+.. autoclass:: cl_convert.model.Converter
     :members:
 
-.. autodecorator:: model.versioned
+.. autodecorator:: cl_convert.model.versioned
 
-.. autoclass:: model.Document
-    :members:
-    :undoc-members:
-
-.. autoclass:: model.Annotation
+.. autoclass:: cl_convert.model.Document
     :members:
     :undoc-members:
 
-.. automodule:: converters
+.. autoclass:: cl_convert.model.Annotation
+    :members:
+    :undoc-members:
+
+.. automodule:: cl_convert.converters
     :members:
 ```

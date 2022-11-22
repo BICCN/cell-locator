@@ -15,12 +15,12 @@ planar polyline annotation to facilitate mapping samples into the corresponding 
 * Manage and save multiple annotations per file.
 * Save annotations as JSON containing Spline or Polyline points as well
   as orientation and thickness.
-* Download from / Upload to a LIMS system. See [LIMS integration](user_interface.html#lims-integration)
+* Download from / Upload to a LIMS system. See [LIMS integration](user_interface.md#lims-integration)
 * 3 interaction modes: Explore, Edit or Place point.
 * Reslicing in arbitrary directions.
 * Ontology selection: layer vs area.
 * Input of Roll/Pitch/Yaw.
-* Load CCF or MNI atlas. See [command-line arguments](user_interface.html#command-line-arguments).
+* Load CCF or MNI atlas. See [command-line arguments](user_interface.md#command-line-arguments).
 
 ## Screenshots
 

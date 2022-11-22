@@ -151,7 +151,7 @@ Features:
 
 * Add LIMS support. See [#93](https://github.com/BICCN/cell-locator/issues/93)
   * Support command-line flags `--lims-specimen-id` and `--lims-base-url`.
-  * Add new section to [README](README.md#lims-integration)
+  * Add new section to README
 
 Tests:
 
