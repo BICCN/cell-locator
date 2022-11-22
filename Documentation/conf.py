@@ -14,7 +14,7 @@ import sphinx_rtd_theme
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath('../Scripts/convert'))
+sys.path.insert(0, os.path.abspath('../cell-locator-cli/src'))
 
 
 # -- Project information -----------------------------------------------------
@@ -36,6 +36,8 @@ extensions = [
     'sphinxarg.ext',
     'sphinx.ext.autodoc',
 ]
+
+myst_heading_anchors = 3
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

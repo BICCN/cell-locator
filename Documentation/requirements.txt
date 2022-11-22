@@ -6,3 +6,5 @@ sphinx-notfound-page
 sphinx-rtd-theme
 sphinx-argparse
 myst-parser
+vtk-addon
+SimpleITK
