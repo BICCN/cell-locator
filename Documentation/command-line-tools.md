@@ -56,3 +56,10 @@ Inferred version 'v0.0.0+2020.08.26'
 $ cl-convert infer newer.json                           
 v0.2.1+2022.03.04
 ```
+
+## Version Identifiers
+
+```{eval-rst}
+.. autofunction:: cl_convert.converters.match(target)
+    :noindex:
+```

@@ -58,9 +58,10 @@ def infer(args):
 
 
 def _parser():
-    parser = argparse.ArgumentParser(
-        description=f'Convert Cell Locator annotation files between versions.',
-    )
+    parser = argparse.ArgumentParser(description=(
+        'A tool used to upgrade annotation .json files through breaking changes to the file format. The converter can '
+        'also downgrade file formats, but this is not as thoroughly tested.'
+    ))
 
     subs = parser.add_subparsers(dest='cmd', title='subcommands', required=True)
 

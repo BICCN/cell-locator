@@ -59,6 +59,8 @@ class Annotation:
 
 @dataclass
 class Document:
+    """Store minimal information about an annotation.json document."""
+
     annotations: List[Annotation] = dataclasses.field(default_factory=list)
 
     current_id: int = 0
