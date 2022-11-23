@@ -4,7 +4,7 @@ sphinx
 sphinx-issues
 sphinx-notfound-page
 sphinx-rtd-theme
-sphinx-argparse
+sphinxcontrib-autoprogram
 myst-parser
 vtk-addon
 SimpleITK

@@ -33,8 +33,8 @@ extensions = [
     'notfound.extension',  # Show a better 404 page when an invalid address is entered
     'sphinx_rtd_theme',
     'myst_parser',
-    'sphinxarg.ext',
     'sphinx.ext.autodoc',
+    'sphinxcontrib.autoprogram',
 ]
 
 myst_heading_anchors = 3
