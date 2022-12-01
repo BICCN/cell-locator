@@ -2,7 +2,7 @@
 
 ## Atlases
 
-The table below describes the coordinate systems of the reference atlases distributed in Cell Locator.
+The table below describes the coordinate systems of the [reference atlases](reference-atlases.md) distributed in Cell Locator.
 
 | Reference atlas                               | Atlas Version | Coordinate System Dimenstions |
 |-----------------------------------------------|---------------|-------------------------------|

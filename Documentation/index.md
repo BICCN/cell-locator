@@ -24,6 +24,7 @@ A desktop application based on [3D Slicer](https://slicer.org/) that displays th
 :caption: Contents
 app-overview.md
 getting-started.md
+reference-atlases.md
 coordinate-systems.md
 lims-integration.md
 command-line-tools.md
