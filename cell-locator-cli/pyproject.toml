@@ -27,7 +27,7 @@ cl-convert = "cl_convert.convert:main"
 
 [project.urls]
 repository = "https://github.com/BICCN/cell-locator"
-homepage = "https://github.com/BICCN/cell-locator/tree/master/Scripts"
+homepage = "https://github.com/BICCN/cell-locator/tree/main/cell-locator-cli"
 documentation = "https://cell-locator.rtfd.io"
 
 [build-system]
