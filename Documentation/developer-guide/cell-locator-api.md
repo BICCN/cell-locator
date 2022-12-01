@@ -18,7 +18,7 @@ model.
 `vtkMRMLMarkupsClosedCurveNode`, and a model is generated from this markup using
 `vtkSlicerSplinesLogic::CreateModelFromContour` [(see here)][create-model-from-contour]
 
-[create-model-from-contour]: https://github.com/BICCN/cell-locator/blob/master/Modules/Loadable/Splines/Logic/vtkSlicerSplinesLogic.cxx#L68-L142
+[create-model-from-contour]: https://github.com/BICCN/cell-locator/blob/main/Modules/Loadable/Splines/Logic/vtkSlicerSplinesLogic.cxx#L68-L142
 
 ## Creating Annotation Types
 

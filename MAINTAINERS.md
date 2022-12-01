@@ -12,7 +12,7 @@ A core developer should use the following steps to create a release of **Cell Lo
 
     ```
     cd /d/D/P/CL-0
-    git pull origin master
+    git pull origin main
     ```
 
 4. Run `D:\D\DashboardScripts\overload-vs2019-cell-locator_preview_experimental.bat` script
@@ -23,13 +23,13 @@ A core developer should use the following steps to create a release of **Cell Lo
 
     ```
     release=X.Y.Z-YYYY-MM-DD
-    git tag --sign -m "${release}" ${release} master
+    git tag --sign -m "${release}" ${release} main
     git push origin ${release}
     ```
 
     where:
 
-    * `X.Y.Z` corresponds to the version in [Applications/CellLocatorApp/slicer-application-properties.cmake](https://github.com/BICCN/cell-locator/blob/master/Applications/CellLocatorApp/slicer-application-properties.cmake)
+    * `X.Y.Z` corresponds to the version in [Applications/CellLocatorApp/slicer-application-properties.cmake](https://github.com/BICCN/cell-locator/blob/main/Applications/CellLocatorApp/slicer-application-properties.cmake)
     * `YYYY-MM-DD` corresponds to the date of commit from which the application is built
 
     _We recommend using a [GPG signing key](https://help.github.com/articles/generating-a-new-gpg-key/) to sign the tag._
@@ -44,12 +44,12 @@ A core developer should use the following steps to create a release of **Cell Lo
    Update release description to include text like the following:
 
    ```
-   See [release notes](https://github.com/BICCN/cell-locator/blob/master/CHANGES.md#cell-locator-XYZ-YYYY-MM-DD)
+   See [release notes](https://github.com/BICCN/cell-locator/blob/main/CHANGES.md#cell-locator-XYZ-YYYY-MM-DD)
    ```
 
    where `XYZ-YYYY-MM-DD` should corresponds to the `release` set in previous steps.
 
 8. From the build machine, login to GitHub and upload the package as a release asset.
 
-[changes]: https://github.com/BICCN/cell-locator/blob/master/CHANGES.md
-[annotation-file-format-versioning-guidelines]: https://github.com/BICCN/cell-locator/blob/master/Documentation/developer_guide/AnnotationFileFormat.md#versioning-guidelines
+[changes]: https://github.com/BICCN/cell-locator/blob/main/CHANGES.md
+[annotation-file-format-versioning-guidelines]: https://github.com/BICCN/cell-locator/blob/main/Documentation/developer-guide/annotation-file-format.md#versioning-guidelines
