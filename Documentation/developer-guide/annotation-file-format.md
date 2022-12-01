@@ -12,12 +12,12 @@ When a change is made to the file format (e.g. a new type of Annotation is added
 
 - Follow [semantic versioning](https://semver.org/) to increment `AnnotationManager.FORMAT_VERSION` in `Home.py`. Use the date of the release as the build metadata.
 - Update the conversion script
-  - Create a converter in [cell-locator-cli/src/versions][cell-locator-cli-versions]. It's easiest to copy the most-recent converter and modify the `specialize` and `normalize` methods accordingly. See the [Converter API](cl-convert-api.md)
-  - Update `version_order` in [cell-locator-cli/src/converters.py][cell-locator-cli-converters-py]. Add the new version number at the top of the list; this way `latest_version` will point to the new converter.
+  - Create a converter in [versions][cell-locator-cli-versions]. It's easiest to copy the most-recent converter and modify the `specialize` and `normalize` methods accordingly. See the [Converter API](cl-convert-api.md)
+  - Update `version_order` in [converters.py][cell-locator-cli-converters-py]. Add the new version number at the top of the list; this way `latest_version` will point to the new converter.
 - Update the [version history](#versions) below.
 
-[cell-locator-cli-converters-py]: https://github.com/BICCN/cell-locator/blob/master/cell-locator-cli/src/converters.py
-[cell-locator-cli-versions]: https://github.com/BICCN/cell-locator/blob/master/cell-locator-cli/src/versions
+[cell-locator-cli-converters-py]: https://github.com/BICCN/cell-locator/blob/main/cell-locator-cli/src/cl_convert/converters.py
+[cell-locator-cli-versions]: https://github.com/BICCN/cell-locator/blob/main/cell-locator-cli/src/versions
 
 ## Versioning Guidelines
 
@@ -37,7 +37,7 @@ If the answer is **No**, consider creating a _synchronization_ converter script:
 
 If the answer is **yes**, no changes are required.
 
-[converters-py]: https://github.com/BICCN/cell-locator/blob/master/cell-locator-cli/src/converters.py
+[converters-py]: https://github.com/BICCN/cell-locator/blob/main/cell-locator-cli/src/cl_convert/converters.py
 
 ## Versions
 
@@ -45,8 +45,8 @@ _The latest version listed below should correspond to the version hard-coded in 
 
 _Overview of differences between versions are documented in [version-changlist.md][version-changlist]._
 
-[home-py]: https://github.com/BICCN/cell-locator/blob/master/Modules/Scripted/Home/Home.py
-[version-changlist]: https://github.com/BICCN/cell-locator/blob/master/cell-locator=cli/version-changlist.md
+[home-py]: https://github.com/BICCN/cell-locator/blob/main/Modules/Scripted/Home/Home.py
+[version-changlist]: https://github.com/BICCN/cell-locator/blob/main/cell-locator-cli/version-changlist.md
 
 ### 0.2.1 (2022-03-04)
 
