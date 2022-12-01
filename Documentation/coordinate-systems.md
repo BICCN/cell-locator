@@ -1,25 +1,25 @@
 # Coordinate Systems
 
-## CCF Atlas
+## Atlases
 
-The common reference space is in PIR (Posterior Inferior Right) orientation where `x axis = Anterior-to-Posterior`, `y axis = Superior-to-Inferior` and `z axis = Left-to-Right`.
+The table below describes the coordinate systems of the reference atlases distributed in Cell Locator.
 
-Cell Locator bundles version 3 (2017).
+| Reference atlas                               | Atlas Version | Coordinate System Dimenstions |
+|-----------------------------------------------|---------------|-------------------------------|
+| Allen Mouse Brain Common Coordinate Framework | 3             | PIR                           |
+| Allen Human Reference Atlas - 3D              | 1.0.0         | RAS                           |
 
-![](https://help.brain-map.org/download/attachments/5308472/3DOrientation.png?version=1&modificationDate=1368132564812&api=v2)
+By convention, the coordinate system dimensions are the the following:
 
-References:
-* https://biccn.org/standards/common-coordinate-frameworks-biccn
-* http://help.brain-map.org/display/mousebrain/API#API-DownloadAtlas3-DReferenceModels
+* PIR (Posterior Inferior Right):
+  * `X` axis is `Anterior-to-Posterior`
+  * `Y` axis is `Superior-to-Inferior`
+  * `Z` axis is `Left-to-Right`.
 
-## MNI Atlas
-
-The common reference space is in RAS (Right Anterior Superior) orientation where `x axis = Left-to-Right`, `y axis = Posterior-to-Anterior` and `z axis = Inferior-to-Superior`.
-
-Cell Locator bundles version `mni_icbm152_t1_tal_nlin_sym_09b_hires`.
-
-References:
-* https://nist.mni.mcgill.ca/icbm-152-nonlinear-atlases-2009/
+* RAS (Right Anterior Superior):
+  * `X` axis is `Left-to-Right`
+  * `Y` axis is `Posterior-to-Anterior`
+  * `Z` axis is `Inferior-to-Superior`
 
 ## Cell Locator
 
