@@ -1,10 +1,10 @@
 docutils
+myst-parser
 pygments
 sphinx
 sphinx-issues
 sphinx-notfound-page
 sphinx-rtd-theme
 sphinxcontrib-autoprogram
-myst-parser
 vtk-addon
 SimpleITK
