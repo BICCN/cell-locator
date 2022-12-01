@@ -5,6 +5,7 @@
 building.md
 cell-locator-api.md
 cl-convert-api.md
+annotation-file-format.md
 changelog.md
 contributing.md
 maintainers.md
