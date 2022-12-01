@@ -37,6 +37,11 @@ extensions = [
     'sphinxcontrib.autoprogram',
 ]
 
+myst_enable_extensions = [
+    "colon_fence",  # Allow code fence using ::: (see https://myst-parser.readthedocs.io/en/latest/using/syntax-optional.html#syntax-colon-fence)
+    "linkify",  # Allow automatic creation of links from URLs (it is sufficient to write https://google.com instead of <https://google.com>)
+]
+
 myst_heading_anchors = 3
 
 # Add any paths that contain templates here, relative to this directory.
