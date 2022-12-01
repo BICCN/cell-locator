@@ -1,4 +1,5 @@
 docutils
+linkify-it-py
 myst-parser
 pygments
 sphinx
