@@ -1,4 +1,6 @@
-# Base
+# Annotation File Version Changlist
+
+## Base
 
 ```diff
 + Locked
@@ -9,7 +11,7 @@
 + TextList_Count 0
 ```
 
-# 2019-01-26 -> 2020-04-16
+## 2019-01-26 -> 2020-04-16
 
 2020-04-16, 2020-04-30, and 2020-08-26 all use the same format.
 
@@ -24,7 +26,7 @@
 + DefaultThickness
 ```
 
-# 2020-04-16 -> 2020-08-26
+## 2020-04-16 -> 2020-08-26
 
 Major Change
 
@@ -86,7 +88,7 @@ Major Change
 -     Visibility
 ```
 
-# 2020-08-26 -> 2020-09-18
+## 2020-08-26 -> 2020-09-18
 
 ```diff
 ! markups[]
@@ -105,7 +107,7 @@ Major Change
 -             visibility
 ```
 
-# 2020-09-18 -> 2021-06-08
+## 2020-09-18 -> 2021-06-08
 
 ```diff
 + version
@@ -118,18 +120,18 @@ Major Change
 +         units?
 ```
 
-# 2021-06-08 -> 2021-06-11
+## 2021-06-08 -> 2021-06-11
 
 ```diff
 ! markups[]
 -     measurements
 ```
 
-# 2021-06-11 -> 2021-08-12
+## 2021-06-11 -> 2021-08-12
 
 _Unchanged; this version synchronizes the file format and cell locator release._
 
-# 2021-08-12 -> 2022-03-04
+## 2021-08-12 -> 2022-03-04
 
 ```diff
 ! markups[]
