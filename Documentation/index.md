@@ -29,6 +29,7 @@ coordinate-systems.md
 lims-integration.md
 command-line-tools.md
 developer-guide/index.md
+acknowledgments.md
 ```
 
 # Indices and tables
