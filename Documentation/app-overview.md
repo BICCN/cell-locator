@@ -26,6 +26,22 @@ Starting the application specifying the `--atlas-type` [command-line argument](#
 
 ## User Interface
 
+![](https://github.com/BICCN/cell-locator/releases/download/docs-resources/app_overview.png)
+
+### Lifecycle
+
+### Annotation List
+
+### Interaction Modes
+
+### 2D Viewer
+
+### 3D Viewer
+
+### Property Editor
+
+### Status Bar
+
 ## Keyboard and Mouse Shortcuts
 
 _On macOS use the Command key (⌘) instead of the Control (Ctrl) key_
