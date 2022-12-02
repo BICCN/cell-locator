@@ -39,6 +39,7 @@ extensions = [
 
 myst_enable_extensions = [
     "colon_fence",  # Allow code fence using ::: (see https://myst-parser.readthedocs.io/en/latest/using/syntax-optional.html#syntax-colon-fence)
+    "html_image", # Allow using isolated img tags (i.e. not wrapped in any other HTML) to specify attributes like width.
     "linkify",  # Allow automatic creation of links from URLs (it is sufficient to write https://google.com instead of <https://google.com>)
 ]
 
