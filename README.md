@@ -9,3 +9,6 @@ polyline annotation to facilitate mapping samples into the corresponding atlas.
 
 To get started, see https://cell-locator.readthedocs.io
 
+## Acknowledgments
+
+To cite Cell Locator or learn about the funding sources, see https://cell-locator.readthedocs.io/en/latest/acknowledgments.html
