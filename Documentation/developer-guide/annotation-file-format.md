@@ -43,10 +43,9 @@ If the answer is **yes**, no changes are required.
 
 _The latest version listed below should correspond to the version hard-coded in the ``AnnotationManager.FORMAT_VERSION`` constant set in [Modules/Scripted/Home/Home.py][home-py]._
 
-_Overview of differences between versions are documented in [version-changlist.md][version-changlist]._
+_Overview of differences between versions are documented in the [version changelist](annotation-file-version-changlist.md)._
 
 [home-py]: https://github.com/BICCN/cell-locator/blob/main/Modules/Scripted/Home/Home.py
-[version-changlist]: https://github.com/BICCN/cell-locator/blob/main/cell-locator-cli/version-changlist.md
 
 ### 0.2.1 (2022-03-04)
 
