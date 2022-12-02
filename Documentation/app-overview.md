@@ -1,5 +1,29 @@
 # Application Overview
 
+## Atlas Selection
+
+After starting Cell Locator, the user is prompted with a dialog asking to choose which [reference atlas](reference-atlases.md) to load.
+
+:::{admonition} Resetting Views
+:class: tip
+
+The `Ctrl + w` keyboard shortcut allows to reset views discarding current changes and asking to choose which reference atlas to load.
+:::
+
+:::{figure-md}
+:align: center
+
+<img src="https://github.com/BICCN/cell-locator/releases/download/docs-resources/app_atlas_selection_dialog.png" width="50%" class="no-scaled-link"/>
+
+Atlas Selection Startup Dialog
+:::
+
+:::{admonition} Automatic Atlas Selection
+:class: tip
+
+Starting the application specifying the `--atlas-type` [command-line argument](#general-options) will skip the atlas selection startup dialog and directly load the requested altas. In this case, resetting the views also skips the atlas selection dialog.
+:::
+
 ## User Interface
 
 ## Keyboard and Mouse Shortcuts
