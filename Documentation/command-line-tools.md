@@ -2,7 +2,7 @@
 
 Utility CLI tools for processing Cell Locator annotation files.
 
-For information on extending `cl-convert`, see the [Converter API Documentation](developer-guide/index.md)
+For information on extending `cl-convert`, see the [Converter API Documentation](developer-guide/cl-convert-api.md)
 
 ## Installation
 
