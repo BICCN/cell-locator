@@ -82,6 +82,23 @@ After clicking in either the **Slice Step Size** or **Annotation Thickess** spin
 
 ### Status Bar
 
+* **Ontology Selector** allows to select between `None`, `Structure` and `Layer` (only available for the CFF atlas).
+* **Text** about what is visible at the current mouse pointer position.
+
+The status bar text is formatted as
+  ```
+  x y z | <path> (<label index>)
+  ```
+where:
+  * `x y z` corresponds to the world coordinates (RAS).
+  * `<path>` is formatted as `> structure 1 > structure 2 > ...` (or `> layer 1 > layer 2 > ...`).
+  * `<label index>` corresponds to the value in the annotation volume.
+
+| Ontology  |  Example of text |
+|-----------|---|
+| structure | ![](https://github.com/BICCN/cell-locator/releases/download/docs-resources/app_ontology_structure.png) |
+| layer     | ![](https://github.com/BICCN/cell-locator/releases/download/docs-resources/app_ontology_layer.png) |
+
 ## Keyboard and Mouse Shortcuts
 
 _On macOS use the Command key (⌘) instead of the Control (Ctrl) key_
