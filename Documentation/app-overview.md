@@ -155,10 +155,19 @@ These interactions are enabled only in _Edit_ and _Place_ modes.
 |---------------------------------------------|--------------------------------------------|
 | `Left-Click` on annotation line             | Add annotation point                       |
 | `Right-Click` on point then `Delete`        | Delete currently selected annotation point |
+| `Right-Click` on point then `Interaction`    | Show/hide the interaction widget           |
 | `Ctrl + Left-Click` on annotation line      | Insert annotation point                    |
 | Drag `Alt + Left-Click` on annotation line  | Rotate annotation                          |
 | Drag `Alt + Right-Click` on annotation line | Scale annotation                           |
 | Drag `Middle-Click` on annotation line      | Translate annotation                       |
+
+:::{figure-md}
+:align: center
+
+<img src="https://github.com/BICCN/cell-locator/releases/download/docs-resources/app_2dviewer_point_right_click_context_menu.png" width="75%" align="center" class="no-scaled-link"/>
+
+Annotation point right-click context menu.
+:::
 
 ### Numeric Inputs
 
