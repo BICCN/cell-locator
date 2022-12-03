@@ -62,6 +62,16 @@ To show or hide an annotation in both viewers, the user may click on the eye ico
 
 ### Property Editor
 
+* **Slice Step Size** configures how the [2D Viewer](#2d-viewer) slicer offset may be adjusted.
+* **Annotation Thickess** updates the width of selected `Curve` annotation.
+* **Annotation Type** updates how the annotation is represented in both viewers.
+
+:::{admonition} Numeric Inputs
+:class: tip
+
+After clicking in either the **Slice Step Size** or **Annotation Thickess** spin box, its value may be updated using a "large" step as described in the [Numeric Inputs](#numeric-inputs) keyboard shortcuts.
+:::
+
 ### Status Bar
 
 ## Keyboard and Mouse Shortcuts
