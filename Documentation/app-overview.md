@@ -40,6 +40,20 @@ If the current annotation(s) have been modified, the user is asked if they shoul
 
 ### Annotation List
 
+To to add, remove or duplicate an annotation, the user may click on the corresponding button:
+
+* **Add Curve** and **Add Point** allow to add an annotation.
+* **Clone** allows to duplicate the selected annotation.
+* **Remove** allows to delete the selected annotation.
+
+To rename an annotation, the user may Double-`Left-Click` on its name.
+
+To show or hide an annotation in both viewers, the user may click on the eye icon.
+
+:::{note}
+* A `Curve` annotation is expected to have multiple points and the corresponding type can be set using the [Property Editor](#property-editor).
+:::
+
 ### Interaction Modes
 
 ### 2D Viewer
