@@ -30,6 +30,14 @@ Starting the application specifying the `--atlas-type` [command-line argument](#
 
 ### Lifecycle
 
+* **New** allows to create a new annotation file.
+* **Save** and **Save As** allow to save the current annotation(s) to file.
+* **Load** allows to load annotation(s) from file.
+
+:::{warning}
+If the current annotation(s) have been modified, the user is asked if they should be saved to file before creating or loading new ones.
+:::
+
 ### Annotation List
 
 ### Interaction Modes
