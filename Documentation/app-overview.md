@@ -91,8 +91,8 @@ _On macOS use the Command key (⌘) instead of the Control (Ctrl) key_
 | Key        | Effect                                                |
 |------------|-------------------------------------------------------|
 | `Ctrl + n` | Create a new annotation                               |
-| `Ctrl + s` | Save current annotation                               |
-| `Ctrl + o` | Load an annotation from file                          |
+| `Ctrl + s` | Save current annotation(s)                            |
+| `Ctrl + o` | Load annotation(s) from file                          |
 | `Ctrl + w` | Reset views discarding current changes                |
 | `f`        | Increment Slice offset                                |
 | `b`        | Decrement Slice offset                                |
