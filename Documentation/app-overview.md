@@ -136,6 +136,7 @@ the `Slice Step Size`.
 | Action                         | Effect               |
 |--------------------------------|----------------------|
 | Double-`Left-Click` annotation | Edit annotation name |
+| `Left-Click` on eye icon       | Show/hide annotation |
 
 ## Command-line arguments
 
