@@ -56,6 +56,14 @@ To show or hide an annotation in both viewers, the user may click on the eye ico
 
 ### Interaction Modes
 
+* **Explore** mode allows to interact with the viewers without updating the orientation of the currently selected annotation.
+* **Edit** mode allows to update the selected annotation.
+  * Position and size can be updated in the [2D Viewer](#2d-viewer).
+  * Orientation can be updated in the [3D Viewer](#3d-viewer) by using the reformat widget or by setting specific angles.
+* **Place** mode allows to add point(s) to the currently selected annotation by clicking one the slice displayed in the [2D Viewer](#2d-viewer).
+
+<img src="https://github.com/BICCN/cell-locator/releases/download/docs-resources/app_interaction_mode.png" width="50%" align="center" class="no-scaled-link"/>
+
 ### 2D Viewer
 
 ### 3D Viewer
@@ -94,7 +102,7 @@ The user will be prompted with a save dialog before overwriting unsaved changes.
 
 ### 2D Viewer - Zoom and Pan
 
-These interactions are enabled only in Exploration and Edit mode.
+These interactions are enabled only in _Explore_ and _Edit_ mode.
 
 | Interface Device | Zoom                              | Pan                       |
 |------------------|-----------------------------------|---------------------------|
@@ -105,7 +113,7 @@ These interactions are enabled only in Exploration and Edit mode.
 
 ### 2D Viewer - Annotation
 
-These interactions are enabled only in Edit and Place modes.
+These interactions are enabled only in _Edit_ and _Place_ modes.
 
 | Key or mouse operation                      | Effect                                     |
 |---------------------------------------------|--------------------------------------------|
