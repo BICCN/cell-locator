@@ -66,7 +66,26 @@ To show or hide an annotation in both viewers, the user may click on the eye ico
 
 ### 2D Viewer
 
+The 2D viewer (or slice viewer) allows to create or edit annotations on the viewing plane. The slice orientation allows to change the reference from which row, pitch and yaw angles are set in the 3D viewer.
+
+<img src="https://github.com/BICCN/cell-locator/releases/download/docs-resources/app_2dviewer.png" width="75%" align="center" class="no-scaled-link"/>
+
+* **Slice offset slider** allows slicing through the atlas reference volume. Step size is set in the [Property Editor](#property-editor).
+* **Adjust field of view** centers the slice viewer's field of view to match the extent of the atlas reference volume.
+* **Slice orientation** allows to choose the orientation of the slice in the 2D and [3D Viewer](#3d-viewer).
+* **Contrast slider** allows to adjust the grayscale background contrast associated with the atlas reference volume.
+* **Reset contrast** allows to reset the grayscale background contrast associated with the atlas reference volume
+
 ### 3D Viewer
+
+The 3D viewer provides an interface to update the slice viewer plane orientation.
+
+<img src="https://github.com/BICCN/cell-locator/releases/download/docs-resources/app_3dviewer.png" width="75%" align="center" class="no-scaled-link"/>
+
+* **Raw**, **Pitch** and **Yaw** sliders and input boxes allow to set the [2D Viewer](#2d-viewer) plane angles relative to the selected slice orientation (Axial, Coronal or Sagittal).
+* **Apply** allows to update the slice orientaton based on the set angles.
+* **Reset** allows to reset the angles to match the slice orientation selected in the 2D Viewer.
+* **Reformat widget** allows to update the slice orientation.
 
 ### Property Editor
 
