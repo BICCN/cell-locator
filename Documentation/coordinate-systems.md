@@ -4,7 +4,7 @@
 
 The table below describes the coordinate systems of the [reference atlases](reference-atlases.md) distributed in Cell Locator.
 
-| Reference atlas                               | Atlas Version | Coordinate System Dimenstions |
+| Reference atlas                               | Atlas Version | Coordinate System Dimensions  |
 |-----------------------------------------------|---------------|-------------------------------|
 | Allen Mouse Brain Common Coordinate Framework | 3             | PIR                           |
 | Allen Human Reference Atlas - 3D              | 1.0.0         | RAS                           |
