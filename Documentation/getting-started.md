@@ -6,13 +6,14 @@ Download the [latest release on GitHub](https://github.com/BICCN/cell-locator/re
 
 ## System Requirements
 
-Cell Locator is built using 3D Slicer, so refer to the 
-[3D Slicer System Requirements](https://slicer.readthedocs.io/en/latest/user_guide/getting_started.html#system-requirements).
+Cell Locator is based on 3D Slicer, so refer to the [3D Slicer System Requirements](https://slicer.readthedocs.io/en/latest/user_guide/getting_started.html#system-requirements).
 
 :::{admonition} Cross-platform Availability
 :class: tip
 
-Installers are only generated for 64-bit Windows, however it is possible to build Cell Locator from source on any platform which supports 3D Slicer. Refer to the [developer guide](developer-guide/building.md) for build instructions.
+Installers are only generated for 64-bit Windows, however it is possible to build Cell Locator from source on any platform which supports 3D Slicer.
+
+Refer to the [Cell Locator build instructions](developer-guide/building.md).
 :::
 
 ## Using Cell Locator
