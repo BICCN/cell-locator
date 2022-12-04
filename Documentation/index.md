@@ -22,8 +22,8 @@ A desktop application based on [3D Slicer](https://slicer.org/) that displays th
 ```{toctree}
 :maxdepth: 2
 :caption: Contents
-app-overview.md
 getting-started.md
+app-overview.md
 reference-atlases.md
 coordinate-systems.md
 lims-integration.md
