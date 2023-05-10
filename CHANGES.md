@@ -2,6 +2,10 @@
 
 ## Next Release
 
+Documentation:
+
+- Explicitly reference license in project `README` and generated documentation main page. [#227](https://github.com/BICCN/cell-locator/pull/227)
+
 ## Cell Locator 0.3.0-2022-07-25
 
 Features:
