@@ -12,3 +12,7 @@ To get started, see https://cell-locator.readthedocs.io
 ## Acknowledgments
 
 To cite Cell Locator or learn about the funding sources, see https://cell-locator.readthedocs.io/en/latest/acknowledgments.html
+
+## License
+
+This software is licensed under the terms of the BSD-3-Clause open-source license. See the [BSD-3-Clause](LICENSE) file for details.

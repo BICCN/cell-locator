@@ -30,6 +30,7 @@ lims-integration.md
 command-line-tools.md
 developer-guide/index.md
 acknowledgments.md
+license.md
 ```
 
 # Indices and tables
