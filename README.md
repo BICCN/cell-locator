@@ -15,4 +15,4 @@ To cite Cell Locator or learn about the funding sources, see https://cell-locato
 
 ## License
 
-This software is licensed under the terms of the BSD-3-Clause open-source license. See the [BSD-3-Clause](LICENSE) file for details.
+This software is licensed under the terms of the BSD-3-Clause open-source license. See the [LICENSE](LICENSE) file for details.
